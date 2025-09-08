@@ -4,7 +4,7 @@
     <LoadingPage v-if="showLoading" />
 
     <!-- 维护模式 - 只显示图标 -->
-    <div v-if="isMaintenanceMode && !showLoading" class="maintenance-overlay">
+    <div v-if="isMaintenanceMode" class="maintenance-overlay">
       <div class="maintenance-icon-container">
         <div class="maintenance-icon">⚙️</div>
       </div>
@@ -17,9 +17,6 @@
 
       <!-- 2. 中间投注区域和筹码 -->
       <MiddleSection :height="heights.betting" />
-
-      <!-- 3. 底部路珠区域 -->
-      <BottomSection :width="containerWidth" />
 
       <!-- 4. 弹出层 - 开牌和中奖特效 -->
       <OverlaySection />
@@ -37,10 +34,9 @@ import { useAudio } from '@/services/Audio'
 import { useGameStore } from '@/stores/gameStore'
 
 // 组件
-import LoadingPage from './load.vue'  // 引入加载页面组件
-import TopSection from './Top.vue'
-import MiddleSection from './Middle.vue'
-import BottomSection from './Bottom.vue'
+import LoadingPage from './Load.vue'
+import TopSection from './VideoAndLuZhu.vue'
+import MiddleSection from './UserBet.vue'
 import OverlaySection from './Overlay.vue'
 
 // 音频服务
@@ -56,7 +52,12 @@ const containerWidth = ref(375)
 
 // 计算属性判断是否维护模式
 const isMaintenanceMode = computed(() => {
-  return gameStore.tableInfo?.status === 2
+  if(gameStore.tableInfo?.status === 2){
+    showLoading.value = false  // 确保加载页面隐藏
+    return true
+  }else{
+    return false
+  }
 })
 
 // 获取真实视口高度
