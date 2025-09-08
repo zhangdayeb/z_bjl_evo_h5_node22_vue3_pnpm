@@ -126,7 +126,7 @@ onMounted(() => {
       isConnected: gameStore.isConnected
     })
 
-    showGlobalMessage('欢迎来到百家乐游戏', 'info')
+    showGlobalMessage('音频暂时没有开启', 'info')
   } catch (error) {
     console.error('❌ BettingAreaLayout 初始化失败:', error)
     showGlobalMessage('投注区域初始化失败', 'error')
