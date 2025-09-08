@@ -29,7 +29,7 @@ import {
 } from 'naive-ui'
 
 // 引入你的专门布局组件
-import GameSection from '@/components/Layout/GameSection.vue'
+import GameSection from '@/components/Layout/BaseLayout.vue'
 
 // 主题配置
 const gameTheme = computed(() => darkTheme)
