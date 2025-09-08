@@ -37,11 +37,8 @@
         class="switch-button"
         @click="togglePosition"
       >
-        <!-- 上下切换箭头图标 -->
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <!-- 向上箭头 -->
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 3.5L4 7.5L5 8.5L7.5 6V12.5H8.5V6L11 8.5L12 7.5L8 3.5Z"/>
-          <!-- 向下箭头 -->
           <path d="M8 12.5L12 8.5L11 7.5L8.5 10V3.5H7.5V10L5 7.5L4 8.5L8 12.5Z" opacity="0.6"/>
         </svg>
       </button>
@@ -70,10 +67,10 @@ const configStore = useConfigStore()
 // 响应式数据
 const isVideoOnTop = computed(() => configStore.isVideoOnTop)
 const containerWidth = ref(window.innerWidth)
-const videoHeight = ref(0)
-const luzhuHeight = ref(0)
+const videoHeight = ref(300)
+const luzhuHeight = ref(150)
 
-// 计算属性 - 直接从 GameStore 读取数据
+// 计算属性
 const currentVideoUrl = computed(() => {
   return gameStore.videoUrl || ''
 })
@@ -83,24 +80,24 @@ const calculateHeights = () => {
   const width = window.innerWidth
   containerWidth.value = width
 
-  // 视频高度 = 宽度 * 9/16 (16:9比例)
-  videoHeight.value = width * 9 / 16
+  // 视频高度 = 宽度 * 9/16 (16:9比例)，但不超过300px
+  videoHeight.value = Math.min(width * 9 / 16, 300)
 
-  // 露珠高度 = 宽度 / 2.73 (2.73:1比例)
-  luzhuHeight.value = width / 2.73
+  // 露珠高度 = 宽度 / 2.73，但不超过150px
+  luzhuHeight.value = Math.min(width / 2.73, 150)
 }
 
 // 计算视频区域的样式
 const videoStyles = computed(() => {
   if (isVideoOnTop.value) {
-    // 情况2：视频在上
+    // 视频在上
     return {
       top: '0',
       height: `${videoHeight.value}px`,
       zIndex: 2
     }
   } else {
-    // 情况1：露珠在上，视频紧挨着露珠
+    // 露珠在上，视频紧挨着露珠
     return {
       top: `${luzhuHeight.value}px`,
       height: `${videoHeight.value}px`,
@@ -112,14 +109,14 @@ const videoStyles = computed(() => {
 // 计算露珠区域的样式
 const luzhuStyles = computed(() => {
   if (isVideoOnTop.value) {
-    // 情况2：视频在上，露珠在底部
+    // 视频在上，露珠贴着投注区域顶部
     return {
-      bottom: '0',
+      bottom: configStore.userBetHeightPercentage, // 直接贴着投注区域
       height: `${luzhuHeight.value}px`,
       zIndex: 1
     }
   } else {
-    // 情况1：露珠在顶部
+    // 露珠在上
     return {
       top: '0',
       height: `${luzhuHeight.value}px`,
@@ -169,18 +166,17 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; /* 第一层起始z-index */
-  background: #D2B48C; /* 浅棕色背景 */
+  z-index: 1;
+  background: #D2B48C;
   overflow: hidden;
 }
 
-/* ==================== 视频区域 ==================== */
+/* 视频区域 */
 .video-section {
   position: absolute;
   left: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-in-out;
 }
 
 /* 视频播放器包装 */
@@ -193,17 +189,14 @@ defineExpose({
   background: #000;
 }
 
-/* ==================== 露珠区域 ==================== */
+/* 露珠区域 */
 .luzhu-section {
   position: absolute;
   left: 0;
   width: 100%;
   background: rgba(0, 0, 0, 0.02);
-  transition: all 0.3s ease-in-out;
   overflow: hidden;
 }
-
-/* ==================== 浮层元素 ==================== */
 
 /* 倒计时浮层 - 右上角 */
 .countdown-overlay {
@@ -227,7 +220,7 @@ defineExpose({
   overflow: hidden;
 }
 
-/* ==================== 切换按钮 ==================== */
+/* 切换按钮 */
 .switch-button {
   position: absolute;
   top: 15px;
@@ -244,7 +237,6 @@ defineExpose({
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(8px);
-  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .switch-button:hover {
@@ -253,9 +245,7 @@ defineExpose({
   color: rgba(255, 255, 255, 0.95);
 }
 
-/* ==================== 响应式设计 ==================== */
-
-/* 平板端 */
+/* 响应式设计 */
 @media (max-width: 1024px) {
   .countdown-overlay {
     top: 15px;
@@ -270,7 +260,6 @@ defineExpose({
   }
 }
 
-/* 移动端 */
 @media (max-width: 768px) {
   .countdown-overlay {
     top: 10px;
@@ -285,7 +274,6 @@ defineExpose({
   }
 }
 
-/* 小屏幕手机 */
 @media (max-width: 480px) {
   .countdown-overlay {
     top: 8px;
@@ -297,23 +285,6 @@ defineExpose({
     left: 8px;
     width: 140px;
     height: 90px;
-  }
-}
-
-/* ==================== 动画效果 ==================== */
-.countdown-overlay,
-.userbet-overlay {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 </style>
