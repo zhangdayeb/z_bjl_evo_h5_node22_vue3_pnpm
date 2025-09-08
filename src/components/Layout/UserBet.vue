@@ -1,52 +1,78 @@
-<!-- src/components/Layout/Middle.vue -->
+<!-- src/components/Layout/UserBet.vue - 第二层：用户投注区域 -->
 <template>
-  <div class="middle-section" :style="middleSectionStyles">
-    <!-- 投注区域布局 -->
-    <div class="betting-area-wrapper">
-      <BettingAreaLayout />
-    </div>
+  <div class="user-bet-layer">
+    <div class="content-wrapper" :style="contentStyles">
+      <!-- 投注区域布局 -->
+      <div class="betting-area-wrapper">
+        <BettingAreaLayout />
+      </div>
 
-    <!-- 筹码显示区域 -->
-    <ChipDisplay />
+      <!-- 筹码显示区域 -->
+      <ChipDisplay />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, type CSSProperties } from 'vue'
+import { computed, ref } from 'vue'
+import { useConfigStore } from '@/stores/configStore'
 
 // 组件导入
 import BettingAreaLayout from '@/components/BetArea/BettingAreaLayout.vue'
 import ChipDisplay from '@/components/BetArea/ChipDisplay.vue'
 
-// Props
-interface Props {
-  height?: number
-  bottom?: number  // 距离底部的距离
-  zIndex?: number  // 层级控制
-}
+// 使用 configStore
+const configStore = useConfigStore()
 
-const props = withDefaults(defineProps<Props>(), {
-  height: 200,    // 默认高度
-  bottom: 0,      // 默认贴底
-  zIndex: 10      // 默认层级
+// 动画状态（后续可以控制覆盖比例）
+const isExpanded = ref(false)
+
+// 计算内容样式
+const contentStyles = computed(() => {
+  // 默认状态：向下移动60%，只显示下部40%
+  // 展开状态：移动到0，覆盖整个屏幕
+  const topPosition = isExpanded.value ? 0 : 60
+
+  return {
+    transform: `translateY(${topPosition}%)`,
+    transition: 'transform 0.3s ease-in-out'
+  }
 })
 
-// 计算样式
-const middleSectionStyles = computed((): CSSProperties => ({
-  height: `${props.height}px`,
-  bottom: `${props.bottom}px`,
-  zIndex: props.zIndex
-}))
+// 暴露方法供外部调用
+defineExpose({
+  // 展开到全屏
+  expand: () => {
+    isExpanded.value = true
+  },
+  // 收缩到默认位置
+  collapse: () => {
+    isExpanded.value = false
+  },
+  // 切换展开/收缩状态
+  toggle: () => {
+    isExpanded.value = !isExpanded.value
+  }
+})
 </script>
 
 <style scoped>
-/* 固定在底部的投注区域 */
-.middle-section {
+/* 第二层容器 - 占满100%高度 */
+.user-bet-layer {
   position: absolute;
+  top: 0;
   left: 0;
-  right: 0;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  z-index: 100; /* 第二层起始z-index */
+  overflow: hidden;
+}
+
+/* 内容包装器 */
+.content-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(to top,
     rgba(0, 0, 0, 0.95) 0%,
     rgba(0, 0, 0, 0.85) 50%,
@@ -55,7 +81,8 @@ const middleSectionStyles = computed((): CSSProperties => ({
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 投注区域容器 */
@@ -69,7 +96,7 @@ const middleSectionStyles = computed((): CSSProperties => ({
 }
 
 /* 悬停效果 */
-.middle-section:hover {
+.content-wrapper:hover {
   background: linear-gradient(to top,
     rgba(0, 0, 0, 0.98) 0%,
     rgba(0, 0, 0, 0.9) 50%,
@@ -81,10 +108,6 @@ const middleSectionStyles = computed((): CSSProperties => ({
 
 /* 平板端 */
 @media (max-width: 1024px) {
-  .middle-section {
-    height: 280px !important; /* 平板上稍微减小高度 */
-  }
-
   .betting-area-wrapper {
     padding: 8px;
   }
@@ -92,8 +115,7 @@ const middleSectionStyles = computed((): CSSProperties => ({
 
 /* 移动端 */
 @media (max-width: 768px) {
-  .middle-section {
-    height: 240px !important; /* 移动端进一步减小高度 */
+  .content-wrapper {
     box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.5);
   }
 
@@ -104,8 +126,7 @@ const middleSectionStyles = computed((): CSSProperties => ({
 
 /* 小屏幕手机 */
 @media (max-width: 480px) {
-  .middle-section {
-    height: 200px !important; /* 小屏幕最小高度 */
+  .content-wrapper {
     border-top-width: 0.5px;
   }
 
@@ -117,7 +138,7 @@ const middleSectionStyles = computed((): CSSProperties => ({
 /* ==================== 动画效果 ==================== */
 
 /* 进入动画 */
-.middle-section {
+.content-wrapper {
   animation: slideUp 0.4s ease-out;
 }
 
@@ -127,14 +148,14 @@ const middleSectionStyles = computed((): CSSProperties => ({
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(60%);
     opacity: 1;
   }
 }
 
 /* 深色主题优化 */
 @media (prefers-color-scheme: dark) {
-  .middle-section {
+  .content-wrapper {
     background: linear-gradient(to top,
       rgba(0, 0, 0, 0.98) 0%,
       rgba(0, 0, 0, 0.9) 50%,
@@ -146,7 +167,7 @@ const middleSectionStyles = computed((): CSSProperties => ({
 
 /* 安全区域适配（针对有刘海或底部横条的设备） */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .middle-section {
+  .content-wrapper {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }

@@ -3,12 +3,12 @@
   <div class="game-run-container" :style="containerStyles">
     <!-- 第一层：底层 - 视频和路珠背景层 -->
     <div class="layer-bottom">
-      <VideoAndLuZhu :height="heights.video" />
+      <VideoAndLuZhu />
     </div>
 
     <!-- 第二层：中间层 - 用户投注操作层 -->
     <div class="layer-middle">
-      <UserBet :height="heights.betting" />
+      <UserBet ref="userBetRef" />
     </div>
 
     <!-- 第三层：顶层 - 弹窗和特效层 -->
@@ -23,7 +23,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { CSSProperties } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 
-
 // 导入三层组件
 import VideoAndLuZhu from './VideoAndLuZhu.vue'  // 底层：视频和路珠
 import UserBet from './UserBet.vue'              // 中间层：投注区域
@@ -32,10 +31,12 @@ import Overlay from './Overlay.vue'              // 顶层：弹窗和特效
 // Store
 const gameStore = useGameStore()
 
+// 组件引用
+const userBetRef = ref()
 
 // 状态
 const viewportHeight = ref(window.innerHeight)
-const containerWidth = ref(375)
+const containerWidth = ref(window.innerWidth)
 
 // 获取真实视口高度
 const getRealViewportHeight = () => {
@@ -45,27 +46,9 @@ const getRealViewportHeight = () => {
   return window.innerHeight || document.documentElement.clientHeight
 }
 
-// 高度计算
-const calculateHeights = () => {
-  const realHeight = getRealViewportHeight()
-  const videoHeight = 300
-  const roadmapHeight = Math.round(containerWidth.value * 0.35)
-  const bettingHeight = Math.max(200, realHeight - videoHeight - roadmapHeight)
-
-  return {
-    total: realHeight,
-    video: videoHeight,
-    roadmap: roadmapHeight,
-    betting: bettingHeight
-  }
-}
-
-const heights = computed(() => calculateHeights())
-
 // 容器样式
 const containerStyles = computed((): CSSProperties => ({
-  height: `${heights.value.total}px`,
-  minHeight: '100vh',
+  height: '100vh',
   width: '100%',
   position: 'relative',
   overflow: 'hidden'
@@ -74,6 +57,7 @@ const containerStyles = computed((): CSSProperties => ({
 // 窗口大小变化处理
 const handleResize = () => {
   viewportHeight.value = getRealViewportHeight()
+  containerWidth.value = window.innerWidth
 
   nextTick(() => {
     const container = document.querySelector('.game-run-container') as HTMLElement
@@ -100,9 +84,10 @@ const handleVisualViewportChange = () => {
 // 生命周期
 onMounted(() => {
   console.log('🎮 GameRun 三层布局已加载')
-  console.log('├─ 底层: VideoAndLuZhu (视频、路珠、倒计时、投注滚动)')
-  console.log('├─ 中间层: UserBet (投注区域、筹码、游戏统计)')
-  console.log('└─ 顶层: Overlay (弹窗、特效、面板)')
+  console.log('├─ 第一层(z-index: 1): VideoAndLuZhu - 视频、路珠')
+  console.log('├─ 第二层(z-index: 100): UserBet - 投注区域')
+  console.log('└─ 第三层(z-index: 500): Overlay - 弹窗、特效')
+  console.log('📐 默认显示: 上60%视频路珠 + 下40%投注区域')
 
   // 初始化游戏状态
   console.log('当前游戏状态:', gameStore.gameStatus)
@@ -118,20 +103,6 @@ onMounted(() => {
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', handleVisualViewportChange)
     window.visualViewport.addEventListener('scroll', handleVisualViewportChange)
-  }
-
-  // 监听容器大小变化
-  if (window.ResizeObserver) {
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        containerWidth.value = entry.contentRect.width
-      }
-    })
-
-    const container = document.querySelector('.game-run-container')
-    if (container) {
-      resizeObserver.observe(container)
-    }
   }
 })
 
@@ -149,6 +120,22 @@ onUnmounted(() => {
 
   if (resizeTimer) {
     clearTimeout(resizeTimer)
+  }
+})
+
+// 暴露方法给外部使用
+defineExpose({
+  // 展开投注区域
+  expandUserBet: () => {
+    userBetRef.value?.expand()
+  },
+  // 收缩投注区域
+  collapseUserBet: () => {
+    userBetRef.value?.collapse()
+  },
+  // 切换投注区域
+  toggleUserBet: () => {
+    userBetRef.value?.toggle()
   }
 })
 </script>
@@ -173,7 +160,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   z-index: 1;
-  pointer-events: auto;
 }
 
 /* 第二层：中间层 - 投注操作区域 */
@@ -184,14 +170,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   z-index: 100;
-  pointer-events: none; /* 默认不拦截事件 */
-}
-
-/* 中间层的子元素需要交互的部分 */
-.layer-middle :deep(.betting-area-wrapper),
-.layer-middle :deep(.chip-display),
-.layer-middle :deep(.game-count-container) {
-  pointer-events: auto; /* 投注区域可交互 */
 }
 
 /* 第三层：顶层 - 弹窗和特效 */
