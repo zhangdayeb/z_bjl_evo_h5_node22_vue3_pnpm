@@ -1,20 +1,22 @@
 <!-- src/components/Layout/UserBet.vue - 第二层：用户投注区域 -->
 <template>
-  <div class="user-bet-layer">
-    <div class="content-wrapper" :style="contentStyles">
+  <div class="user-bet-layer" :style="layerStyles">
+    <div class="content-wrapper">
       <!-- 投注区域布局 -->
       <div class="betting-area-wrapper">
         <BettingAreaLayout />
       </div>
 
       <!-- 筹码显示区域 -->
-      <ChipDisplay />
+      <div class="chip-display-wrapper">
+        <ChipDisplay />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useConfigStore } from '@/stores/configStore'
 
 // 组件导入
@@ -24,47 +26,35 @@ import ChipDisplay from '@/components/BetArea/ChipDisplay.vue'
 // 使用 configStore
 const configStore = useConfigStore()
 
-// 动画状态（后续可以控制覆盖比例）
-const isExpanded = ref(false)
-
-// 计算内容样式
-const contentStyles = computed(() => {
-  // 默认状态：向下移动60%，只显示下部40%
-  // 展开状态：移动到0，覆盖整个屏幕
-  const topPosition = isExpanded.value ? 0 : 60
-
+// 层级容器样式 - 从store读取
+const layerStyles = computed(() => {
   return {
-    transform: `translateY(${topPosition}%)`,
-    transition: 'transform 0.3s ease-in-out'
+    top: configStore.userBetTopPosition,
+    height: configStore.userBetHeightPercentage
   }
 })
 
-// 暴露方法供外部调用
+// 暴露方法 - 通过store控制
 defineExpose({
-  // 展开到全屏
   expand: () => {
-    isExpanded.value = true
+    configStore.setUserBetExpanded(true)
   },
-  // 收缩到默认位置
   collapse: () => {
-    isExpanded.value = false
+    configStore.setUserBetExpanded(false)
   },
-  // 切换展开/收缩状态
   toggle: () => {
-    isExpanded.value = !isExpanded.value
+    configStore.toggleUserBetExpand()
   }
 })
 </script>
 
 <style scoped>
-/* 第二层容器 - 占满100%高度 */
+/* 第二层容器 */
 .user-bet-layer {
   position: absolute;
-  top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  z-index: 100; /* 第二层起始z-index */
+  z-index: 100;
   overflow: hidden;
 }
 
@@ -83,6 +73,7 @@ defineExpose({
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* 投注区域容器 */
@@ -92,28 +83,49 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 10px;
-  overflow: hidden;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* 悬停效果 */
-.content-wrapper:hover {
-  background: linear-gradient(to top,
-    rgba(0, 0, 0, 0.98) 0%,
-    rgba(0, 0, 0, 0.9) 50%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
+/* 筹码显示区域容器 */
+.chip-display-wrapper {
+  flex-shrink: 0;
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-/* ==================== 响应式设计 ==================== */
+/* 滚动条样式 */
+.betting-area-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
 
-/* 平板端 */
+.betting-area-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.betting-area-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.betting-area-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 响应式设计 */
 @media (max-width: 1024px) {
   .betting-area-wrapper {
     padding: 8px;
   }
+
+  .chip-display-wrapper {
+    padding: 8px;
+  }
 }
 
-/* 移动端 */
 @media (max-width: 768px) {
   .content-wrapper {
     box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.5);
@@ -122,9 +134,12 @@ defineExpose({
   .betting-area-wrapper {
     padding: 6px;
   }
+
+  .chip-display-wrapper {
+    padding: 6px;
+  }
 }
 
-/* 小屏幕手机 */
 @media (max-width: 480px) {
   .content-wrapper {
     border-top-width: 0.5px;
@@ -133,23 +148,13 @@ defineExpose({
   .betting-area-wrapper {
     padding: 4px;
   }
-}
 
-/* ==================== 动画效果 ==================== */
-
-/* 进入动画 */
-.content-wrapper {
-  animation: slideUp 0.4s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
+  .chip-display-wrapper {
+    padding: 4px;
   }
-  to {
-    transform: translateY(60%);
-    opacity: 1;
+
+  .betting-area-wrapper::-webkit-scrollbar {
+    width: 4px;
   }
 }
 
@@ -165,10 +170,25 @@ defineExpose({
   }
 }
 
-/* 安全区域适配（针对有刘海或底部横条的设备） */
+/* 安全区域适配 */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .content-wrapper {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .chip-display-wrapper {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 横屏模式优化 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .betting-area-wrapper {
+    padding: 5px;
+  }
+
+  .chip-display-wrapper {
+    padding: 5px;
   }
 }
 </style>
