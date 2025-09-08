@@ -214,17 +214,12 @@ defineExpose({
 /* 投注信息浮层 - 左下角 */
 .userbet-overlay {
   position: absolute;
-  bottom: 20px;
+  bottom: 80px;
   left: 20px;
-  width: 320px;
+  width: 150px;
   height: 200px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 8px;
-  padding: 12px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
 
@@ -291,7 +286,7 @@ defineExpose({
   .userbet-overlay {
     bottom: 15px;
     left: 15px;
-    width: 280px;
+    width: 150px;
     height: 180px;
   }
 
@@ -325,10 +320,9 @@ defineExpose({
     bottom: 10px;
     left: 10px;
     right: 10px;
-    width: auto;
-    max-width: 300px;
+    width: 150px;
     height: 150px;
-    padding: 10px;
+    /* padding: 10px; */
   }
 
   .switch-button {
@@ -354,11 +348,11 @@ defineExpose({
   }
 
   .userbet-overlay {
-    bottom: 8px;
+    bottom: 20px;
     left: 8px;
     right: 8px;
     height: 120px;
-    padding: 8px;
+    /* padding: 8px; */
   }
 
   .switch-button {
