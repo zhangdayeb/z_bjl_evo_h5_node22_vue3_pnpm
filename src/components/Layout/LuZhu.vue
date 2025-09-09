@@ -128,7 +128,7 @@
                   :class="{ 'fullscreen': fullscreenMode === 'bead-road' }"
                   @click="toggleFullscreen('bead-road')"
                 >
-                  <svg class="road-svg" viewBox="0 0 14 6" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="road-svg" viewBox="0 0 11 6" xmlns="http://www.w3.org/2000/svg">
                     <!-- 珠盘路数据 - 使用测试数据渲染 -->
                     <g class="road-data">
                       <template v-for="(column, colIndex) in beadColumns" :key="`col-${colIndex}`">
@@ -137,7 +137,7 @@
                           <circle
                             :cx="colIndex + 0.5"
                             :cy="rowIndex + 0.5"
-                            r="0.48"
+                            r="0.49"
                             :fill="getResultColor(item.result)"
                             opacity="0.95"
                           />
@@ -148,7 +148,7 @@
                             text-anchor="middle"
                             dominant-baseline="middle"
                             fill="white"
-                            font-size="0.6"
+                            font-size="0.65"
                             font-weight="bold"
                           >
                             {{ getResultText(item.result) }}
@@ -157,8 +157,8 @@
                           <!-- 闲对标记（左上角蓝点）ext=2 或 ext=3 -->
                           <circle
                             v-if="item.ext === 2 || item.ext === 3"
-                            :cx="colIndex + 0.25"
-                            :cy="rowIndex + 0.25"
+                            :cx="colIndex + 0.2"
+                            :cy="rowIndex + 0.2"
                             r="0.08"
                             fill="#2E83FF"
                           />
@@ -166,8 +166,8 @@
                           <!-- 庄对标记（右下角红点）ext=1 或 ext=3 -->
                           <circle
                             v-if="item.ext === 1 || item.ext === 3"
-                            :cx="colIndex + 0.75"
-                            :cy="rowIndex + 0.75"
+                            :cx="colIndex + 0.8"
+                            :cy="rowIndex + 0.8"
                             r="0.08"
                             fill="#EC2024"
                           />
@@ -191,57 +191,83 @@
         </div>
       </div>
 
-      <!-- 底部统计栏 -->
+      <!-- 底部统计栏 - 优化版 -->
       <div class="statistics-bar">
         <!-- 左侧：局数 -->
         <div class="left-section">
           <span class="game-round">
             <span class="hash">#</span>
-            <span class="round-number">36</span>
+            <span class="round-number">110</span>
           </span>
         </div>
 
         <!-- 中间：统计数据 -->
         <div class="center-section">
+          <!-- 闲家统计 -->
           <div class="stat-item">
-            <div class="stat-circle player">
-              <span>P</span>
-            </div>
-            <span class="stat-count">17</span>
+            <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="9.5" fill="#2E83FF" />
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">P</text>
+            </svg>
+            <span class="stat-count">40</span>
           </div>
 
+          <!-- 庄家统计 -->
           <div class="stat-item">
-            <div class="stat-circle banker">
-              <span>B</span>
-            </div>
-            <span class="stat-count">17</span>
+            <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="9.5" fill="#EC2024" />
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">B</text>
+            </svg>
+            <span class="stat-count">59</span>
           </div>
 
+          <!-- 和局统计 -->
           <div class="stat-item">
-            <div class="stat-circle tie">
-              <span>T</span>
-            </div>
-            <span class="stat-count">2</span>
+            <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="9.5" fill="#159252" />
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">T</text>
+            </svg>
+            <span class="stat-count">11</span>
           </div>
         </div>
 
         <!-- 右侧：问路预测 -->
         <div class="right-section">
+          <!-- 闲家预测 -->
           <div class="prediction-indicator player-predict">
             <span class="predict-label">P</span>
-            <div class="predict-dots">
-              <span class="dot filled-blue"></span>
-              <span class="dot outline-blue"></span>
-              <span class="dot filled-red"></span>
+            <div class="predict-icons">
+              <!-- 大眼路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="none" stroke="#EC2024" stroke-width="1.2" />
+              </svg>
+              <!-- 小路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="#EC2024" />
+              </svg>
+              <!-- 蟑螂路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <line x1="2" y1="2" x2="8" y2="8" stroke="#EC2024" stroke-width="1.5" />
+              </svg>
             </div>
           </div>
 
+          <!-- 庄家预测 -->
           <div class="prediction-indicator banker-predict">
             <span class="predict-label">B</span>
-            <div class="predict-dots">
-              <span class="dot filled-red"></span>
-              <span class="dot outline-red"></span>
-              <span class="dot filled-blue"></span>
+            <div class="predict-icons">
+              <!-- 大眼路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="none" stroke="#2E83FF" stroke-width="1.2" />
+              </svg>
+              <!-- 小路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <circle cx="5" cy="5" r="4" fill="#2E83FF" />
+              </svg>
+              <!-- 蟑螂路 -->
+              <svg class="predict-svg" viewBox="0 0 10 10">
+                <line x1="2" y1="2" x2="8" y2="8" stroke="#2E83FF" stroke-width="1.5" />
+              </svg>
             </div>
           </div>
         </div>
@@ -254,18 +280,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-// 测试数据
-const res_org_obj = {
-  "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},"k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
-  "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},"k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
-  "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},"k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
-  "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},"k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
-  "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},"k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
-  "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},"k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
-  "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},"k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
-  "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},"k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
-  "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
+// 扩展测试数据，生成更多数据以填满珠盘路
+const generateTestData = () => {
+  const data: any = {}
+  // 生成66个数据点（11列 x 6行）
+  for (let i = 0; i < 66; i++) {
+    const key = `k${i}`
+    // 随机生成结果：1(庄B), 2(闲P), 3(和T)
+    const results = [1, 1, 1, 1, 2, 2, 2, 2, 3] // 让庄闲更常见
+    const result = results[Math.floor(Math.random() * results.length)]
+
+    // 随机生成对子：0(无), 1(庄对), 2(闲对), 3(双对)
+    const extValues = [0, 0, 0, 0, 0, 0, 1, 2, 3] // 让无对子更常见
+    const ext = extValues[Math.floor(Math.random() * extValues.length)]
+
+    data[key] = { result, ext }
+  }
+  return data
 }
+
+// 使用生成的测试数据
+const res_org_obj = generateTestData()
 
 // 将数据转换为珠盘路列数组
 const beadColumns = computed(() => {
@@ -273,7 +308,7 @@ const beadColumns = computed(() => {
   let currentColumn: any[] = []
 
   // 按顺序处理 k0, k1, k2...
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 66; i++) {
     const key = `k${i}`
     if (res_org_obj[key as keyof typeof res_org_obj]) {
       currentColumn.push(res_org_obj[key as keyof typeof res_org_obj])
@@ -455,7 +490,7 @@ const exitFullscreen = () => {
   overflow: hidden;
 }
 
-/* ================== 滑动容器 - 中等点阵背景 ================== */
+/* ================== 滑动容器 ================== */
 .scrollable-container {
   width: 200%;
   height: 100%;
@@ -463,14 +498,8 @@ const exitFullscreen = () => {
   cursor: grab;
   will-change: transform;
   user-select: none;
-  /* 中等点阵背景 - 给大路用 */
-  background-image: radial-gradient(
-    circle at center,
-    rgba(255, 255, 255, 0.1) 1.3px,
-    transparent 1.3px
-  );
-  background-size: 25px 25px;
-  background-position: center;
+  /* 不给滑动容器设置背景 */
+  background: transparent;
 }
 
 .scrollable-container:active {
@@ -488,17 +517,26 @@ const exitFullscreen = () => {
   position: relative;
 }
 
-/* 左屏布局 */
+/* 左屏布局 - 添加大路背景 */
 .left-screen {
   display: flex;
   flex-direction: column;
+  /* 只给左屏添加中等点阵背景 */
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.1) 1.3px,
+    transparent 1.3px
+  );
+  background-size: 25px 25px;
+  background-position: center;
 }
 
-/* 右屏布局 */
+/* 右屏布局 - 不设置背景 */
 .right-screen {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent;
 }
 
 /* ================== 背景覆盖层 ================== */
@@ -517,14 +555,14 @@ const exitFullscreen = () => {
   background-position: center;
 }
 
-/* 珠盘路 - 大点背景覆盖 */
+/* 珠盘路 - 大点背景覆盖（修复：单独设置背景） */
 .bead-road-overlay {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 大点背景 */
+  /* 珠盘路专属大点背景 */
   background-image: radial-gradient(
     circle at center,
     rgba(255, 255, 255, 0.12) 1.5px,
@@ -555,11 +593,11 @@ const exitFullscreen = () => {
   padding: 8px;
 }
 
-/* 珠盘路 */
+/* 珠盘路 - 减小padding让数据贴边 */
 .bead-road-section {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 8px; /* 从20px减小到8px */
   box-sizing: border-box;
 }
 
@@ -592,9 +630,9 @@ const exitFullscreen = () => {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 40px !important;
+  bottom: 32px !important;
   width: 100% !important;
-  height: calc(100% - 40px) !important;
+  height: calc(100% - 32px) !important;
   z-index: 1000;
   padding: 20px;
   background: linear-gradient(rgba(37, 37, 37, 0.98) 0%, rgb(30, 30, 30) 100%);
@@ -642,7 +680,7 @@ const exitFullscreen = () => {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 40px;
+  bottom: 32px;
   z-index: 999;
   background: rgba(0, 0, 0, 0.2);
 }
@@ -666,16 +704,16 @@ const exitFullscreen = () => {
   50% { opacity: 1; }
 }
 
-/* ================== 统计栏 ================== */
+/* ================== 统计栏 - 优化版 ================== */
 .statistics-bar {
-  height: 40px;
-  min-height: 40px;
-  background: #1a1a1a;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  height: 32px;
+  min-height: 32px;
+  background: rgb(37, 37, 37);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   flex-shrink: 0;
   z-index: 1001;
 }
@@ -684,139 +722,104 @@ const exitFullscreen = () => {
 .left-section {
   display: flex;
   align-items: center;
+  min-width: 50px;
 }
 
 .game-round {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  gap: 3px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
   font-weight: 500;
 }
 
 .game-round .hash {
-  opacity: 0.7;
+  opacity: 0.6;
+  font-size: 12px;
 }
 
 .game-round .round-number {
-  color: white;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
+  font-size: 14px;
 }
 
-/* 中间：统计 */
+/* 中间：统计 - 使用SVG */
 .center-section {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.stat-circle {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.stat-circle.player {
-  background: #2E83FF;
-}
-
-.stat-circle.banker {
-  background: #EC2024;
-}
-
-.stat-circle.tie {
-  background: #159252;
+.stat-svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .stat-count {
-  color: white;
-  font-size: 16px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
   font-weight: 600;
-  min-width: 24px;
+  min-width: 20px;
   text-align: center;
 }
 
-/* 右侧：问路预测 */
+/* 右侧：问路预测 - 优化版 */
 .right-section {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .prediction-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 14px;
-  height: 28px;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  height: 24px;
 }
 
 .player-predict {
-  background: rgba(46, 131, 255, 0.15);
-  border: 1px solid rgba(46, 131, 255, 0.3);
+  background: rgba(46, 131, 255, 0.12);
+  border: 1px solid rgba(46, 131, 255, 0.25);
 }
 
 .banker-predict {
-  background: rgba(236, 32, 36, 0.15);
-  border: 1px solid rgba(236, 32, 36, 0.3);
+  background: rgba(236, 32, 36, 0.12);
+  border: 1px solid rgba(236, 32, 36, 0.25);
 }
 
 .predict-label {
-  color: white;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
+  margin-right: 2px;
 }
 
-.predict-dots {
+.predict-icons {
   display: flex;
-  gap: 3px;
+  gap: 2px;
   align-items: center;
 }
 
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1px solid transparent;
-}
-
-.dot.filled-blue {
-  background: #2E83FF;
-  border-color: #2E83FF;
-}
-
-.dot.filled-red {
-  background: #EC2024;
-  border-color: #EC2024;
-}
-
-.dot.outline-blue {
-  background: transparent;
-  border-color: #2E83FF;
-}
-
-.dot.outline-red {
-  background: transparent;
-  border-color: #EC2024;
+.predict-svg {
+  width: 10px;
+  height: 10px;
+  display: block;
 }
 
 /* ================== 响应式设计 ================== */
 @media (max-width: 768px) {
-  .scrollable-container {
+  .left-screen {
     background-size: 22px 22px;
   }
 
@@ -829,38 +832,37 @@ const exitFullscreen = () => {
   }
 
   .statistics-bar {
-    height: 36px;
-    min-height: 36px;
-    padding: 0 12px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0 10px;
   }
 
-  .stat-circle {
-    width: 22px;
-    height: 22px;
-    font-size: 12px;
+  .stat-svg {
+    width: 18px;
+    height: 18px;
   }
 
   .stat-count {
-    font-size: 15px;
+    font-size: 13px;
   }
 
   .center-section {
-    gap: 16px;
+    gap: 14px;
   }
 
   .prediction-indicator {
-    height: 26px;
-    padding: 3px 8px;
+    height: 22px;
+    padding: 2px 6px;
   }
 
-  .dot {
-    width: 8px;
-    height: 8px;
+  .predict-svg {
+    width: 9px;
+    height: 9px;
   }
 }
 
 @media (max-width: 480px) {
-  .scrollable-container {
+  .left-screen {
     background-size: 20px 20px;
   }
 
@@ -873,27 +875,39 @@ const exitFullscreen = () => {
   }
 
   .statistics-bar {
-    height: 34px;
-    min-height: 34px;
+    height: 28px;
+    min-height: 28px;
     padding: 0 8px;
   }
 
   .game-round {
-    font-size: 13px;
+    font-size: 12px;
   }
 
-  .stat-circle {
-    width: 20px;
-    height: 20px;
+  .game-round .hash {
     font-size: 11px;
   }
 
+  .game-round .round-number {
+    font-size: 13px;
+  }
+
+  .stat-svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .stat-count {
-    font-size: 14px;
+    font-size: 12px;
+    min-width: 18px;
   }
 
   .center-section {
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .stat-item {
+    gap: 4px;
   }
 
   .right-section {
@@ -901,18 +915,56 @@ const exitFullscreen = () => {
   }
 
   .prediction-indicator {
-    height: 24px;
-    padding: 2px 6px;
-    gap: 4px;
+    height: 20px;
+    padding: 2px 5px;
+    gap: 3px;
   }
 
   .predict-label {
+    font-size: 10px;
+  }
+
+  .predict-svg {
+    width: 8px;
+    height: 8px;
+  }
+
+  .predict-icons {
+    gap: 1px;
+  }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 360px) {
+  .statistics-bar {
+    height: 26px;
+    min-height: 26px;
+    padding: 0 6px;
+  }
+
+  .left-section {
+    min-width: 40px;
+  }
+
+  .game-round .hash {
+    display: none;
+  }
+
+  .center-section {
+    gap: 8px;
+  }
+
+  .stat-svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .stat-count {
     font-size: 11px;
   }
 
-  .dot {
-    width: 7px;
-    height: 7px;
+  .prediction-indicator {
+    padding: 1px 4px;
   }
 }
 </style>
