@@ -154,7 +154,6 @@
                         left: item.left + 'px',
                         top: item.top + 'px'
                       }"
-                      :class="{ 'new': item.isNew }"
                     >
                       <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
                         <!-- 主圆圈 -->
