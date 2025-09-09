@@ -1,4 +1,4 @@
-<!-- 露珠组件 - 使用 RoadmapCalculator 重构版 -->
+<!-- 露珠组件 - 自包含版本 -->
 <template>
   <div class="luzhu-component">
     <!-- 主容器 -->
@@ -191,7 +191,7 @@
         </div>
       </div>
 
-      <!-- 底部统计栏 - 优化版 -->
+      <!-- 底部统计栏 -->
       <div class="statistics-bar">
         <!-- 左侧：局数 -->
         <div class="left-section">
@@ -287,23 +287,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import roadmapCalculator, {
   type GameResult,
   type RoadmapData,
   type Statistics,
   type Prediction
-} from './utils/roadmapCalculator'
+} from '@/utils/roadmapCalculator'
 
-// Props
-interface Props {
-  gameData?: Record<string, GameResult>
-}
-
-const props = defineProps<Props>()
-
-// 测试数据
-const defaultGameData: Record<string, GameResult> = {
+// 内部模拟数据 - 使用您提供的测试数据
+const mockGameData: Record<string, GameResult> = {
   "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
   "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
   "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
@@ -323,8 +316,8 @@ const defaultGameData: Record<string, GameResult> = {
   "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
 }
 
-// 响应式数据
-const currentGameData = ref<Record<string, GameResult>>(props.gameData || defaultGameData)
+// 组件内部状态
+const currentGameData = ref<Record<string, GameResult>>(mockGameData)
 const roadmapData = ref<RoadmapData>({
   beadPlate: [],
   bigRoad: [],
@@ -371,7 +364,7 @@ const getPredictionColor = (type: 'banker' | 'player', road: 'bigEye' | 'small' 
   return color === 'red' ? '#EC2024' : '#2E83FF'
 }
 
-// 添加新结果（带动画）
+// 添加新结果（带动画）- 用于模拟新数据
 const addNewResult = (result: GameResult) => {
   const newKey = `k${Object.keys(currentGameData.value).length}`
   currentGameData.value[newKey] = result
@@ -400,13 +393,11 @@ const addNewResult = (result: GameResult) => {
   predictions.value = roadmapCalculator.calculatePredictions(currentGameData.value)
 }
 
-// 监听数据变化
-watch(() => props.gameData, (newData) => {
-  if (newData) {
-    currentGameData.value = newData
-    calculateRoadmaps()
-  }
-}, { deep: true })
+// 更新游戏数据（用于后续接口集成）
+const updateGameData = (newData: Record<string, GameResult>) => {
+  currentGameData.value = newData
+  calculateRoadmaps()
+}
 
 // 初始化
 onMounted(() => {
@@ -497,9 +488,10 @@ const exitFullscreen = () => {
   fullscreenMode.value = null
 }
 
-// 暴露方法给父组件
+// 暴露方法给父组件（如果需要）
 defineExpose({
   addNewResult,
+  updateGameData,
   calculateRoadmaps
 })
 </script>
