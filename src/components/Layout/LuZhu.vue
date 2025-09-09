@@ -818,7 +818,15 @@ const exitFullscreen = () => {
 }
 
 /* ================== 响应式设计 ================== */
+:root {
+  --root-size: 20px;
+}
+
 @media (max-width: 768px) {
+  :root {
+    --root-size: 18px;
+  }
+
   .left-screen {
     background-size: 22px 22px;
   }
@@ -832,36 +840,25 @@ const exitFullscreen = () => {
   }
 
   .statistics-bar {
-    height: 30px;
-    min-height: 30px;
-    padding: 0 10px;
+    --stat-height: calc(var(--root-size) * 1.5);
   }
 
-  .stat-svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .stat-count {
-    font-size: 13px;
+  .left-section,
+  .center-section,
+  .right-section {
+    width: auto;
   }
 
   .center-section {
-    gap: 14px;
-  }
-
-  .prediction-indicator {
-    height: 22px;
-    padding: 2px 6px;
-  }
-
-  .predict-svg {
-    width: 9px;
-    height: 9px;
+    flex: 1;
   }
 }
 
 @media (max-width: 480px) {
+  :root {
+    --root-size: 16px;
+  }
+
   .left-screen {
     background-size: 20px 20px;
   }
@@ -875,96 +872,40 @@ const exitFullscreen = () => {
   }
 
   .statistics-bar {
-    height: 28px;
-    min-height: 28px;
-    padding: 0 8px;
-  }
-
-  .game-round {
-    font-size: 12px;
-  }
-
-  .game-round .hash {
-    font-size: 11px;
-  }
-
-  .game-round .round-number {
-    font-size: 13px;
-  }
-
-  .stat-svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .stat-count {
-    font-size: 12px;
-    min-width: 18px;
-  }
-
-  .center-section {
-    gap: 10px;
-  }
-
-  .stat-item {
-    gap: 4px;
-  }
-
-  .right-section {
-    gap: 6px;
-  }
-
-  .prediction-indicator {
-    height: 20px;
-    padding: 2px 5px;
-    gap: 3px;
-  }
-
-  .predict-label {
-    font-size: 10px;
-  }
-
-  .predict-svg {
-    width: 8px;
-    height: 8px;
-  }
-
-  .predict-icons {
-    gap: 1px;
-  }
-}
-
-/* 超小屏幕适配 */
-@media (max-width: 360px) {
-  .statistics-bar {
-    height: 26px;
-    min-height: 26px;
-    padding: 0 6px;
-  }
-
-  .left-section {
-    min-width: 40px;
+    --stat-height: calc(var(--root-size) * 1.6);
+    padding: 0 calc(var(--root-size) * 0.5);
   }
 
   .game-round .hash {
     display: none;
   }
 
+  .prediction-indicator {
+    padding: calc(var(--root-size) * 0.1) calc(var(--root-size) * 0.25);
+  }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 360px) {
+  :root {
+    --root-size: 14px;
+  }
+
+  .statistics-bar {
+    --stat-height: calc(var(--root-size) * 1.7);
+    padding: 0 calc(var(--root-size) * 0.4);
+  }
+
   .center-section {
-    gap: 8px;
-  }
-
-  .stat-svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .stat-count {
-    font-size: 11px;
+    gap: calc(var(--root-size) * 0.4);
   }
 
   .prediction-indicator {
-    padding: 1px 4px;
+    min-width: calc(var(--root-size) * 2.5);
+  }
+
+  .predict-icons {
+    gap: calc(var(--root-size) * 0.05);
   }
 }
 </style>
