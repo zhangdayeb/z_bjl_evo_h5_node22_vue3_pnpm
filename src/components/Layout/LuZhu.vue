@@ -1,4 +1,4 @@
-<!-- 露珠组件 - 完整重构版 -->
+<!-- 露珠组件 - 使用 RoadmapCalculator 重构版 -->
 <template>
   <div class="luzhu-component">
     <!-- 主容器 -->
@@ -32,38 +32,31 @@
                 :class="{ 'fullscreen': fullscreenMode === 'big-road' }"
                 @click="toggleFullscreen('big-road')"
               >
-                <svg class="road-svg" viewBox="0 0 21 6" xmlns="http://www.w3.org/2000/svg">
-                  <!-- 大路数据 -->
-                  <g class="road-data">
-                    <!-- 示例数据 -->
-                    <circle cx="0.5" cy="0.5" r="0.43" fill="#EC2024" opacity="0.95" />
-                    <text x="0.5" y="0.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">B</text>
-
-                    <circle cx="0.5" cy="1.5" r="0.43" fill="#EC2024" opacity="0.95" />
-                    <text x="0.5" y="1.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">B</text>
-
-                    <circle cx="0.5" cy="2.5" r="0.43" fill="#EC2024" opacity="0.95" />
-                    <text x="0.5" y="2.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">B</text>
-
-                    <circle cx="1.5" cy="0.5" r="0.43" fill="#2E83FF" opacity="0.95" />
-                    <text x="1.5" y="0.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">P</text>
-
-                    <circle cx="1.5" cy="1.5" r="0.43" fill="#2E83FF" opacity="0.95" />
-                    <text x="1.5" y="1.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">P</text>
-
-                    <circle cx="2.5" cy="0.5" r="0.43" fill="#EC2024" opacity="0.95" />
-                    <text x="2.5" y="0.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">B</text>
-
-                    <g transform="translate(2.5, 1.5)">
-                      <circle cx="0" cy="0" r="0.43" fill="#EC2024" opacity="0.95" />
-                      <text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">B</text>
-                      <line x1="-0.35" y1="-0.35" x2="0.35" y2="0.35" stroke="#159252" stroke-width="0.12" />
-                    </g>
-
-                    <circle cx="3.5" cy="0.5" r="0.43" fill="#2E83FF" opacity="0.95" />
-                    <text x="3.5" y="0.5" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="0.55" font-weight="bold">P</text>
-                  </g>
-                </svg>
+                <div class="road-container">
+                  <!-- 大路数据 - 使用绝对定位 -->
+                  <div
+                    v-for="item in roadmapData.bigRoad"
+                    :key="item.id"
+                    class="road-item"
+                    :style="{
+                      left: item.left + 'px',
+                      top: item.top + 'px',
+                      width: '25px',
+                      height: '25px'
+                    }"
+                  >
+                    <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12.5" cy="12.5" r="11" :fill="item.color" opacity="0.95" />
+                      <text x="12.5" y="12.5" text-anchor="middle" dominant-baseline="middle"
+                            fill="white" font-size="14" font-weight="bold">
+                        {{ item.value }}
+                      </text>
+                      <!-- 和局标记 -->
+                      <line v-if="item.tie" x1="5" y1="5" x2="20" y2="20"
+                            stroke="#159252" stroke-width="2" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <!-- 下三路容器 -->
@@ -75,14 +68,22 @@
                     :class="{ 'fullscreen': fullscreenMode === 'eye-road' }"
                     @click="toggleFullscreen('eye-road')"
                   >
-                    <svg class="road-svg" viewBox="0 0 14 3" xmlns="http://www.w3.org/2000/svg">
-                      <g class="road-data">
-                        <circle cx="0.5" cy="0.5" r="0.38" fill="none" stroke="#EC2024" stroke-width="0.12" opacity="0.9" />
-                        <circle cx="1.5" cy="0.5" r="0.38" fill="none" stroke="#2E83FF" stroke-width="0.12" opacity="0.9" />
-                        <circle cx="1.5" cy="1.5" r="0.38" fill="none" stroke="#2E83FF" stroke-width="0.12" opacity="0.9" />
-                        <circle cx="2.5" cy="0.5" r="0.38" fill="none" stroke="#EC2024" stroke-width="0.12" opacity="0.9" />
-                      </g>
-                    </svg>
+                    <div class="road-container">
+                      <div
+                        v-for="item in roadmapData.bigEyeRoad"
+                        :key="item.id"
+                        class="road-item small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 12 12">
+                          <circle cx="6" cy="6" r="5" fill="none"
+                                  :stroke="item.color" stroke-width="1.5" opacity="0.9" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- 小路 -->
@@ -91,14 +92,21 @@
                     :class="{ 'fullscreen': fullscreenMode === 'small-road' }"
                     @click="toggleFullscreen('small-road')"
                   >
-                    <svg class="road-svg" viewBox="0 0 14 3" xmlns="http://www.w3.org/2000/svg">
-                      <g class="road-data">
-                        <circle cx="0.5" cy="0.5" r="0.35" fill="#EC2024" opacity="0.9" />
-                        <circle cx="1.5" cy="0.5" r="0.35" fill="#2E83FF" opacity="0.9" />
-                        <circle cx="1.5" cy="1.5" r="0.35" fill="#2E83FF" opacity="0.9" />
-                        <circle cx="2.5" cy="0.5" r="0.35" fill="#EC2024" opacity="0.9" />
-                      </g>
-                    </svg>
+                    <div class="road-container">
+                      <div
+                        v-for="item in roadmapData.smallRoad"
+                        :key="item.id"
+                        class="road-item small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 12 12">
+                          <circle cx="6" cy="6" r="5" :fill="item.color" opacity="0.9" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- 蟑螂路 -->
@@ -107,14 +115,22 @@
                     :class="{ 'fullscreen': fullscreenMode === 'roach-road' }"
                     @click="toggleFullscreen('roach-road')"
                   >
-                    <svg class="road-svg" viewBox="0 0 14 3" xmlns="http://www.w3.org/2000/svg">
-                      <g class="road-data">
-                        <line x1="0.2" y1="0.2" x2="0.8" y2="0.8" stroke="#EC2024" stroke-width="0.15" opacity="0.9" />
-                        <line x1="1.2" y1="0.2" x2="1.8" y2="0.8" stroke="#2E83FF" stroke-width="0.15" opacity="0.9" />
-                        <line x1="1.2" y1="1.2" x2="1.8" y2="1.8" stroke="#2E83FF" stroke-width="0.15" opacity="0.9" />
-                        <line x1="2.2" y1="0.2" x2="2.8" y2="0.8" stroke="#EC2024" stroke-width="0.15" opacity="0.9" />
-                      </g>
-                    </svg>
+                    <div class="road-container">
+                      <div
+                        v-for="item in roadmapData.cockroachRoad"
+                        :key="item.id"
+                        class="road-item small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 12 12">
+                          <line x1="2" y1="2" x2="10" y2="10"
+                                :stroke="item.color" stroke-width="2" opacity="0.9" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -128,53 +144,37 @@
                   :class="{ 'fullscreen': fullscreenMode === 'bead-road' }"
                   @click="toggleFullscreen('bead-road')"
                 >
-                  <svg class="road-svg" viewBox="0 0 11 6" xmlns="http://www.w3.org/2000/svg">
-                    <!-- 珠盘路数据 - 使用测试数据渲染 -->
-                    <g class="road-data">
-                      <template v-for="(column, colIndex) in beadColumns" :key="`col-${colIndex}`">
-                        <template v-for="(item, rowIndex) in column" :key="`item-${colIndex}-${rowIndex}`">
-                          <!-- 主圆圈 -->
-                          <circle
-                            :cx="colIndex + 0.5"
-                            :cy="rowIndex + 0.5"
-                            r="0.49"
-                            :fill="getResultColor(item.result)"
-                            opacity="0.95"
-                          />
-                          <!-- 字母 -->
-                          <text
-                            :x="colIndex + 0.5"
-                            :y="rowIndex + 0.5"
-                            text-anchor="middle"
-                            dominant-baseline="middle"
-                            fill="white"
-                            font-size="0.65"
-                            font-weight="bold"
-                          >
-                            {{ getResultText(item.result) }}
-                          </text>
+                  <div class="road-container">
+                    <!-- 珠盘路数据 - 使用绝对定位 -->
+                    <div
+                      v-for="item in roadmapData.beadPlate"
+                      :key="item.id"
+                      class="bead-item"
+                      :style="{
+                        left: item.left + 'px',
+                        top: item.top + 'px'
+                      }"
+                      :class="{ 'new': item.isNew }"
+                    >
+                      <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 主圆圈 -->
+                        <circle cx="15" cy="15" r="14.5" :fill="item.color" opacity="0.95" />
+                        <!-- 字母 -->
+                        <text x="15" y="15" text-anchor="middle" dominant-baseline="middle"
+                              fill="white" font-size="18" font-weight="bold">
+                          {{ item.value }}
+                        </text>
 
-                          <!-- 闲对标记（左上角蓝点）ext=2 或 ext=3 -->
-                          <circle
-                            v-if="item.ext === 2 || item.ext === 3"
-                            :cx="colIndex + 0.2"
-                            :cy="rowIndex + 0.2"
-                            r="0.08"
-                            fill="#2E83FF"
-                          />
+                        <!-- 闲对标记（左上角蓝点）ext=2 或 ext=3 -->
+                        <circle v-if="item.ext === 2 || item.ext === 3"
+                                cx="6" cy="6" r="2.5" fill="#2E83FF" />
 
-                          <!-- 庄对标记（右下角红点）ext=1 或 ext=3 -->
-                          <circle
-                            v-if="item.ext === 1 || item.ext === 3"
-                            :cx="colIndex + 0.8"
-                            :cy="rowIndex + 0.8"
-                            r="0.08"
-                            fill="#EC2024"
-                          />
-                        </template>
-                      </template>
-                    </g>
-                  </svg>
+                        <!-- 庄对标记（右下角红点）ext=1 或 ext=3 -->
+                        <circle v-if="item.ext === 1 || item.ext === 3"
+                                cx="24" cy="24" r="2.5" fill="#EC2024" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -197,7 +197,7 @@
         <div class="left-section">
           <span class="game-round">
             <span class="hash">#</span>
-            <span class="round-number">110</span>
+            <span class="round-number">{{ statistics.total }}</span>
           </span>
         </div>
 
@@ -207,27 +207,30 @@
           <div class="stat-item">
             <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <circle cx="10" cy="10" r="9.5" fill="#2E83FF" />
-              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">P</text>
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle"
+                    fill="white" font-size="12" font-weight="bold">P</text>
             </svg>
-            <span class="stat-count">40</span>
+            <span class="stat-count">{{ statistics.player }}</span>
           </div>
 
           <!-- 庄家统计 -->
           <div class="stat-item">
             <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <circle cx="10" cy="10" r="9.5" fill="#EC2024" />
-              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">B</text>
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle"
+                    fill="white" font-size="12" font-weight="bold">B</text>
             </svg>
-            <span class="stat-count">59</span>
+            <span class="stat-count">{{ statistics.banker }}</span>
           </div>
 
           <!-- 和局统计 -->
           <div class="stat-item">
             <svg class="stat-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <circle cx="10" cy="10" r="9.5" fill="#159252" />
-              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="bold">T</text>
+              <text x="10" y="10" text-anchor="middle" dominant-baseline="middle"
+                    fill="white" font-size="12" font-weight="bold">T</text>
             </svg>
-            <span class="stat-count">11</span>
+            <span class="stat-count">{{ statistics.tie }}</span>
           </div>
         </div>
 
@@ -239,15 +242,18 @@
             <div class="predict-icons">
               <!-- 大眼路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="4" fill="none" stroke="#EC2024" stroke-width="1.2" />
+                <circle cx="5" cy="5" r="4" fill="none"
+                        :stroke="getPredictionColor('player', 'bigEye')" stroke-width="1.2" />
               </svg>
               <!-- 小路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="4" fill="#EC2024" />
+                <circle cx="5" cy="5" r="4"
+                        :fill="getPredictionColor('player', 'small')" />
               </svg>
               <!-- 蟑螂路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <line x1="2" y1="2" x2="8" y2="8" stroke="#EC2024" stroke-width="1.5" />
+                <line x1="2" y1="2" x2="8" y2="8"
+                      :stroke="getPredictionColor('player', 'cockroach')" stroke-width="1.5" />
               </svg>
             </div>
           </div>
@@ -258,15 +264,18 @@
             <div class="predict-icons">
               <!-- 大眼路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="4" fill="none" stroke="#2E83FF" stroke-width="1.2" />
+                <circle cx="5" cy="5" r="4" fill="none"
+                        :stroke="getPredictionColor('banker', 'bigEye')" stroke-width="1.2" />
               </svg>
               <!-- 小路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="4" fill="#2E83FF" />
+                <circle cx="5" cy="5" r="4"
+                        :fill="getPredictionColor('banker', 'small')" />
               </svg>
               <!-- 蟑螂路 -->
               <svg class="predict-svg" viewBox="0 0 10 10">
-                <line x1="2" y1="2" x2="8" y2="8" stroke="#2E83FF" stroke-width="1.5" />
+                <line x1="2" y1="2" x2="8" y2="8"
+                      :stroke="getPredictionColor('banker', 'cockroach')" stroke-width="1.5" />
               </svg>
             </div>
           </div>
@@ -278,76 +287,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import roadmapCalculator, {
+  type GameResult,
+  type RoadmapData,
+  type Statistics,
+  type Prediction
+} from './utils/roadmapCalculator'
 
-// 扩展测试数据，生成更多数据以填满珠盘路
-const generateTestData = () => {
-  const data: any = {}
-  // 生成66个数据点（11列 x 6行）
-  for (let i = 0; i < 66; i++) {
-    const key = `k${i}`
-    // 随机生成结果：1(庄B), 2(闲P), 3(和T)
-    const results = [1, 1, 1, 1, 2, 2, 2, 2, 3] // 让庄闲更常见
-    const result = results[Math.floor(Math.random() * results.length)]
-
-    // 随机生成对子：0(无), 1(庄对), 2(闲对), 3(双对)
-    const extValues = [0, 0, 0, 0, 0, 0, 1, 2, 3] // 让无对子更常见
-    const ext = extValues[Math.floor(Math.random() * extValues.length)]
-
-    data[key] = { result, ext }
-  }
-  return data
+// Props
+interface Props {
+  gameData?: Record<string, GameResult>
 }
 
-// 使用生成的测试数据
-const res_org_obj = generateTestData()
+const props = defineProps<Props>()
 
-// 将数据转换为珠盘路列数组
-const beadColumns = computed(() => {
-  const columns: any[][] = []
-  let currentColumn: any[] = []
+// 测试数据
+const defaultGameData: Record<string, GameResult> = {
+  "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
+  "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
+  "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
+  "k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
+  "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},
+  "k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
+  "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},
+  "k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
+  "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},
+  "k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
+  "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},
+  "k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
+  "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},
+  "k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
+  "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},
+  "k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
+  "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
+}
 
-  // 按顺序处理 k0, k1, k2...
-  for (let i = 0; i < 66; i++) {
-    const key = `k${i}`
-    if (res_org_obj[key as keyof typeof res_org_obj]) {
-      currentColumn.push(res_org_obj[key as keyof typeof res_org_obj])
-
-      // 每6个为一列
-      if (currentColumn.length === 6) {
-        columns.push([...currentColumn])
-        currentColumn = []
-      }
-    }
-  }
-
-  // 处理最后不满6个的列
-  if (currentColumn.length > 0) {
-    columns.push(currentColumn)
-  }
-
-  return columns
+// 响应式数据
+const currentGameData = ref<Record<string, GameResult>>(props.gameData || defaultGameData)
+const roadmapData = ref<RoadmapData>({
+  beadPlate: [],
+  bigRoad: [],
+  bigEyeRoad: [],
+  smallRoad: [],
+  cockroachRoad: []
 })
-
-// 获取结果颜色
-const getResultColor = (result: number) => {
-  switch(result) {
-    case 1: return '#EC2024' // 庄 - 红色
-    case 2: return '#2E83FF' // 闲 - 蓝色
-    case 3: return '#159252' // 和 - 绿色
-    default: return '#666666'
-  }
-}
-
-// 获取结果文字
-const getResultText = (result: number) => {
-  switch(result) {
-    case 1: return 'B' // 庄
-    case 2: return 'P' // 闲
-    case 3: return 'T' // 和
-    default: return ''
-  }
-}
+const statistics = ref<Statistics>({
+  total: 0,
+  banker: 0,
+  player: 0,
+  tie: 0,
+  bankerPair: 0,
+  playerPair: 0
+})
+const predictions = ref<Prediction | null>(null)
 
 // 全屏模式
 const fullscreenMode = ref<string | null>(null)
@@ -360,14 +353,66 @@ const currentTranslateX = ref(0)
 const viewportWidth = ref(0)
 const startTranslateX = ref(0)
 
-// 初始化视口宽度
+// 计算路单数据
+const calculateRoadmaps = () => {
+  roadmapData.value = roadmapCalculator.calculateAll(currentGameData.value)
+  statistics.value = roadmapCalculator.calculateStatistics(currentGameData.value)
+  predictions.value = roadmapCalculator.calculatePredictions(currentGameData.value)
+
+  console.log('路单数据:', roadmapData.value)
+  console.log('统计数据:', statistics.value)
+  console.log('预测数据:', predictions.value)
+}
+
+// 获取预测颜色
+const getPredictionColor = (type: 'banker' | 'player', road: 'bigEye' | 'small' | 'cockroach') => {
+  if (!predictions.value) return '#666'
+  const color = predictions.value[type][road]
+  return color === 'red' ? '#EC2024' : '#2E83FF'
+}
+
+// 添加新结果（带动画）
+const addNewResult = (result: GameResult) => {
+  const newKey = `k${Object.keys(currentGameData.value).length}`
+  currentGameData.value[newKey] = result
+
+  // 重新计算
+  const newData = roadmapCalculator.calculateAll(currentGameData.value)
+
+  // 标记新添加的项目
+  const markAsNew = (items: any[]) => {
+    if (items.length > 0) {
+      items[items.length - 1].isNew = true
+      setTimeout(() => {
+        items[items.length - 1].isNew = false
+      }, 500)
+    }
+  }
+
+  markAsNew(newData.beadPlate)
+  markAsNew(newData.bigRoad)
+  markAsNew(newData.bigEyeRoad)
+  markAsNew(newData.smallRoad)
+  markAsNew(newData.cockroachRoad)
+
+  roadmapData.value = newData
+  statistics.value = roadmapCalculator.calculateStatistics(currentGameData.value)
+  predictions.value = roadmapCalculator.calculatePredictions(currentGameData.value)
+}
+
+// 监听数据变化
+watch(() => props.gameData, (newData) => {
+  if (newData) {
+    currentGameData.value = newData
+    calculateRoadmaps()
+  }
+}, { deep: true })
+
+// 初始化
 onMounted(() => {
+  calculateRoadmaps()
   updateViewportWidth()
   window.addEventListener('resize', updateViewportWidth)
-
-  // 打印调试信息
-  console.log('珠盘路数据列数:', beadColumns.value.length)
-  console.log('珠盘路数据:', beadColumns.value)
 })
 
 onUnmounted(() => {
@@ -387,14 +432,13 @@ const clampTranslateX = (x: number) => {
   return Math.max(maxScroll, Math.min(0, x))
 }
 
-// 触摸开始
+// 触摸事件处理
 const handleTouchStart = (e: TouchEvent) => {
   isDragging.value = true
   startX.value = e.touches[0].clientX
   startTranslateX.value = currentTranslateX.value
 }
 
-// 触摸移动
 const handleTouchMove = (e: TouchEvent) => {
   if (!isDragging.value) return
   e.preventDefault()
@@ -404,7 +448,6 @@ const handleTouchMove = (e: TouchEvent) => {
   currentTranslateX.value = clampTranslateX(translateX)
 }
 
-// 触摸结束
 const handleTouchEnd = () => {
   if (!isDragging.value) return
   isDragging.value = false
@@ -418,7 +461,7 @@ const handleTouchEnd = () => {
   }
 }
 
-// 鼠标事件
+// 鼠标事件处理
 const handleMouseDown = (e: MouseEvent) => {
   isDragging.value = true
   startX.value = e.clientX
@@ -453,9 +496,21 @@ const toggleFullscreen = (roadType: string) => {
 const exitFullscreen = () => {
   fullscreenMode.value = null
 }
+
+// 暴露方法给父组件
+defineExpose({
+  addNewResult,
+  calculateRoadmaps
+})
 </script>
 
 <style scoped>
+/* ================== CSS变量 ================== */
+:root {
+  --root-size: 20px;
+  --stat-height: calc(var(--root-size) * 1.4);
+}
+
 /* ================== 根容器 ================== */
 .luzhu-component {
   width: 100%;
@@ -498,7 +553,6 @@ const exitFullscreen = () => {
   cursor: grab;
   will-change: transform;
   user-select: none;
-  /* 不给滑动容器设置背景 */
   background: transparent;
 }
 
@@ -521,7 +575,6 @@ const exitFullscreen = () => {
 .left-screen {
   display: flex;
   flex-direction: column;
-  /* 只给左屏添加中等点阵背景 */
   background-image: radial-gradient(
     circle at center,
     rgba(255, 255, 255, 0.1) 1.3px,
@@ -531,7 +584,7 @@ const exitFullscreen = () => {
   background-position: center;
 }
 
-/* 右屏布局 - 不设置背景 */
+/* 右屏布局 */
 .right-screen {
   display: flex;
   align-items: center;
@@ -540,12 +593,9 @@ const exitFullscreen = () => {
 }
 
 /* ================== 背景覆盖层 ================== */
-
-/* 下三路 - 小点背景覆盖 */
 .three-roads-overlay {
   flex: 1;
   position: relative;
-  /* 小点背景 */
   background-image: radial-gradient(
     circle at center,
     rgba(255, 255, 255, 0.08) 1px,
@@ -555,14 +605,12 @@ const exitFullscreen = () => {
   background-position: center;
 }
 
-/* 珠盘路 - 大点背景覆盖（修复：单独设置背景） */
 .bead-road-overlay {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 珠盘路专属大点背景 */
   background-image: radial-gradient(
     circle at center,
     rgba(255, 255, 255, 0.12) 1.5px,
@@ -593,11 +641,11 @@ const exitFullscreen = () => {
   padding: 8px;
 }
 
-/* 珠盘路 - 减小padding让数据贴边 */
+/* 珠盘路 */
 .bead-road-section {
   width: 100%;
   height: 100%;
-  padding: 8px; /* 从20px减小到8px */
+  padding: 8px;
   box-sizing: border-box;
 }
 
@@ -617,8 +665,50 @@ const exitFullscreen = () => {
   flex: 1;
 }
 
+/* ================== 路单容器（绝对定位） ================== */
+.road-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 路单项目 */
+.road-item {
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.road-item.small {
+  width: 12px;
+  height: 12px;
+}
+
+/* 珠盘路项目 */
+.bead-item {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  transition: all 0.3s ease;
+}
+
+.bead-item.new {
+  animation: flyIn 0.5s ease-out;
+}
+
+@keyframes flyIn {
+  from {
+    transform: translateY(-100px) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 /* SVG样式 */
-.road-svg {
+.road-item svg,
+.bead-item svg {
   width: 100%;
   height: 100%;
   display: block;
@@ -630,9 +720,9 @@ const exitFullscreen = () => {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 32px !important;
+  bottom: var(--stat-height) !important;
   width: 100% !important;
-  height: calc(100% - 32px) !important;
+  height: calc(100% - var(--stat-height)) !important;
   z-index: 1000;
   padding: 20px;
   background: linear-gradient(rgba(37, 37, 37, 0.98) 0%, rgb(30, 30, 30) 100%);
@@ -680,7 +770,7 @@ const exitFullscreen = () => {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 32px;
+  bottom: var(--stat-height);
   z-index: 999;
   background: rgba(0, 0, 0, 0.2);
 }
@@ -704,88 +794,97 @@ const exitFullscreen = () => {
   50% { opacity: 1; }
 }
 
-/* ================== 统计栏 - 优化版 ================== */
+/* ================== 统计栏 ================== */
 .statistics-bar {
-  height: 32px;
-  min-height: 32px;
+  height: var(--stat-height);
+  min-height: var(--stat-height);
   background: rgb(37, 37, 37);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 calc(var(--root-size) * 0.8) calc(var(--root-size) * 0.25);
   flex-shrink: 0;
   z-index: 1001;
+  font-weight: 600;
 }
 
 /* 左侧：局数 */
 .left-section {
   display: flex;
   align-items: center;
-  min-width: 50px;
+  width: 46%;
 }
 
 .game-round {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: calc(var(--root-size) * 0.2);
   color: rgba(255, 255, 255, 0.65);
-  font-size: 13px;
+  font-size: calc(var(--root-size) * 0.6);
   font-weight: 500;
 }
 
 .game-round .hash {
   opacity: 0.6;
-  font-size: 12px;
+  font-size: calc(var(--root-size) * 0.55);
 }
 
 .game-round .round-number {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
-  font-size: 14px;
+  font-size: calc(var(--root-size) * 0.65);
 }
 
-/* 中间：统计 - 使用SVG */
+/* 中间：统计 */
 .center-section {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: calc(var(--root-size) * 0.6);
+  height: 100%;
+  width: 46%;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(var(--root-size) * 0.2);
+  height: 100%;
 }
 
 .stat-svg {
-  width: 20px;
-  height: 20px;
+  width: calc(var(--root-size) * 1);
+  height: calc(var(--root-size) * 1);
   display: block;
+  flex-shrink: 0;
 }
 
 .stat-count {
   color: rgba(255, 255, 255, 0.95);
-  font-size: 14px;
+  font-size: calc(var(--root-size) * 0.65);
   font-weight: 600;
-  min-width: 20px;
+  min-width: calc(var(--root-size) * 1);
   text-align: center;
+  line-height: 1;
 }
 
-/* 右侧：问路预测 - 优化版 */
+/* 右侧：问路预测 */
 .right-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: calc(var(--root-size) * 0.3);
+  width: 46%;
 }
 
 .prediction-indicator {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 12px;
-  height: 24px;
+  gap: calc(var(--root-size) * 0.2);
+  padding: calc(var(--root-size) * 0.15) calc(var(--root-size) * 0.4);
+  border-radius: calc(var(--root-size) * 0.6);
+  height: calc(var(--root-size) * 1.2);
+  min-width: calc(var(--root-size) * 3);
 }
 
 .player-predict {
@@ -801,27 +900,23 @@ const exitFullscreen = () => {
 .predict-label {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 700;
-  font-size: 11px;
-  margin-right: 2px;
+  font-size: calc(var(--root-size) * 0.55);
+  margin-right: calc(var(--root-size) * 0.1);
 }
 
 .predict-icons {
   display: flex;
-  gap: 2px;
+  gap: calc(var(--root-size) * 0.1);
   align-items: center;
 }
 
 .predict-svg {
-  width: 10px;
-  height: 10px;
+  width: calc(var(--root-size) * 0.5);
+  height: calc(var(--root-size) * 0.5);
   display: block;
 }
 
 /* ================== 响应式设计 ================== */
-:root {
-  --root-size: 20px;
-}
-
 @media (max-width: 768px) {
   :root {
     --root-size: 18px;
@@ -837,20 +932,6 @@ const exitFullscreen = () => {
 
   .bead-road-overlay {
     background-size: 27px 27px;
-  }
-
-  .statistics-bar {
-    --stat-height: calc(var(--root-size) * 1.5);
-  }
-
-  .left-section,
-  .center-section,
-  .right-section {
-    width: auto;
-  }
-
-  .center-section {
-    flex: 1;
   }
 }
 
@@ -871,41 +952,22 @@ const exitFullscreen = () => {
     background-size: 24px 24px;
   }
 
-  .statistics-bar {
-    --stat-height: calc(var(--root-size) * 1.6);
-    padding: 0 calc(var(--root-size) * 0.5);
-  }
-
   .game-round .hash {
     display: none;
   }
-
-  .prediction-indicator {
-    padding: calc(var(--root-size) * 0.1) calc(var(--root-size) * 0.25);
-  }
 }
 
-/* 超小屏幕适配 */
 @media (max-width: 360px) {
   :root {
     --root-size: 14px;
   }
 
   .statistics-bar {
-    --stat-height: calc(var(--root-size) * 1.7);
     padding: 0 calc(var(--root-size) * 0.4);
   }
 
   .center-section {
     gap: calc(var(--root-size) * 0.4);
-  }
-
-  .prediction-indicator {
-    min-width: calc(var(--root-size) * 2.5);
-  }
-
-  .predict-icons {
-    gap: calc(var(--root-size) * 0.05);
   }
 }
 </style>
