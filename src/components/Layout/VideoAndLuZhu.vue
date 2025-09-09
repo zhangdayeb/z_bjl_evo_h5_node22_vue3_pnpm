@@ -37,9 +37,19 @@
         class="switch-button"
         @click="togglePosition"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 3.5L4 7.5L5 8.5L7.5 6V12.5H8.5V6L11 8.5L12 7.5L8 3.5Z"/>
-          <path d="M8 12.5L12 8.5L11 7.5L8.5 10V3.5H7.5V10L5 7.5L4 8.5L8 12.5Z" opacity="0.6"/>
+        <svg
+          class="swap-icon"
+          :style="iconStyles"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 14"
+          fill="none"
+        >
+          <path
+            d="M15.1468 12.5256c-.39-.209-4.9162-3.50583-7.13056-5.11655L.853265 12.5256M15.1468 6.59087c-.39-.20896-4.9162-3.50582-7.13056-5.11655L.853265 6.59087"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
         </svg>
       </button>
 
@@ -125,9 +135,26 @@ const luzhuStyles = computed(() => {
   }
 })
 
+// 计算箭头图标的样式
+const iconStyles = computed(() => {
+  if (isVideoOnTop.value) {
+    // 视频在上，露珠在下，箭头向上
+    return {
+      transform: 'rotate(0deg)'
+    }
+  } else {
+    // 露珠在上，视频在下，箭头向下
+    return {
+      transform: 'rotate(180deg)'
+    }
+  }
+})
+
 // 切换位置
 const togglePosition = () => {
+  console.log('切换前:', configStore.videoAndLuZhuWhoIsTop)
   configStore.togglePosition()
+  console.log('切换后:', configStore.videoAndLuZhuWhoIsTop)
 }
 
 // 视频事件处理器
@@ -220,29 +247,40 @@ defineExpose({
   overflow: hidden;
 }
 
-/* 切换按钮 */
+/* 切换按钮 - 圆形设计 */
 .switch-button {
   position: absolute;
   top: 15px;
   right: 15px;
   z-index: 20;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.8);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
 .switch-button:hover {
-  background: rgba(0, 0, 0, 0.7);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.switch-button:active {
+  background: rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* SVG 图标样式 */
+.swap-icon {
+  width: 20px;
+  height: 18px;
 }
 
 /* 响应式设计 */
@@ -258,6 +296,18 @@ defineExpose({
     width: 180px;
     height: 130px;
   }
+
+  .switch-button {
+    width: 40px;
+    height: 40px;
+    top: 12px;
+    right: 12px;
+  }
+
+  .swap-icon {
+    width: 18px;
+    height: 16px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -272,6 +322,18 @@ defineExpose({
     width: 160px;
     height: 110px;
   }
+
+  .switch-button {
+    width: 38px;
+    height: 38px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .swap-icon {
+    width: 17px;
+    height: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -285,6 +347,18 @@ defineExpose({
     left: 8px;
     width: 140px;
     height: 90px;
+  }
+
+  .switch-button {
+    width: 36px;
+    height: 36px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .swap-icon {
+    width: 16px;
+    height: 14px;
   }
 }
 </style>

@@ -38,7 +38,7 @@ onMounted(() => {
   // ========== 手动配置区域 ==========
 
   // 配置1：设置视频/露珠位置 ('Video' 或 'LuZhu')
-  configStore.videoAndLuZhuWhoIsTop = 'LuZhu'  // 修改这里测试
+  configStore.videoAndLuZhuWhoIsTop = 'Video'  // 修改这里测试
 
   // 配置2：设置显示比例 (false: 60%/40%, true: 50%/50%)
   configStore.userBetExpanded = false  // 修改这里测试
@@ -69,7 +69,6 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
 }
 
 .layer-middle {
@@ -78,7 +77,6 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 100;
 }
 
 .layer-top {
@@ -87,7 +85,6 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 500;
   pointer-events: none;
 }
 
