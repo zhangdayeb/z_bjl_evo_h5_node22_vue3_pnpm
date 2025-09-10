@@ -1,1118 +1,607 @@
-<!-- src/components/BetArea/ChipDisplay.vue - 完整修复版：铺满+音效+无滚动条+确认投注 -->
 <template>
-  <div class="chip-display">
-    <!-- 🔥 修复后的布局结构：铺满整个宽度 -->
-    <div class="chip-control-layout">
-      <!-- 左侧控制按钮组 -->
-      <div class="left-controls">
-        <!-- 🔥 修改：取消按钮（原撤销按钮） -->
+  <div class="chipstack-container">
+    <div class="chipstack-wrapper">
+      <!-- 左侧UNDO按钮 -->
+      <div class="action-section left">
         <button
-          class="control-btn cancel-btn"
-          :class="{ 'disabled': !canCancel, 'has-bets': betHistoryCount > 0 }"
-          :disabled="!canCancel"
-          @click="handleCancel"
-          title="取消投注"
+          class="action-button undo-button"
+          :class="{ 'disabled': !canUndo }"
+          :disabled="!canUndo"
+          @click="handleUndo"
         >
-          <div class="btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          <div class="button-icon">
+            <svg viewBox="0 0 24 24" class="icon">
+              <path d="M13 6H9V4L4 7l5 3V8h4a4.5 4.5 0 1 1 0 9H5v2h8a6.5 6.5 0 1 0 0-13Z"/>
             </svg>
           </div>
-          <span class="btn-text">取消</span>
-          <!-- 投注计数指示器 -->
-          <div class="bet-count-indicator" v-if="betHistoryCount > 0">{{ betHistoryCount }}</div>
-        </button>
-
-        <!-- 重复按钮 -->
-        <button
-          class="control-btn repeat-btn"
-          :class="{ 'disabled': !canRepeat, 'available': canRepeat }"
-          :disabled="!canRepeat"
-          @click="handleRepeat"
-          title="重复上一局投注"
-        >
-          <div class="btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
-            </svg>
-          </div>
-          <span class="btn-text">重复</span>
-          <!-- 上次投注金额提示 -->
-          <div class="last-bet-amount" v-if="lastBetAmount > 0">{{ formatAmount(lastBetAmount) }}</div>
+          <span class="button-label">UNDO</span>
         </button>
       </div>
 
-      <!-- 🔥 中间筹码选择区域 - 占据剩余空间并居中 -->
-      <div class="chip-selection-area">
-        <div
-          v-for="chip in displayChips"
-          :key="chip.id"
-          class="chip-item"
-          :class="{
-            'active': chip.value === currentChip
-          }"
-          @click="handleChipSelect(chip)"
-        >
-          <div class="chip-image-container">
-            <img
-              :src="chip.image"
-              :alt="chip.name"
-              class="chip-image"
-              @error="handleImageError"
-            />
-          </div>
-        </div>
-      </div>
+      <!-- 中间筹码转盘区域 -->
+      <div class="revolver-wrapper">
+        <div class="revolver-container" :style="revolverStyle">
+          <!-- 遮罩层 -->
+          <div class="revolver-overlay"></div>
 
-      <!-- 右侧控制按钮组 -->
-      <div class="right-controls">
-        <!-- 🔥 新增：确认投注按钮 -->
-        <button
-          class="control-btn confirm-btn"
-          :class="{
-            'disabled': !canConfirm,
-            'active': canConfirm,
-            'submitting': isSubmitting
-          }"
-          :disabled="!canConfirm || isSubmitting"
-          @click="handleConfirm"
-          :title="getConfirmButtonTitle()"
-        >
-          <div class="btn-icon">
-            <svg v-if="!isSubmitting" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-            <!-- 提交中的加载动画 -->
-            <div v-else class="loading-spinner">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12,4V2A10,10 0 0,0 2,12H4A8,8 0 0,1 12,4Z"/>
+          <!-- 筹码列表 -->
+          <ul class="chip-list">
+            <li
+              v-for="(chip, index) in chips"
+              :key="chip.value"
+              class="chip-item"
+              :class="{ 'active': selectedChip === chip.value }"
+              :style="getChipStyle(index)"
+              @click="selectChip(chip)"
+            >
+              <div class="chip" :data-value="chip.value">
+                <svg viewBox="0 0 78 78" class="chip-svg">
+                  <g>
+                    <circle class="chip-outer" cx="39" cy="39" r="38.5" :fill="chip.color"/>
+                    <circle class="chip-inner" cx="39" cy="39" r="25.5" fill="white"/>
+                    <text
+                      class="chip-value"
+                      x="50%"
+                      y="50%"
+                      :font-size="chip.value >= 1000 ? 18 : (chip.value >= 100 ? 24 : 30)"
+                      dy="8"
+                      text-anchor="middle"
+                      fill="black"
+                    >
+                      {{ chip.value }}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </li>
+
+            <!-- CASHIER按钮 -->
+            <li
+              class="cashier-item"
+              :style="getCashierStyle()"
+              @click="handleCashier"
+            >
+              <div class="cashier-button">
+                <svg viewBox="0 0 24 24" class="cashier-icon">
+                  <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2Zm2.77 8.02-.36 1.51H9.16v.83h5.13l-.36 1.51H9.35c.25.88.72 1.51 1.43 1.94.56.31 1.18.47 1.86.47.93 0 1.65-.22 2.12-.66l.42-.39v2.25l-.15.06c-.73.31-1.5.47-2.27.47-2.51 0-4.16-.94-5.05-2.88a6.39 6.39 0 0 1-.39-1.19H5.99l.36-1.51h.79v-.83H6.05l.36-1.51h.9c.35-1.52 1.25-2.69 2.62-3.38.87-.46 1.86-.7 2.94-.7.98 0 1.88.22 2.6.65l.17.1-.52 1.76-.29-.22a3.26 3.26 0 0 0-2.02-.68c-.81 0-1.5.19-2.09.57-.31.19-.59.48-.89.94-.2.3-.35.61-.44.9h5.37l.01-.01Z"/>
+                </svg>
+                <span class="cashier-text">CASHIER</span>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 选中筹码显示 -->
+          <div class="selected-chip-container">
+            <div class="selected-border">
+              <svg viewBox="0 0 52 52" fill="none">
+                <defs>
+                  <linearGradient id="borderGradient" x1="0" y1="52" x2="52" y2="0">
+                    <stop offset="0.26" stop-color="#F7EAA3"/>
+                    <stop offset="0.51" stop-color="#C29740"/>
+                    <stop offset="0.76" stop-color="#FEF8B9"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="26" cy="26" r="25" stroke="url(#borderGradient)" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="selected-chip">
+              <svg viewBox="0 0 78 78" class="chip-svg">
+                <g>
+                  <circle class="chip-outer" cx="39" cy="39" r="38.5" :fill="currentChipColor"/>
+                  <circle class="chip-inner" cx="39" cy="39" r="25.5" fill="white"/>
+                  <text
+                    class="chip-value"
+                    x="50%"
+                    y="50%"
+                    :font-size="selectedChip >= 1000 ? 18 : (selectedChip >= 100 ? 24 : 30)"
+                    dy="8"
+                    text-anchor="middle"
+                    fill="black"
+                  >
+                    {{ selectedChip }}
+                  </text>
+                </g>
               </svg>
             </div>
           </div>
-          <span class="btn-text">{{ getConfirmButtonText() }}</span>
-          <!-- 待确认金额提示 -->
-          <div class="pending-amount" v-if="totalPendingAmount > 0 && !isSubmitting">
-            {{ formatAmount(totalPendingAmount) }}
-          </div>
-        </button>
-
-        <!-- 免佣按钮 -->
-        <button
-          class="control-btn control-btn-commission"
-          :class="{ 'active': isCommissionFree }"
-          @click="handleCommissionToggle"
-          :title="isCommissionFree ? '关闭免佣' : '开启免佣'"
-        >
-          <div class="btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-            </svg>
-          </div>
-          <span class="btn-text">{{ isCommissionFree ? '免佣中' : '免佣' }}</span>
-          <!-- 免佣状态指示灯 -->
-          <div class="commission-status-dot" v-if="isCommissionFree"></div>
-        </button>
-
-        <!-- 更多按钮 -->
-        <button
-          class="control-btn control-btn-more"
-          @click="handleMore"
-          title="选择更多筹码"
-        >
-          <div class="btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-            </svg>
-          </div>
-          <span class="btn-text">更多</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 🔥 新增：简单Toast提示 -->
-    <div
-      v-if="toastMessage"
-      class="simple-toast"
-      :class="toastType"
-      @click="hideToast"
-    >
-      <div class="toast-content">
-        <div class="toast-icon">
-          <svg v-if="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-          </svg>
-          <svg v-else-if="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
         </div>
-        <span class="toast-text">{{ toastMessage }}</span>
+      </div>
+
+      <!-- 右侧DOUBLE按钮 -->
+      <div class="action-section right">
+        <button
+          class="action-button double-button"
+          :class="{ 'disabled': !canDouble }"
+          :disabled="!canDouble"
+          @click="handleDouble"
+        >
+          <div class="button-icon">
+            <svg viewBox="0 0 24 24" class="icon">
+              <path d="M12.017 18.881v-1.49l4.63-4.81c.458-.477.841-.92 1.148-1.275l.082-.095c.287-.344.529-.724.72-1.13a2.57 2.57 0 0 0 .25-1.14 2.12 2.12 0 0 0-.33-1.18 2.17 2.17 0 0 0-.87-.77 2.83 2.83 0 0 0-1.25-.27 2.67 2.67 0 0 0-1.29.3 2.21 2.21 0 0 0-.84.85 2.67 2.67 0 0 0-.29 1.29h-2a4.14 4.14 0 0 1 .58-2.19 3.88 3.88 0 0 1 1.58-1.45 4.85 4.85 0 0 1 2.28-.52 4.84 4.84 0 0 1 2.27.51 3.87 3.87 0 0 1 1.55 1.39c.373.6.564 1.294.55 2a4.107 4.107 0 0 1-.28 1.5 6.777 6.777 0 0 1-1 1.62c-.473.593-1.14 1.313-2 2.16l-2.72 2.85v.1h6.16v1.77l-8.93-.02Zm-4.654-8.02L5.061 8.557 4 9.618l2.303 2.303-2.3 2.3 1.06 1.06 2.3-2.3 2.294 2.294 1.06-1.06-2.293-2.294 2.296-2.296-1.06-1.06-2.297 2.295Z"/>
+            </svg>
+          </div>
+          <span class="button-label">DOUBLE</span>
+        </button>
       </div>
     </div>
+
+    <!-- Toast提示 -->
+    <transition name="toast">
+      <div v-if="toastMessage" class="toast" :class="toastType">
+        <span>{{ toastMessage }}</span>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useBettingStore } from '@/stores/bettingStore'
 import { useUIStore } from '@/stores/uiStore'
-// 🔥 修复导入路径，直接从 services/Audio.ts 导入
 import { useAudio } from '@/services/Audio'
 
-// 🔥 ChipData 类型定义
-interface ChipData {
-  id: string | number
+interface Chip {
   value: number
+  color: string
   name: string
-  image: string
-  displayValue: string
 }
 
-// Props
-interface Props {
-  chipCount?: number
-}
+// Stores
+const bettingStore = useBettingStore()
+const uiStore = useUIStore()
+const audioSystem = useAudio()
 
-const props = withDefaults(defineProps<Props>(), {
-  chipCount: 3
-})
+// 筹码数据
+const chips = ref<Chip[]>([
+  { value: 1, color: '#595959', name: '€1' },
+  { value: 2, color: '#ff82d6', name: '€2' },
+  { value: 5, color: '#ce1d00', name: '€5' },
+  { value: 25, color: '#05ae29', name: '€25' },
+  { value: 100, color: '#1a1a1a', name: '€100' },
+  { value: 500, color: '#8548b0', name: '€500' },
+  { value: 1000, color: '#de9807', name: '€1000' },
+  { value: 5000, color: '#de7571', name: '€5000' }
+])
 
-// 🔥 新增：Toast相关状态
+// 状态
+const selectedChip = ref(1)
+const revolverAngle = ref(0)
+const isAnimating = ref(false)
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error'>('success')
-const isSubmitting = ref(false)
 
-// 🔥 引入 Stores 和 Audio
-let bettingStore: any = null
-let uiStore: any = null
-let audioSystem: any = null
+// 计算属性
+const canUndo = computed(() => bettingStore?.canCancel || false)
+const canDouble = computed(() => {
+  const lastBets = bettingStore?.lastBets || {}
+  return Object.keys(lastBets).some(key => lastBets[key] > 0)
+})
 
-try {
-  bettingStore = useBettingStore()
-  uiStore = useUIStore()
-  audioSystem = useAudio() // 🔥 获取音频系统
-} catch (error) {
-  console.error('❌ Store 初始化失败:', error)
-  // 创建默认对象避免错误
-  bettingStore = {
-    selectedChip: 10,
-    balance: 10000,
-    currentBets: {},
-    confirmedBets: {},
-    lastBets: {},
-    totalBetAmount: 0,
-    totalPendingAmount: 0,
-    availableBalance: 10000,
-    bettingPhase: 'betting',
-    isCommissionFree: false,
-    canConfirm: false,
-    canCancel: false,
-    getDisplayChipsData: [],
-    selectChip: () => {},
-    confirmBets: () => Promise.resolve({ success: false, message: 'Store未初始化' }),
-    cancelBets: () => {},
-    repeatLastBets: () => {},
-    toggleCommissionFree: () => {}
-  }
-  uiStore = {
-    openChipSelector: () => {},
-    closeChipSelector: () => {}
-  }
-  audioSystem = {
-    playAudioFile: () => Promise.resolve(false)
+const currentChipColor = computed(() => {
+  const chip = chips.value.find(c => c.value === selectedChip.value)
+  return chip?.color || '#595959'
+})
+
+const revolverStyle = computed(() => ({
+  transform: `rotate(${revolverAngle.value}deg)`,
+  transition: isAnimating.value ? 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
+}))
+
+// 方法
+const getChipStyle = (index: number) => {
+  const angle = (index * 45) // 8个筹码，每个45度
+  const radius = 85 // 半径
+  const radian = (angle * Math.PI) / 180
+  const x = Math.cos(radian) * radius
+  const y = Math.sin(radian) * radius
+
+  return {
+    transform: `translate(${x}px, ${y}px)`,
+    '--chip-angle': `${-angle}deg`
   }
 }
 
-// 🔥 Toast相关方法
+const getCashierStyle = () => {
+  // CASHIER按钮位置（在最后一个筹码旁边）
+  const angle = 315 // 315度位置
+  const radius = 85
+  const radian = (angle * Math.PI) / 180
+  const x = Math.cos(radian) * radius
+  const y = Math.sin(radian) * radius
+
+  return {
+    transform: `translate(${x}px, ${y}px)`
+  }
+}
+
+const selectChip = async (chip: Chip) => {
+  if (selectedChip.value === chip.value) return
+
+  selectedChip.value = chip.value
+
+  // 计算旋转角度，让选中的筹码转到顶部
+  const chipIndex = chips.value.findIndex(c => c.value === chip.value)
+  const targetAngle = -chipIndex * 45
+
+  isAnimating.value = true
+  revolverAngle.value = targetAngle
+
+  // 播放音效
+  await playSound()
+
+  // 同步到store
+  bettingStore?.selectChip?.(chip.value)
+
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 500)
+}
+
+const handleUndo = async () => {
+  if (!canUndo.value) return
+
+  await playSound()
+  bettingStore?.cancelBets?.()
+  showToast('投注已撤销', 'success')
+}
+
+const handleDouble = async () => {
+  if (!canDouble.value) return
+
+  await playSound()
+  const success = bettingStore?.repeatLastBets?.()
+
+  if (success) {
+    showToast('加倍成功', 'success')
+  } else {
+    showToast('加倍失败', 'error')
+  }
+}
+
+const handleCashier = async () => {
+  await playSound()
+  uiStore?.openCashier?.()
+  showToast('打开收银台', 'success')
+}
+
+const playSound = async () => {
+  try {
+    await audioSystem?.playAudioFile?.('click.mp3')
+  } catch (error) {
+    console.warn('播放音效失败:', error)
+  }
+}
+
 const showToast = (message: string, type: 'success' | 'error' = 'success') => {
   toastMessage.value = message
   toastType.value = type
 
-  // 3秒后自动隐藏
   setTimeout(() => {
-    hideToast()
-  }, 3000)
+    toastMessage.value = ''
+  }, 2000)
 }
-
-const hideToast = () => {
-  toastMessage.value = ''
-}
-
-// 🔥 点击音效播放函数
-const playClickSound = async () => {
-  try {
-    if (audioSystem?.playAudioFile) {
-      await audioSystem.playAudioFile('click.mp3')
-    }
-  } catch (error) {
-    console.warn('⚠️ 播放点击音效失败:', error)
-  }
-}
-
-// 🔥 计算属性 - 完全依赖 bettingStore，增加响应式监听
-const displayChips = computed(() => {
-  // 🔥 直接使用 bettingStore.getDisplayChipsData，它现在返回完整的 ChipData 对象
-  const storeChips = bettingStore?.getDisplayChipsData || []
-
-  // 确保返回的数据格式正确
-  if (Array.isArray(storeChips) && storeChips.length > 0) {
-    // 检查第一个元素是否包含必要的属性
-    const firstChip = storeChips[0]
-    if (firstChip && typeof firstChip === 'object' && 'value' in firstChip && 'image' in firstChip) {
-      return storeChips.slice(0, props.chipCount)
-    }
-  }
-
-  // 🔥 如果 store 数据无效，使用 DEFAULT_DISPLAY_CHIPS
-  const defaultChips = bettingStore?.DEFAULT_DISPLAY_CHIPS || []
-  return defaultChips.slice(0, props.chipCount)
-})
-
-const currentChip = computed(() => {
-  return bettingStore?.selectedChip || 10
-})
-
-const availableBalance = computed(() => {
-  return bettingStore?.balance || 0
-})
-
-const totalBetAmount = computed(() => {
-  return bettingStore?.totalBetAmount || 0
-})
-
-// 🔥 新增：确认投注相关计算属性
-const totalPendingAmount = computed(() => {
-  return bettingStore?.totalPendingAmount || 0
-})
-
-const canConfirm = computed(() => {
-  return bettingStore?.canConfirm || false
-})
-
-const canCancel = computed(() => {
-  return bettingStore?.canCancel || false
-})
-
-const isCommissionFree = computed(() => {
-  return bettingStore?.isCommissionFree || false
-})
-
-const canRepeat = computed(() => {
-  try {
-    const lastBets = bettingStore?.lastBets || {}
-    return Object.keys(lastBets).some(key => {
-      const amount = lastBets[key]
-      return typeof amount === 'number' && amount > 0
-    })
-  } catch (error) {
-    return false
-  }
-})
-
-const betHistoryCount = computed(() => {
-  try {
-    const currentBets = bettingStore?.currentBets || {}
-    return Object.keys(currentBets).filter(key => {
-      const amount = currentBets[key]
-      return typeof amount === 'number' && amount > 0
-    }).length
-  } catch (error) {
-    return 0
-  }
-})
-
-const lastBetAmount = computed(() => {
-  try {
-    const lastBets = bettingStore?.lastBets || {}
-    return Object.values(lastBets).reduce((sum: number, amount: unknown) => {
-      const numAmount = typeof amount === 'number' ? amount : 0
-      return sum + numAmount
-    }, 0)
-  } catch (error) {
-    return 0
-  }
-})
-
-// 方法 - 改为纯数字显示
-const formatAmount = (amount: number): string => {
-  return amount.toString()  // 直接返回数字
-}
-
-// 🔥 新增：获取确认按钮标题
-const getConfirmButtonTitle = (): string => {
-  if (!canConfirm.value) {
-    return '没有待确认的投注'
-  }
-  if (isSubmitting.value) {
-    return '投注提交中...'
-  }
-  return `确认投注 ¥${formatAmount(totalPendingAmount.value)}`
-}
-
-// 🔥 新增：获取确认按钮文本
-const getConfirmButtonText = (): string => {
-  if (isSubmitting.value) {
-    return '提交中'
-  }
-  return '确认'
-}
-
-// 🔥 关键修复：筹码选择事件处理 + 音效
-const handleChipSelect = async (chip: ChipData) => {
-  try {
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    // 🔥 直接调用 selectChip，确保状态同步
-    bettingStore?.selectChip?.(chip.value)
-
-    // 🔥 添加触觉反馈
-    if (navigator.vibrate) {
-      navigator.vibrate(30)
-    }
-  } catch (error) {
-    console.error('❌ 选择筹码失败:', error)
-  }
-}
-
-// 🔥 新增：确认投注处理
-const handleConfirm = async () => {
-  if (!canConfirm.value || isSubmitting.value) return
-
-  try {
-    isSubmitting.value = true
-
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    console.log('🎯 开始确认投注')
-
-    // 🔥 调用Store的确认投注方法
-    const result = await bettingStore?.confirmBets?.()
-
-    if (result?.success) {
-      showToast(`投注成功`, 'success')
-      console.log('✅ 投注确认成功')
-    } else {
-      showToast(result?.message || '投注失败', 'error')
-      console.error('❌ 投注确认失败:', result?.message)
-    }
-
-    // 添加触觉反馈
-    if (navigator.vibrate) {
-      navigator.vibrate(result?.success ? 100 : 200)
-    }
-
-  } catch (error) {
-    console.error('❌ 确认投注异常:', error)
-    showToast('投注异常，请重试', 'error')
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 🔥 修改：取消投注处理（原撤销按钮）
-const handleCancel = async () => {
-  if (!canCancel.value) return
-
-  try {
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    // 🔥 调用Store的取消投注方法
-    bettingStore?.cancelBets?.()
-
-    showToast('投注已取消', 'success')
-    console.log('🚫 投注取消成功')
-
-    // 添加触觉反馈
-    if (navigator.vibrate) {
-      navigator.vibrate(50)
-    }
-  } catch (error) {
-    console.error('❌ 取消投注失败:', error)
-    showToast('取消失败', 'error')
-  }
-}
-
-const handleRepeat = async () => {
-  if (!canRepeat.value) return
-
-  try {
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    // 🔥 调用Store的重复投注方法
-    const success = bettingStore?.repeatLastBets?.()
-
-    if (success) {
-      showToast('重复投注成功', 'success')
-      console.log('🔄 重复投注成功')
-    } else {
-      showToast('重复投注失败', 'error')
-      console.log('❌ 重复投注失败')
-    }
-  } catch (error) {
-    console.error('❌ 重复投注失败:', error)
-    showToast('重复投注失败', 'error')
-  }
-}
-
-const handleCommissionToggle = async () => {
-  try {
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    bettingStore?.toggleCommissionFree?.()
-
-    const newStatus = isCommissionFree.value
-    showToast(`免佣${newStatus ? '已开启' : '已关闭'}`, 'success')
-    console.log(`🎯 免佣状态切换: ${newStatus ? '开启' : '关闭'}`)
-  } catch (error) {
-    console.error('❌ 免佣状态切换失败:', error)
-  }
-}
-
-// 🔥 修复：使用 uiStore 打开筹码选择器 + 音效
-const handleMore = async () => {
-  try {
-    // 🔥 播放点击音效
-    await playClickSound()
-
-    uiStore?.openChipSelector?.()
-    console.log('📱 打开筹码选择器 [通过 uiStore]')
-
-    // 添加触觉反馈
-    if (navigator.vibrate) {
-      navigator.vibrate(50)
-    }
-  } catch (error) {
-    console.error('❌ 打开筹码选择器失败:', error)
-  }
-}
-
-const handleImageError = (event: Event) => {
-  const img = event.target as HTMLImageElement
-  img.src = '/src/assets/images/chips/default.png'
-  console.warn('⚠️ 筹码图片加载失败')
-}
-
-// 🔥 新增：监听 displayChips 变化，确保当前选中筹码在列表中
-watch(displayChips, (newChips) => {
-  if (newChips && newChips.length > 0) {
-    const currentSelectedChip = currentChip.value
-    const isCurrentChipInList = newChips.some(chip => chip.value === currentSelectedChip)
-
-    if (!isCurrentChipInList) {
-      console.log(`⚠️ 当前选中筹码 ${currentSelectedChip} 不在新的显示列表中`)
-      console.log('🔄 可选筹码:', newChips.map(c => c.value))
-    }
-  }
-}, { immediate: true, deep: true })
-
-// 🔥 新增：监听当前选中筹码变化
-watch(currentChip, (newChip, oldChip) => {
-  if (newChip !== oldChip) {
-    console.log(`🎯 当前选中筹码变化: ${oldChip} → ${newChip}`)
-  }
-}, { immediate: true })
 
 // 生命周期
 onMounted(() => {
-  console.log('🎰 筹码显示组件挂载 [确认投注版]', {
-    selectedChip: currentChip.value,
-    balance: availableBalance.value,
-    displayChipsCount: displayChips.value.length,
-    displayChipsData: displayChips.value.map(c => ({ value: c.value, id: c.id })),
-    canConfirm: canConfirm.value,
-    canCancel: canCancel.value,
-    totalPendingAmount: totalPendingAmount.value,
-    hasUIStore: !!uiStore,
-    hasBettingStore: !!bettingStore
-  })
+  // 初始化选中筹码
+  const storeChip = bettingStore?.selectedChip
+  if (storeChip) {
+    selectedChip.value = storeChip
+  }
 })
 </script>
 
 <style scoped>
-.chip-display {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(6px);
+.chipstack-container {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 4px;
-  color: white;
-  margin-top: auto;
-  flex-shrink: 0;
-  height: 64px; /* 固定高度 */
-  overflow: hidden; /* 隐藏溢出内容 */
-  position: relative; /* 为Toast定位 */
-}
-
-/* 🔥 修复后的主布局 - 铺满整个宽度 */
-.chip-control-layout {
+  padding: 8px;
+  position: relative;
+  height: 200px;
   display: flex;
   align-items: center;
-  gap: 6px; /* 减小间距 */
-  justify-content: space-between; /* 🔥 改回 space-between 实现铺满 */
-  width: 100%;
-  flex-wrap: nowrap; /* 🔥 强制不换行 */
-  overflow-x: auto; /* 如果太宽则允许横向滚动 */
-}
-
-/* 🔥 左侧按钮组 - 紧凑布局 */
-.left-controls {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0; /* 不允许收缩 */
-}
-
-/* 🔥 右侧按钮组 - 紧凑布局，为确认按钮留更多空间 */
-.right-controls {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0; /* 不允许收缩 */
-}
-
-/* 🔥 筹码选择区域 - 铺满中间空间 */
-.chip-selection-area {
-  display: flex;
-  align-items: center;
-  gap: 6px; /* 减小筹码间距 */
-  flex: 1; /* 占据剩余空间 */
   justify-content: center;
-  /* 🔥 移除宽度限制，让它铺满中间空间 */
-  margin: 0 4px; /* 减小左右留白 */
-  flex-shrink: 1; /* 允许适度收缩 */
 }
 
-.chip-item {
+.chipstack-wrapper {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 8px; /* 稍微减小圆角 */
-  padding: 6px 4px; /* 减小内边距 */
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  min-width: 50px; /* 减小最小宽度 */
-  flex-shrink: 0; /* 防止收缩 */
-  position: relative;
-}
-
-.chip-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* 🔥 选中状态增强 */
-.chip-item.active {
-  background: rgba(24, 144, 255, 0.2);
-  border-color: rgba(24, 144, 255, 0.5);
-  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.3), 0 6px 20px rgba(24, 144, 255, 0.2);
-  transform: scale(1.15);
-}
-
-.chip-image-container {
-  position: relative;
-  width: 52px;
-  height: 52px;
-  margin-bottom: 6px;
-}
-
-.chip-item.active .chip-image-container {
-  width: 58px;
-  height: 58px;
-}
-
-.chip-image {
+  gap: 16px;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  max-width: 600px;
 }
 
-.chip-item.active .chip-image {
-  filter: drop-shadow(0 4px 12px rgba(24, 144, 255, 0.4));
-}
-
-.chip-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.chip-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: white;
-  line-height: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.chip-item.active .chip-value {
-  font-size: 16px;
-  color: #69c0ff;
-}
-
-/* 🔥 控制按钮优化 - 更紧凑 */
-.control-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px; /* 减小内部间距 */
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px; /* 减小圆角 */
-  padding: 6px 8px; /* 减小内边距 */
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: white;
-  min-width: 48px; /* 减小最小宽度 */
+/* 动作按钮区域 */
+.action-section {
   flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
 }
 
-/* 🔥 悬停光扫效果 */
-.control-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s ease;
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 60px;
 }
 
-.control-btn:hover:not(.disabled)::before {
-  left: 100%;
-}
-
-.control-btn:hover:not(.disabled) {
+.action-button:hover:not(.disabled) {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.control-btn:active:not(.disabled) {
-  transform: translateY(0);
-}
-
-.control-btn.disabled {
+.action-button.disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.control-btn.disabled:hover {
-  transform: none;
-  box-shadow: none;
+.button-icon {
+  width: 24px;
+  height: 24px;
 }
 
-/* 🔥 新增：确认按钮特殊样式 */
-.confirm-btn {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
-  min-width: 56px; /* 稍宽一些 */
+.icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
 }
 
-.confirm-btn.active {
-  background: rgba(34, 197, 94, 0.2);
-  border-color: rgba(34, 197, 94, 0.4);
-  color: #22c55e;
-  animation: confirmPulse 2s ease-in-out infinite;
+.button-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.confirm-btn.submitting {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #60a5fa;
+/* 转盘容器 */
+.revolver-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 180px;
+}
+
+.revolver-container {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.revolver-overlay {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
 }
 
-.confirm-btn:hover:not(.disabled):not(.submitting) {
-  background: rgba(34, 197, 94, 0.25);
-  color: #16a34a;
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+/* 筹码列表 */
+.chip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-/* 🔥 修改：取消按钮样式（原撤销按钮） */
-.cancel-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #f87171;
+.chip-item {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  top: 50%;
+  left: 50%;
+  margin: -24px 0 0 -24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.cancel-btn.has-bets {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  animation: cancelGlow 3s ease-in-out infinite;
+.chip-item:hover {
+  transform: translate(var(--x), var(--y)) scale(1.1);
+  z-index: 10;
 }
 
-.cancel-btn:hover:not(.disabled) {
-  background: rgba(239, 68, 68, 0.25);
-  color: #dc2626;
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+.chip-item.active {
+  transform: translate(var(--x), var(--y)) scale(1.2);
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
 }
 
-/* 🔥 特定按钮状态增强 */
-.repeat-btn.available {
-  background: rgba(82, 196, 26, 0.1);
-  border-color: rgba(82, 196, 26, 0.2);
-  color: #95de64;
+.chip {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-.control-btn-commission.active {
-  background: rgba(255, 193, 7, 0.2);
-  border-color: rgba(255, 193, 7, 0.4);
-  color: #ffc107;
-  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
-  animation: commissionActive 3s ease-in-out infinite;
+.chip-svg {
+  width: 100%;
+  height: 100%;
 }
 
-/* 🔥 更多按钮特殊样式 */
-.control-btn-more {
-  background: rgba(24, 144, 255, 0.12);
-  border-color: rgba(24, 144, 255, 0.25);
-  color: #40a9ff;
+.chip-outer {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-.control-btn-more:hover:not(.disabled) {
+.chip-value {
+  font-weight: bold;
+  fill: black;
+}
+
+/* CASHIER按钮 */
+.cashier-item {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  top: 50%;
+  left: 50%;
+  margin: -28px 0 0 -28px;
+  cursor: pointer;
+}
+
+.cashier-button {
+  width: 100%;
+  height: 100%;
+  background: rgba(24, 144, 255, 0.15);
+  border: 2px solid rgba(24, 144, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.3s ease;
+}
+
+.cashier-button:hover {
   background: rgba(24, 144, 255, 0.25);
-  color: #69c0ff;
-  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.3);
-}
-
-.btn-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.control-btn:hover:not(.disabled) .btn-icon {
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
 }
 
-/* 🔥 新增：加载动画 */
-.loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: spin 1s linear infinite;
+.cashier-icon {
+  width: 24px;
+  height: 24px;
+  fill: #40a9ff;
 }
 
-@keyframes spin {
+.cashier-text {
+  font-size: 8px;
+  font-weight: 600;
+  color: #40a9ff;
+  text-transform: uppercase;
+}
+
+/* 选中筹码显示 */
+.selected-chip-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  pointer-events: none;
+}
+
+.selected-border {
+  position: absolute;
+  inset: -2px;
+  animation: borderRotate 3s linear infinite;
+}
+
+.selected-chip {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes borderRotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-.btn-text {
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* 🔥 指示器和徽章 */
-.bet-count-indicator {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  background: #ff4d4f;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  border: 2px solid rgba(0, 0, 0, 0.8);
-}
-
-.last-bet-amount {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  /* transform: translateX(-50%); */
-  background: rgba(82, 196, 26, 0.9);
-  color: white;
-  border-radius: 8px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-/* 🔥 新增：待确认金额提示 */
-.pending-amount {
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  /* transform: translateX(-50%); */
-  background: rgba(34, 197, 94, 0.9);
-  color: white;
-  border-radius: 8px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: 600;
-  white-space: nowrap;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  /* animation: pendingBlink 2s ease-in-out infinite; */
-}
-
-.commission-status-dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background: #52c41a;
-  border-radius: 50%;
-  animation: statusDotBlink 2s ease-in-out infinite;
-}
-
-/* 🔥 新增：简单Toast样式 */
-.simple-toast {
+/* Toast提示 */
+.toast {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(0, 0, 0, 0.9);
   color: white;
+  padding: 12px 24px;
   border-radius: 8px;
-  z-index: 9999;
-  padding: 16px 20px;
-  min-width: 200px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
-  cursor: pointer;
-  animation: toastSlideIn 0.3s ease-out;
-}
-
-.simple-toast.success {
-  border-left: 4px solid #22c55e;
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.simple-toast.error {
-  border-left: 4px solid #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.toast-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.toast-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toast-text {
   font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* 🔥 动画定义 */
-@keyframes toastSlideIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -60%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
+.toast.success {
+  border-left: 4px solid #52c41a;
 }
 
-@keyframes confirmPulse {
-  0%, 100% {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
-  }
+.toast.error {
+  border-left: 4px solid #ff4d4f;
 }
 
-@keyframes cancelGlow {
-  0%, 100% {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
-  }
+/* 过渡动画 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
 }
 
-@keyframes commissionActive {
-  0%, 100% {
-    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.3);
-  }
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -40%);
 }
 
-@keyframes statusDotBlink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-@keyframes pendingBlink {
-  0%, 100% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translateX(-50%) scale(1.05);
-  }
-}
-
-/* 🔥 响应式优化 - 平板端，保持一行 */
+/* 响应式 */
 @media (max-width: 768px) {
-  .chip-display {
-    padding: 4px;
-    height: 64px;
+  .chipstack-container {
+    height: 160px;
+    padding: 6px;
   }
 
-  .chip-control-layout {
-    gap: 4px; /* 进一步减小间距 */
-  }
-
-  .chip-selection-area {
-    gap: 4px; /* 减小筹码间距 */
-    margin: 0 2px;
+  .revolver-container {
+    width: 140px;
+    height: 140px;
   }
 
   .chip-item {
-    min-width: 42px;
-    padding: 4px 2px;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
   }
 
-  .chip-image-container {
-    width: 38px;
-    height: 38px;
+  .selected-chip-container {
+    width: 44px;
+    height: 44px;
   }
 
-  .chip-item.active .chip-image-container {
-    width: 42px;
-    height: 42px;
+  .action-button {
+    min-width: 50px;
+    padding: 6px 8px;
   }
 
-  .chip-value {
-    font-size: 11px;
+  .button-icon {
+    width: 20px;
+    height: 20px;
   }
 
-  .chip-item.active .chip-value {
-    font-size: 12px;
-  }
-
-  .control-btn {
-    min-width: 40px;
-    padding: 4px 6px;
-  }
-
-  .confirm-btn {
-    min-width: 46px;
-  }
-
-  .btn-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .btn-text {
+  .button-label {
     font-size: 9px;
   }
-
-  .simple-toast {
-    min-width: 180px;
-    padding: 12px 16px;
-  }
-
-  .toast-text {
-    font-size: 13px;
-  }
 }
 
-/* 🔥 小屏幕也保持一行 - 极度紧凑 */
-@media (max-width: 420px) {
-  .chip-display {
-    padding: 4px;
-    height: 56px;
+@media (max-width: 480px) {
+  .chipstack-container {
+    height: 140px;
   }
 
-  .chip-control-layout {
-    gap: 2px; /* 最小间距 */
+  .chipstack-wrapper {
+    gap: 8px;
   }
 
-  .chip-selection-area {
-    gap: 2px;
-    margin: 0 1px;
+  .revolver-container {
+    width: 120px;
+    height: 120px;
   }
 
   .chip-item {
-    min-width: 36px;
-    padding: 3px 1px;
-  }
-
-  .chip-image-container {
-    width: 32px;
-    height: 32px;
-  }
-
-  .chip-item.active .chip-image-container {
     width: 36px;
     height: 36px;
-  }
-
-  .chip-value {
-    font-size: 10px;
-  }
-
-  .control-btn {
-    min-width: 36px;
-    padding: 3px 4px;
-  }
-
-  .confirm-btn {
-    min-width: 40px;
-  }
-
-  .btn-icon svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .btn-text {
-    font-size: 8px;
-  }
-
-  .simple-toast {
-    min-width: 160px;
-    padding: 10px 14px;
-  }
-
-  .toast-text {
-    font-size: 12px;
+    margin: -18px 0 0 -18px;
   }
 }
 </style>
