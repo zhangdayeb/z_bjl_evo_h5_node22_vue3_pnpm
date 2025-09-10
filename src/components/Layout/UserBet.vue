@@ -9,11 +9,7 @@
 
       <!-- 中部：筹码操作栏 -->
       <div class="chip-action-section">
-        <ChipAction
-          @undo="handleUndo"
-          @double="handleDouble"
-          ref="chipActionRef"
-        >
+        <ChipAction ref="chipActionRef">
           <!-- 默认显示当前选中的筹码 -->
           <div class="current-chip-display" @click="showChipSelector">
             <div class="chip-preview">
@@ -24,13 +20,13 @@
                   <text
                     x="50%"
                     y="50%"
-                    :font-size="selectedChipValue >= 1000 ? 18 : (selectedChipValue >= 100 ? 24 : 30)"
+                    :font-size="currentChipValue >= 1000 ? 18 : (currentChipValue >= 100 ? 24 : 30)"
                     dy="8"
                     text-anchor="middle"
                     fill="black"
                     font-weight="bold"
                   >
-                    {{ selectedChipValue }}
+                    {{ currentChipValue }}
                   </text>
                 </g>
               </svg>
@@ -51,7 +47,6 @@
       <div v-if="isChipSelectorVisible" class="chip-selector-overlay" @click.self="hideChipSelector">
         <div class="chip-selector-container">
           <ChipSelector
-            v-model="selectedChipValue"
             @change="handleChipChange"
             @cashier="handleCashier"
           />
@@ -83,24 +78,22 @@
       </div>
     </div>
 
-    <!-- 设置面板（可选） -->
+    <!-- 设置面板 -->
     <transition name="panel-slide">
       <div v-if="isSettingsOpen" class="settings-panel">
-        <!-- 设置内容 -->
         <div class="panel-header">
           <h3>设置</h3>
           <button @click="isSettingsOpen = false" class="panel-close">×</button>
         </div>
         <div class="panel-content">
-          <!-- 设置选项 -->
+          <!-- 设置选项内容 -->
         </div>
       </div>
     </transition>
 
-    <!-- 露珠列表面板（可选） -->
+    <!-- 露珠列表面板 -->
     <transition name="panel-slide">
       <div v-if="isLuZhuListOpen" class="luzhu-panel">
-        <!-- 露珠列表内容 -->
         <div class="panel-header">
           <h3>露珠列表</h3>
           <button @click="isLuZhuListOpen = false" class="panel-close">×</button>
@@ -130,27 +123,13 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 const bettingStore = useBettingStore()
 const uiStore = useUIStore()
 
-// 筹码相关状态
-const selectedChipValue = ref(100)
+// 筹码选择器相关状态
 const isChipSelectorVisible = ref(false)
 const chipActionRef = ref()
 
-// 筹码颜色映射
-const chipColors = {
-  1: '#595959',
-  2: '#ff82d6',
-  5: '#ce1d00',
-  25: '#05ae29',
-  100: '#1a1a1a',
-  500: '#8548b0',
-  1000: '#de9807',
-  5000: '#de7571'
-}
-
-// 计算当前筹码颜色
-const currentChipColor = computed(() => {
-  return chipColors[selectedChipValue.value] || '#1a1a1a'
-})
+// 从 store 读取当前筹码值和颜色
+const currentChipValue = computed(() => bettingStore.selectedChip)
+const currentChipColor = computed(() => bettingStore.selectedChipColor)
 
 // 悬浮按钮状态
 const isSettingsOpen = ref(false)
@@ -169,6 +148,7 @@ const hideChipSelector = () => {
 // 处理筹码选择
 const handleChipChange = (chip: any) => {
   console.log('Selected chip:', chip)
+
   // 选择后自动关闭选择器
   setTimeout(() => {
     hideChipSelector()
@@ -178,19 +158,13 @@ const handleChipChange = (chip: any) => {
   chipActionRef.value?.showToast(`已选择 ${chip.name}`, 'success')
 }
 
-// 处理UNDO
-const handleUndo = () => {
-  console.log('Undo clicked')
-}
-
-// 处理DOUBLE
-const handleDouble = () => {
-  console.log('Double clicked')
-}
-
 // 处理CASHIER
 const handleCashier = () => {
   console.log('Cashier clicked')
+  hideChipSelector()
+
+  // 这里可以添加跳转到充值页面的逻辑
+  chipActionRef.value?.showToast('即将跳转到充值页面', 'success')
 }
 
 // 处理设置按钮点击

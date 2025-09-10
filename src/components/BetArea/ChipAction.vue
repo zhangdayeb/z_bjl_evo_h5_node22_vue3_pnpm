@@ -18,10 +18,10 @@
         </button>
       </div>
 
-      <!-- 中间插槽区域（用于插入ChipChoose组件） -->
+      <!-- 中间插槽区域 -->
       <div class="content-slot">
         <slot>
-          <!-- 默认内容或提示 -->
+          <!-- 默认内容 -->
           <div class="default-content">
             <span>请选择筹码</span>
           </div>
@@ -60,25 +60,6 @@ import { ref, computed } from 'vue'
 import { useBettingStore } from '@/stores/bettingStore'
 import { useAudio } from '@/services/Audio'
 
-// Props
-interface Props {
-  undoDisabled?: boolean
-  doubleDisabled?: boolean
-  showToast?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  undoDisabled: false,
-  doubleDisabled: false,
-  showToast: true
-})
-
-// Emits
-const emit = defineEmits<{
-  'undo': []
-  'double': []
-}>()
-
 // Stores
 const bettingStore = useBettingStore()
 const audioSystem = useAudio()
@@ -87,29 +68,17 @@ const audioSystem = useAudio()
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error'>('success')
 
-// 计算属性
-const canUndo = computed(() => {
-  if (props.undoDisabled) return false
-  return bettingStore?.canCancel || false
-})
-
-const canDouble = computed(() => {
-  if (props.doubleDisabled) return false
-  const lastBets = bettingStore?.lastBets || {}
-  return Object.keys(lastBets).some(key => lastBets[key] > 0)
-})
+// 计算属性 - 直接从 store 获取
+const canUndo = computed(() => bettingStore.canCancel)
+const canDouble = computed(() => bettingStore.hasLastRoundData)
 
 // 处理撤销
 const handleUndo = async () => {
   if (!canUndo.value) return
 
   await playSound()
-  bettingStore?.cancelBets?.()
-  emit('undo')
-
-  if (props.showToast) {
-    showToast('投注已撤销', 'success')
-  }
+  bettingStore.cancelBets()
+  showToast('投注已撤销', 'success')
 }
 
 // 处理加倍
@@ -117,16 +86,8 @@ const handleDouble = async () => {
   if (!canDouble.value) return
 
   await playSound()
-  const success = bettingStore?.repeatLastBets?.()
-  emit('double')
-
-  if (props.showToast) {
-    if (success) {
-      showToast('加倍成功', 'success')
-    } else {
-      showToast('加倍失败', 'error')
-    }
-  }
+  const success = bettingStore.repeatLastBets()
+  showToast(success ? '加倍成功' : '加倍失败', success ? 'success' : 'error')
 }
 
 // 播放音效

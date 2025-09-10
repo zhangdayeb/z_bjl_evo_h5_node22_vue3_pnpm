@@ -34,6 +34,7 @@
 
         <!-- CASHIER按钮 -->
         <li
+          v-if="showCashier"
           class="cashier-item"
           :class="{ 'hidden': !isExpanded }"
           :style="getCashierStyle()"
@@ -70,16 +71,15 @@ interface Chip {
 
 // Props
 interface Props {
-  modelValue?: number
+  showCashier?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: 100
+  showCashier: true
 })
 
 // Emits
 const emit = defineEmits<{
-  'update:modelValue': [value: number]
   'change': [chip: Chip]
   'cashier': []
 }>()
@@ -102,18 +102,19 @@ const chips = ref<Chip[]>([
 ])
 
 // 状态
-const selectedChip = ref(props.modelValue)
 const selectedIndex = ref(4) // 默认选中100的索引
 const isExpanded = ref(false)
 
-// 监听外部值变化
-watch(() => props.modelValue, (newValue) => {
-  selectedChip.value = newValue
+// 从 store 获取选中的筹码值
+const selectedChipValue = computed(() => bettingStore.selectedChip)
+
+// 监听 store 中筹码值的变化，更新索引
+watch(selectedChipValue, (newValue) => {
   const index = chips.value.findIndex(c => c.value === newValue)
   if (index !== -1) {
     selectedIndex.value = index
   }
-})
+}, { immediate: true })
 
 // 获取筹码的类名
 const getChipClass = (index: number) => {
@@ -212,17 +213,14 @@ const selectChip = async (chip: Chip, index: number) => {
     return
   }
 
-  selectedChip.value = chip.value
+  // 更新 store 中的筹码
+  bettingStore.selectChip(chip.value)
   selectedIndex.value = index
 
   // 播放音效
   await playSound()
 
-  // 同步到store
-  bettingStore?.selectChip?.(chip.value)
-
   // 发送事件
-  emit('update:modelValue', chip.value)
   emit('change', chip)
 
   // 选择后自动收起
@@ -254,14 +252,11 @@ const playSound = async () => {
 
 // 生命周期
 onMounted(() => {
-  // 初始化选中筹码
-  const storeChip = bettingStore?.selectedChip
-  if (storeChip) {
-    selectedChip.value = storeChip
-    const index = chips.value.findIndex(c => c.value === storeChip)
-    if (index !== -1) {
-      selectedIndex.value = index
-    }
+  // 初始化选中筹码索引
+  const storeChip = bettingStore.selectedChip
+  const index = chips.value.findIndex(c => c.value === storeChip)
+  if (index !== -1) {
+    selectedIndex.value = index
   }
 })
 </script>
