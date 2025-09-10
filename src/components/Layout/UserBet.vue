@@ -1,194 +1,567 @@
-<!-- src/components/Layout/UserBet.vue - 第二层：用户投注区域 -->
 <template>
-  <div class="user-bet-layer" :style="layerStyles">
-    <div class="content-wrapper">
-      <!-- 投注区域布局 -->
-      <div class="betting-area-wrapper">
-        <BettingAreaLayout />
+  <div class="user-bet-container">
+    <!-- 主内容区域 -->
+    <div class="main-content">
+      <!-- 顶部：投注区域 -->
+      <div class="betting-area-section">
+        <BettingArea />
       </div>
 
-      <!-- 筹码显示区域 -->
-      <div class="chip-display-wrapper">
-        <ChipDisplay />
+      <!-- 中部：筹码操作栏 -->
+      <div class="chip-action-section">
+        <ChipAction
+          @undo="handleUndo"
+          @double="handleDouble"
+          ref="chipActionRef"
+        >
+          <!-- 默认显示当前选中的筹码 -->
+          <div class="current-chip-display" @click="showChipSelector">
+            <div class="chip-preview">
+              <svg viewBox="0 0 78 78" class="chip-svg">
+                <g>
+                  <circle cx="39" cy="39" r="38.5" :fill="currentChipColor"/>
+                  <circle cx="39" cy="39" r="25.5" fill="white"/>
+                  <text
+                    x="50%"
+                    y="50%"
+                    :font-size="selectedChipValue >= 1000 ? 18 : (selectedChipValue >= 100 ? 24 : 30)"
+                    dy="8"
+                    text-anchor="middle"
+                    fill="black"
+                    font-weight="bold"
+                  >
+                    {{ selectedChipValue }}
+                  </text>
+                </g>
+              </svg>
+            </div>
+            <div class="chip-hint">点击选择筹码</div>
+          </div>
+        </ChipAction>
+      </div>
+
+      <!-- 底部：统计信息 -->
+      <div class="game-count-section">
+        <GameCount />
       </div>
     </div>
+
+    <!-- 筹码选择器悬浮层 -->
+    <transition name="chip-selector">
+      <div v-if="isChipSelectorVisible" class="chip-selector-overlay" @click.self="hideChipSelector">
+        <div class="chip-selector-container">
+          <ChipChoose
+            v-model="selectedChipValue"
+            @change="handleChipChange"
+            @cashier="handleCashier"
+          />
+          <button class="close-button" @click="hideChipSelector">
+            <svg viewBox="0 0 24 24" class="close-icon">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 悬浮按钮 -->
+    <div class="floating-buttons">
+      <!-- 左下角：设置按钮 -->
+      <div class="floating-button-left">
+        <ButtonSet
+          :active="isSettingsOpen"
+          @click="handleSettingsClick"
+        />
+      </div>
+
+      <!-- 右下角：露珠列表按钮 -->
+      <div class="floating-button-right">
+        <ButtonLuZhuList
+          :active="isLuZhuListOpen"
+          @click="handleLuZhuListClick"
+        />
+      </div>
+    </div>
+
+    <!-- 设置面板（可选） -->
+    <transition name="panel-slide">
+      <div v-if="isSettingsOpen" class="settings-panel">
+        <!-- 设置内容 -->
+        <div class="panel-header">
+          <h3>设置</h3>
+          <button @click="isSettingsOpen = false" class="panel-close">×</button>
+        </div>
+        <div class="panel-content">
+          <!-- 设置选项 -->
+        </div>
+      </div>
+    </transition>
+
+    <!-- 露珠列表面板（可选） -->
+    <transition name="panel-slide">
+      <div v-if="isLuZhuListOpen" class="luzhu-panel">
+        <!-- 露珠列表内容 -->
+        <div class="panel-header">
+          <h3>露珠列表</h3>
+          <button @click="isLuZhuListOpen = false" class="panel-close">×</button>
+        </div>
+        <div class="panel-content">
+          <!-- 露珠内容 -->
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useConfigStore } from '@/stores/configStore'
+import { ref, computed } from 'vue'
+import { useBettingStore } from '@/stores/bettingStore'
+import { useUIStore } from '@/stores/uiStore'
 
 // 组件导入
-import BettingAreaLayout from '@/components/BetArea/BettingAreaLayout.vue'
-import ChipDisplay from '@/components/BetArea/ChipDisplay.vue'
+import BettingArea from '@/components/BetArea/BettingArea.vue'
+import ChipAction from '@/components/BetArea/ChipAction.vue'
+import ChipChoose from '@/components/BetArea/ChipChoose.vue'
+import GameCount from '@/components/BetArea/GameCount.vue'
+import ButtonSet from '@/components/Buttons/ButtonSet.vue'
+import ButtonLuZhuList from '@/components/Buttons/ButtonLuZhuList.vue'
 
-// 使用 configStore
-const configStore = useConfigStore()
+// Stores
+const bettingStore = useBettingStore()
+const uiStore = useUIStore()
 
-// 层级容器样式 - 从store读取
-const layerStyles = computed(() => {
-  return {
-    top: configStore.userBetTopPosition,
-    height: configStore.userBetHeightPercentage
-  }
+// 筹码相关状态
+const selectedChipValue = ref(100)
+const isChipSelectorVisible = ref(false)
+const chipActionRef = ref()
+
+// 筹码颜色映射
+const chipColors = {
+  1: '#595959',
+  2: '#ff82d6',
+  5: '#ce1d00',
+  25: '#05ae29',
+  100: '#1a1a1a',
+  500: '#8548b0',
+  1000: '#de9807',
+  5000: '#de7571'
+}
+
+// 计算当前筹码颜色
+const currentChipColor = computed(() => {
+  return chipColors[selectedChipValue.value] || '#1a1a1a'
 })
 
-// 暴露方法 - 通过store控制
-defineExpose({
-  expand: () => {
-    configStore.setUserBetExpanded(true)
-  },
-  collapse: () => {
-    configStore.setUserBetExpanded(false)
-  },
-  toggle: () => {
-    configStore.toggleUserBetExpand()
+// 悬浮按钮状态
+const isSettingsOpen = ref(false)
+const isLuZhuListOpen = ref(false)
+
+// 显示筹码选择器
+const showChipSelector = () => {
+  isChipSelectorVisible.value = true
+}
+
+// 隐藏筹码选择器
+const hideChipSelector = () => {
+  isChipSelectorVisible.value = false
+}
+
+// 处理筹码选择
+const handleChipChange = (chip: any) => {
+  console.log('Selected chip:', chip)
+  // 选择后自动关闭选择器
+  setTimeout(() => {
+    hideChipSelector()
+  }, 300)
+
+  // 显示toast提示
+  chipActionRef.value?.showToast(`已选择 ${chip.name}`, 'success')
+}
+
+// 处理UNDO
+const handleUndo = () => {
+  console.log('Undo clicked')
+}
+
+// 处理DOUBLE
+const handleDouble = () => {
+  console.log('Double clicked')
+}
+
+// 处理CASHIER
+const handleCashier = () => {
+  console.log('Cashier clicked')
+  hideChipSelector()
+  uiStore?.openCashier?.()
+}
+
+// 处理设置按钮点击
+const handleSettingsClick = () => {
+  isSettingsOpen.value = !isSettingsOpen.value
+  // 关闭露珠列表
+  if (isSettingsOpen.value) {
+    isLuZhuListOpen.value = false
   }
-})
+}
+
+// 处理露珠列表按钮点击
+const handleLuZhuListClick = () => {
+  isLuZhuListOpen.value = !isLuZhuListOpen.value
+  // 关闭设置面板
+  if (isLuZhuListOpen.value) {
+    isSettingsOpen.value = false
+  }
+}
 </script>
 
 <style scoped>
-/* 第二层容器 */
-.user-bet-layer {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-  overflow: hidden;
-}
-
-/* 内容包装器 */
-.content-wrapper {
+.user-bet-container {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to top,
+  background: linear-gradient(to bottom,
     rgba(0, 0, 0, 0.95) 0%,
-    rgba(0, 0, 0, 0.85) 50%,
-    rgba(0, 0, 0, 0.75) 100%
+    rgba(0, 0, 0, 0.9) 100%
   );
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
 
-/* 投注区域容器 */
-.betting-area-wrapper {
+/* 主内容区域 */
+.main-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 投注区域 */
+.betting-area-section {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px;
-  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* 筹码显示区域容器 */
-.chip-display-wrapper {
+/* 筹码操作栏 */
+.chip-action-section {
   flex-shrink: 0;
-  padding: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 当前筹码显示 */
+.current-chip-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.current-chip-display:hover {
+  transform: scale(1.05);
+}
+
+.chip-preview {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.chip-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chip-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.3s ease;
+}
+
+.current-chip-display:hover .chip-hint {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 统计信息区域 */
+.game-count-section {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 筹码选择器悬浮层 */
+.chip-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.chip-selector-container {
+  position: relative;
+  background: rgba(26, 26, 26, 0.95);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  max-width: 90%;
+  max-height: 80%;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
+}
+
+.close-icon {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+/* 悬浮按钮容器 */
+.floating-buttons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 500;
+}
+
+.floating-button-left {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  pointer-events: auto;
+}
+
+.floating-button-right {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  pointer-events: auto;
+}
+
+/* 面板样式 */
+.settings-panel,
+.luzhu-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  background: rgba(26, 26, 26, 0.98);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-panel {
+  left: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.luzhu-panel {
+  right: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h3 {
+  color: white;
+  font-size: 18px;
+  margin: 0;
+}
+
+.panel-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.panel-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* 动画过渡 */
+.chip-selector-enter-active,
+.chip-selector-leave-active {
+  transition: all 0.3s ease;
+}
+
+.chip-selector-enter-from,
+.chip-selector-leave-to {
+  opacity: 0;
+}
+
+.chip-selector-enter-from .chip-selector-container,
+.chip-selector-leave-to .chip-selector-container {
+  transform: scale(0.8);
+}
+
+.panel-slide-enter-active,
+.panel-slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.panel-slide-enter-from.settings-panel,
+.panel-slide-leave-to.settings-panel {
+  transform: translateX(-100%);
+}
+
+.panel-slide-enter-from.luzhu-panel,
+.panel-slide-leave-to.luzhu-panel {
+  transform: translateX(100%);
 }
 
 /* 滚动条样式 */
-.betting-area-wrapper::-webkit-scrollbar {
+.betting-area-section::-webkit-scrollbar,
+.panel-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.betting-area-wrapper::-webkit-scrollbar-track {
+.betting-area-section::-webkit-scrollbar-track,
+.panel-content::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
 }
 
-.betting-area-wrapper::-webkit-scrollbar-thumb {
+.betting-area-section::-webkit-scrollbar-thumb,
+.panel-content::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
 
-.betting-area-wrapper::-webkit-scrollbar-thumb:hover {
+.betting-area-section::-webkit-scrollbar-thumb:hover,
+.panel-content::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
-  .betting-area-wrapper {
-    padding: 8px;
-  }
-
-  .chip-display-wrapper {
-    padding: 8px;
-  }
-}
-
 @media (max-width: 768px) {
-  .content-wrapper {
-    box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.5);
+  .betting-area-section {
+    padding: 8px;
   }
 
-  .betting-area-wrapper {
-    padding: 6px;
+  .floating-button-left {
+    bottom: 15px;
+    left: 15px;
   }
 
-  .chip-display-wrapper {
-    padding: 6px;
+  .floating-button-right {
+    bottom: 15px;
+    right: 15px;
+  }
+
+  .settings-panel,
+  .luzhu-panel {
+    width: 280px;
+  }
+
+  .chip-preview {
+    width: 50px;
+    height: 50px;
   }
 }
 
 @media (max-width: 480px) {
-  .content-wrapper {
-    border-top-width: 0.5px;
+  .betting-area-section {
+    padding: 6px;
   }
 
-  .betting-area-wrapper {
-    padding: 4px;
+  .floating-button-left {
+    bottom: 10px;
+    left: 10px;
   }
 
-  .chip-display-wrapper {
-    padding: 4px;
+  .floating-button-right {
+    bottom: 10px;
+    right: 10px;
   }
 
-  .betting-area-wrapper::-webkit-scrollbar {
-    width: 4px;
+  .settings-panel,
+  .luzhu-panel {
+    width: 100%;
   }
-}
 
-/* 深色主题优化 */
-@media (prefers-color-scheme: dark) {
-  .content-wrapper {
-    background: linear-gradient(to top,
-      rgba(0, 0, 0, 0.98) 0%,
-      rgba(0, 0, 0, 0.9) 50%,
-      rgba(0, 0, 0, 0.8) 100%
-    );
-    border-top-color: rgba(255, 255, 255, 0.08);
+  .chip-selector-container {
+    max-width: 95%;
+    padding: 15px;
+  }
+
+  .chip-preview {
+    width: 45px;
+    height: 45px;
+  }
+
+  .current-chip-display {
+    padding: 15px;
   }
 }
 
 /* 安全区域适配 */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .content-wrapper {
+  .floating-button-left,
+  .floating-button-right {
+    bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .game-count-section {
     padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .chip-display-wrapper {
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  }
-}
-
-/* 横屏模式优化 */
-@media (orientation: landscape) and (max-height: 500px) {
-  .betting-area-wrapper {
-    padding: 5px;
-  }
-
-  .chip-display-wrapper {
-    padding: 5px;
   }
 }
 </style>
