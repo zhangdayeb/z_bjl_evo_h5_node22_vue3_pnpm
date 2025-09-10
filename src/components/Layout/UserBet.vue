@@ -16,8 +16,8 @@
     </div>
 
     <!-- 悬浮按钮 - 始终显示 -->
-    <ButtonSet class="floating-button-left" />
-    <ButtonLuZhuList class="floating-button-right" />
+    <ButtonLuZhuList class="floating-button-left" />
+    <ButtonSet class="floating-button-right" />
   </div>
 </template>
 
