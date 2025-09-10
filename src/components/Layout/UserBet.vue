@@ -50,7 +50,7 @@
     <transition name="chip-selector">
       <div v-if="isChipSelectorVisible" class="chip-selector-overlay" @click.self="hideChipSelector">
         <div class="chip-selector-container">
-          <ChipChoose
+          <ChipSelector
             v-model="selectedChipValue"
             @change="handleChipChange"
             @cashier="handleCashier"
@@ -121,7 +121,7 @@ import { useUIStore } from '@/stores/uiStore'
 // 组件导入
 import BettingArea from '@/components/BetArea/BettingArea.vue'
 import ChipAction from '@/components/BetArea/ChipAction.vue'
-import ChipChoose from '@/components/BetArea/ChipChoose.vue'
+import ChipSelector from '@/components/Panels/ChipSelector.vue'
 import GameCount from '@/components/BetArea/GameCount.vue'
 import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
 import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
