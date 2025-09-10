@@ -1,52 +1,43 @@
 <!-- src/components/Layout/Overlay.vue -->
 <template>
   <div class="overlay-system">
-    <!-- 1. 历史投注记录面板 -->
-    <transition name="panel-fade">
-      <BettingHistoryPanel
-        v-if="uiStore.showBettingHistory"
-        @close="uiStore.closeBettingHistory"
-      />
-    </transition>
-
-    <!-- 2. 设置控制面板 -->
-    <transition name="panel-fade">
-      <SettingsPanel
-        v-if="uiStore.showSettingsPanel"
-        @close="uiStore.closeSettingsPanel"
-      />
-    </transition>
-
-    <!-- 3. 开牌效果 -->
-    <transition name="effect-fade">
-      <ResultEffect
-        v-if="uiStore.showResultEffect"
-        @close="uiStore.hideCardResult"
-        @complete="uiStore.hideCardResult"
-      />
-    </transition>
-
-    <!-- 4. 中奖效果 -->
-    <transition name="effect-fade">
-      <WinningEffect
-        v-if="uiStore.showWinningEffect"
-        @finished="uiStore.hideWinEffect"
-      />
-    </transition>
-
-    <!-- 5. 筹码选择器 -->
+    <!-- 筹码选择器 -->
     <transition name="panel-fade">
       <ChipSelector
-        v-if="uiStore.showChipSelector"
-        @close="uiStore.closeChipSelector"
+        v-if="uiStore.chipSelector"
+        @close="uiStore.close"
       />
     </transition>
 
-    <!-- 6. 路珠列表面板 -->
+    <!-- 中奖效果 -->
+    <transition name="effect-fade">
+      <WinningEffect
+        v-if="uiStore.winningEffect"
+        @close="uiStore.close"
+      />
+    </transition>
+
+    <!-- 露珠列表 -->
     <transition name="panel-fade">
-      <LuZhuAllList
-        v-if="uiStore.showLuZhuList"
-        @close="uiStore.closeLuZhuList"
+      <LuZhuList
+        v-if="uiStore.luZhuList"
+        @close="uiStore.close"
+      />
+    </transition>
+
+    <!-- 设置面板 -->
+    <transition name="panel-fade">
+      <SettingsPanel
+        v-if="uiStore.settingsPanel"
+        @close="uiStore.close"
+      />
+    </transition>
+
+    <!-- 收银台 -->
+    <transition name="panel-fade">
+      <Cashier
+        v-if="uiStore.cashier"
+        @close="uiStore.close"
       />
     </transition>
   </div>
@@ -57,48 +48,28 @@ import { onMounted, onUnmounted } from 'vue'
 import { useUIStore } from '@/stores/uiStore'
 
 // 组件导入
-import BettingHistoryPanel from '@/components/Panels/BettingHistoryPanel.vue'
-import SettingsPanel from '@/components/Panels/SettingsPanel.vue'
-import ResultEffect from '@/components/Effects/ResultEffect.vue'
-import WinningEffect from '@/components/Effects/WinningEffect.vue'
 import ChipSelector from '@/components/Panels/ChipSelector.vue'
-import LuZhuAllList from '@/components/Panels/LuZhuAllList.vue'
+import WinningEffect from '@/components/Panels/WinningEffect.vue'
+import LuZhuList from '@/components/Panels/LuZhuList.vue'
+import SettingsPanel from '@/components/Panels/SettingsPanel.vue'
+import Cashier from '@/components/Panels/Cashier.vue'
 
-// 使用 UI Store
 const uiStore = useUIStore()
 
-// 键盘事件监听 - ESC 关闭面板
+// ESC 关闭当前面板
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    uiStore.closeAllPanels()
+    uiStore.close()
   }
 }
 
-// 生命周期
 onMounted(() => {
-  console.log('🎯 Overlay 组件已挂载')
   document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
-  console.log('🎯 Overlay 组件已卸载')
   document.removeEventListener('keydown', handleKeydown)
 })
-
-// 开发模式暴露调试方法
-if (import.meta.env.DEV) {
-  ;(window as any).uiDebug = {
-    uiStore,
-    openBettingHistory: uiStore.openBettingHistory,
-    openSettingsPanel: uiStore.openSettingsPanel,
-    showCardResult: uiStore.showCardResult,
-    showWinEffect: uiStore.showWinEffect,
-    openChipSelector: uiStore.openChipSelector,
-    openLuZhuList: uiStore.openLuZhuList,
-    closeAll: uiStore.closeAllPanels
-  }
-  console.log('🐛 UI调试工具已添加到 window.uiDebug')
-}
 </script>
 
 <style scoped>
@@ -138,13 +109,8 @@ if (import.meta.env.DEV) {
   transition: all 0.3s ease;
 }
 
-.effect-fade-enter-from {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
+.effect-fade-enter-from,
 .effect-fade-leave-to {
   opacity: 0;
-  transform: scale(1.1);
 }
 </style>

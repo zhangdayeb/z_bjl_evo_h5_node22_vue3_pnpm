@@ -123,8 +123,8 @@ import BettingArea from '@/components/BetArea/BettingArea.vue'
 import ChipAction from '@/components/BetArea/ChipAction.vue'
 import ChipChoose from '@/components/BetArea/ChipChoose.vue'
 import GameCount from '@/components/BetArea/GameCount.vue'
-import ButtonSet from '@/components/Buttons/ButtonSet.vue'
-import ButtonLuZhuList from '@/components/Buttons/ButtonLuZhuList.vue'
+import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
+import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
 // Stores
 const bettingStore = useBettingStore()
@@ -191,8 +191,6 @@ const handleDouble = () => {
 // 处理CASHIER
 const handleCashier = () => {
   console.log('Cashier clicked')
-  hideChipSelector()
-  uiStore?.openCashier?.()
 }
 
 // 处理设置按钮点击

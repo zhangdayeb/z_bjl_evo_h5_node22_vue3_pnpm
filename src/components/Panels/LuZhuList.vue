@@ -1,4 +1,4 @@
-<!-- src/components/Panels/LuZhuAllList.vue -->
+<!-- src/components/Panels/LuZhuList.vue -->
 <template>
   <div class="luzhu-list-panel">
     <!-- 面板头部 -->

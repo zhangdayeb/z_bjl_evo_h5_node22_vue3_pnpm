@@ -234,7 +234,7 @@ const selectChip = async (chip: Chip, index: number) => {
 // 处理CASHIER
 const handleCashier = async () => {
   await playSound()
-  uiStore?.openCashier?.()
+
   emit('cashier')
 
   // 选择后收起
