@@ -239,6 +239,8 @@ const predictions = computed(() =>
 .statistics-group {
   display: flex;
   align-items: center;
+  height: 28.7152px;
+  font-size: 14px;
   gap: 12px;
 }
 
@@ -252,12 +254,11 @@ const predictions = computed(() =>
   display: flex;
   align-items: center;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
 }
 
 .stat-svg {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 
 .stat-count {
@@ -267,7 +268,6 @@ const predictions = computed(() =>
 
 .value {
   color: rgba(255, 255, 255, 0.95);
-  font-size: 12px;
   font-weight: 600;
 }
 
@@ -286,8 +286,8 @@ const predictions = computed(() =>
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 4px 6px;
-  border-radius: 10px;
+  padding: 0px 8px;
+  border-radius: 20px;
   box-sizing: border-box;
 }
 
@@ -305,10 +305,11 @@ const predictions = computed(() =>
 
 /* P/B 标签 */
 .simple-svg-symbol {
-  width: 12px;
-  height: 16px;
+  width: 15px;
+  height: 28px;
   display: flex;
   align-items: center;
+  font-family: "Inter, Arial, sans-serif";
 }
 
 /* 预测图标 */
@@ -319,8 +320,8 @@ const predictions = computed(() =>
 }
 
 .icon-item {
-  width: 12px;
-  height: 12px;
+  width: 17px;
+  height: 23px;
   display: flex;
   align-items: center;
   justify-content: center;
