@@ -70,6 +70,7 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
 /* 投注区域 - 固定在筹码操作栏上方 */
 .betting-area-section {
+  background-color: black;
   position: fixed;
   bottom: 170px; /* 统计栏50px + 筹码栏120px */
   left: 0;
@@ -79,7 +80,6 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
   overflow: hidden;
 }
 
@@ -100,17 +100,11 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .betting-area-section {
-    padding: 8px;
-  }
 
   .chip-action-section {
     height: 100px;
   }
 
-  .betting-area-section {
-    bottom: 150px; /* 调整位置 */
-  }
 }
 
 @media (max-width: 480px) {
@@ -123,11 +117,6 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
     bottom: 45px;
   }
 
-  .betting-area-section {
-    height: 200px;
-    bottom: 135px;
-    padding: 6px;
-  }
 }
 
 /* 安全区域适配 */
