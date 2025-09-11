@@ -59,10 +59,10 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 /* 筹码操作栏 - 固定在统计栏上方 */
 .chip-action-section {
   position: fixed;
-  bottom: 50px; /* 统计栏高度 */
+  bottom: 49px; /* 统计栏高度 */
   left: 0;
   right: 0;
-  height: 120px;
+  height: 45px;
   z-index: 99;
   background: rgba(0, 0, 0, 0.9);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -86,57 +86,37 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 /* 悬浮按钮位置 */
 .floating-button-left {
   position: fixed;
-  bottom: 70px; /* 在统计栏上方 */
+  bottom: 49px; /* 在统计栏上方 */
   left: 20px;
   z-index: 500;
 }
 
 .floating-button-right {
   position: fixed;
-  bottom: 70px; /* 在统计栏上方 */
+  bottom: 49px; /* 在统计栏上方 */
   right: 20px;
   z-index: 500;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-
-  .chip-action-section {
-    height: 100px;
-  }
-
-}
-
-@media (max-width: 480px) {
-  .game-count-section {
-    height: 45px;
-  }
-
-  .chip-action-section {
-    height: 90px;
-    bottom: 45px;
-  }
-
-}
 
 /* 安全区域适配 */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .game-count-section {
     padding-bottom: env(safe-area-inset-bottom);
-    height: calc(50px + env(safe-area-inset-bottom));
+    height: calc(49px + env(safe-area-inset-bottom));
   }
 
   .chip-action-section {
-    bottom: calc(50px + env(safe-area-inset-bottom));
+    bottom: calc(45px + env(safe-area-inset-bottom));
   }
 
   .betting-area-section {
-    bottom: calc(170px + env(safe-area-inset-bottom));
+    bottom: calc(94px + env(safe-area-inset-bottom));
   }
 
   .floating-button-left,
   .floating-button-right {
-    bottom: calc(70px + env(safe-area-inset-bottom));
+    bottom: calc(49px + env(safe-area-inset-bottom));
   }
 }
 </style>
