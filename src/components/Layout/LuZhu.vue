@@ -1,10 +1,10 @@
-<!-- 露珠组件 - 自包含版本 -->
+<!-- 露珠组件 - 固定高度版本 (总高度233px) -->
 <template>
   <div class="luzhu-component">
     <!-- 主容器 -->
     <div class="luzhu-wrapper">
 
-      <!-- 路珠显示区域 -->
+      <!-- 路珠显示区域 (200px) -->
       <div class="luzhu-display-area">
         <!-- 视口容器 -->
         <div class="viewport-container">
@@ -190,7 +190,7 @@
         </div>
       </div>
 
-      <!-- 底部统计栏 -->
+      <!-- 底部统计栏 (28px + 5px padding-bottom) -->
       <div class="statistics-bar">
         <!-- 左侧：局数 -->
         <div class="left-section">
@@ -496,16 +496,10 @@ defineExpose({
 </script>
 
 <style scoped>
-/* ================== CSS变量 ================== */
-:root {
-  --root-size: 20px;
-  --stat-height: calc(var(--root-size) * 1.4);
-}
-
 /* ================== 根容器 ================== */
 .luzhu-component {
   width: 100%;
-  height: 100%;
+  height: 233px; /* 固定总高度 */
   background: #1a1a1a;
   position: relative;
   overflow: hidden;
@@ -513,14 +507,14 @@ defineExpose({
 
 .luzhu-wrapper {
   width: 100%;
-  height: 100%;
+  height: 233px; /* 固定总高度 */
   display: flex;
   flex-direction: column;
 }
 
 /* ================== 路珠显示区域 ================== */
 .luzhu-display-area {
-  flex: 1;
+  height: 200px; /* 固定露珠区域高度 */
   position: relative;
   overflow: hidden;
   background: linear-gradient(rgba(37, 37, 37, 0.95) 0%, rgb(30, 30, 30) 100%);
@@ -711,9 +705,9 @@ defineExpose({
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: var(--stat-height) !important;
+  bottom: 33px !important; /* 调整为固定的统计栏高度 */
   width: 100% !important;
-  height: calc(100% - var(--stat-height)) !important;
+  height: calc(100% - 33px) !important;
   z-index: 1000;
   padding: 20px;
   background: linear-gradient(rgba(37, 37, 37, 0.98) 0%, rgb(30, 30, 30) 100%);
@@ -761,7 +755,7 @@ defineExpose({
   top: 0;
   left: 0;
   right: 0;
-  bottom: var(--stat-height);
+  bottom: 33px; /* 调整为固定的统计栏高度 */
   z-index: 999;
   background: rgba(0, 0, 0, 0.2);
 }
@@ -787,17 +781,18 @@ defineExpose({
 
 /* ================== 统计栏 ================== */
 .statistics-bar {
-  height: var(--stat-height);
-  min-height: var(--stat-height);
+  height: 28px; /* 固定统计栏高度 */
+  min-height: 28px;
   background: rgb(37, 37, 37);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 calc(var(--root-size) * 0.8) calc(var(--root-size) * 0.25);
+  padding: 0 12px 5px; /* 固定下内边距5px */
   flex-shrink: 0;
   z-index: 1001;
   font-weight: 600;
+  box-sizing: content-box; /* 重要：确保padding不影响height */
 }
 
 /* 左侧：局数 */
@@ -810,28 +805,28 @@ defineExpose({
 .game-round {
   display: flex;
   align-items: center;
-  gap: calc(var(--root-size) * 0.2);
+  gap: 3px;
   color: rgba(255, 255, 255, 0.65);
-  font-size: calc(var(--root-size) * 0.6);
+  font-size: 11px;
   font-weight: 500;
 }
 
 .game-round .hash {
   opacity: 0.6;
-  font-size: calc(var(--root-size) * 0.55);
+  font-size: 10px;
 }
 
 .game-round .round-number {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
-  font-size: calc(var(--root-size) * 0.65);
+  font-size: 12px;
 }
 
 /* 中间：统计 */
 .center-section {
   display: flex;
   align-items: center;
-  gap: calc(var(--root-size) * 0.6);
+  gap: 10px;
   height: 100%;
   width: 46%;
 }
@@ -839,22 +834,22 @@ defineExpose({
 .stat-item {
   display: flex;
   align-items: center;
-  gap: calc(var(--root-size) * 0.2);
+  gap: 3px;
   height: 100%;
 }
 
 .stat-svg {
-  width: calc(var(--root-size) * 1);
-  height: calc(var(--root-size) * 1);
+  width: 18px;
+  height: 18px;
   display: block;
   flex-shrink: 0;
 }
 
 .stat-count {
   color: rgba(255, 255, 255, 0.95);
-  font-size: calc(var(--root-size) * 0.65);
+  font-size: 12px;
   font-weight: 600;
-  min-width: calc(var(--root-size) * 1);
+  min-width: 18px;
   text-align: center;
   line-height: 1;
 }
@@ -864,18 +859,18 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: calc(var(--root-size) * 0.3);
+  gap: 5px;
   width: 46%;
 }
 
 .prediction-indicator {
   display: flex;
   align-items: center;
-  gap: calc(var(--root-size) * 0.2);
-  padding: calc(var(--root-size) * 0.15) calc(var(--root-size) * 0.4);
-  border-radius: calc(var(--root-size) * 0.6);
-  height: calc(var(--root-size) * 1.2);
-  min-width: calc(var(--root-size) * 3);
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  height: 20px;
+  min-width: 50px;
 }
 
 .player-predict {
@@ -891,28 +886,24 @@ defineExpose({
 .predict-label {
   color: rgba(255, 255, 255, 0.9);
   font-weight: 700;
-  font-size: calc(var(--root-size) * 0.55);
-  margin-right: calc(var(--root-size) * 0.1);
+  font-size: 10px;
+  margin-right: 2px;
 }
 
 .predict-icons {
   display: flex;
-  gap: calc(var(--root-size) * 0.1);
+  gap: 2px;
   align-items: center;
 }
 
 .predict-svg {
-  width: calc(var(--root-size) * 0.5);
-  height: calc(var(--root-size) * 0.5);
+  width: 9px;
+  height: 9px;
   display: block;
 }
 
-/* ================== 响应式设计 ================== */
+/* ================== 响应式设计 - 保持固定高度 ================== */
 @media (max-width: 768px) {
-  :root {
-    --root-size: 18px;
-  }
-
   .left-screen {
     background-size: 22px 22px;
   }
@@ -927,10 +918,6 @@ defineExpose({
 }
 
 @media (max-width: 480px) {
-  :root {
-    --root-size: 16px;
-  }
-
   .left-screen {
     background-size: 20px 20px;
   }
@@ -946,19 +933,29 @@ defineExpose({
   .game-round .hash {
     display: none;
   }
+
+  .statistics-bar {
+    padding: 0 8px 5px;
+  }
 }
 
 @media (max-width: 360px) {
-  :root {
-    --root-size: 14px;
-  }
-
   .statistics-bar {
-    padding: 0 calc(var(--root-size) * 0.4);
+    padding: 0 6px 5px;
   }
 
   .center-section {
-    gap: calc(var(--root-size) * 0.4);
+    gap: 6px;
+  }
+
+  .stat-svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .predict-svg {
+    width: 8px;
+    height: 8px;
   }
 }
 </style>
