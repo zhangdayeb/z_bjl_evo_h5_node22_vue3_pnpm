@@ -33,7 +33,7 @@
                 @click="toggleFullscreen('big-road')"
               >
                 <div class="road-container">
-                  <!-- 大路数据 - 使用绝对定位 -->
+                  <!-- 大路数据 - 新的圆环样式 -->
                   <div
                     v-for="item in roadmapData.bigRoad"
                     :key="item.id"
@@ -46,14 +46,52 @@
                     }"
                   >
                     <svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12.5" cy="12.5" r="11" :fill="item.color" opacity="0.95" />
-                      <text x="12.5" y="12.5" text-anchor="middle" dominant-baseline="middle"
-                            fill="white" font-size="14" font-weight="bold">
-                        {{ item.value }}
+                      <!-- 主圆环（空心） -->
+                      <circle
+                        cx="12.5"
+                        cy="12.5"
+                        r="10"
+                        fill="none"
+                        :stroke="item.color"
+                        stroke-width="2"
+                        opacity="0.95"
+                      />
+
+                      <!-- 庄对标记（右下角红点） ext=1 或 ext=3 -->
+                      <circle
+                        v-if="item.ext === 1 || item.ext === 3"
+                        cx="19.5"
+                        cy="19.5"
+                        r="2.25"
+                        fill="#dc3545"
+                        stroke="#1a1a1a"
+                        stroke-width="1.5"
+                      />
+
+                      <!-- 闲对标记（左上角蓝点） ext=2 或 ext=3 -->
+                      <circle
+                        v-if="item.ext === 2 || item.ext === 3"
+                        cx="5.5"
+                        cy="5.5"
+                        r="2.25"
+                        fill="#007bff"
+                        stroke="#1a1a1a"
+                        stroke-width="1.5"
+                      />
+
+                      <!-- 和局数字（黄色，显示在圆环中央） -->
+                      <text
+                        v-if="item.tie && item.tie > 0"
+                        x="12.5"
+                        y="12.5"
+                        text-anchor="middle"
+                        dominant-baseline="middle"
+                        fill="#ffc107"
+                        font-size="10"
+                        font-weight="bold"
+                      >
+                        {{ item.tie }}
                       </text>
-                      <!-- 和局标记 -->
-                      <line v-if="item.tie" x1="5" y1="5" x2="20" y2="20"
-                            stroke="#159252" stroke-width="2" />
                     </svg>
                   </div>
                 </div>
@@ -145,7 +183,7 @@
                   @click="toggleFullscreen('bead-road')"
                 >
                   <div class="road-container">
-                    <!-- 珠盘路数据 - 使用绝对定位 -->
+                    <!-- 珠盘路数据 - 保持原样式 -->
                     <div
                       v-for="item in roadmapData.beadPlate"
                       :key="item.id"
@@ -156,7 +194,7 @@
                       }"
                     >
                       <svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 主圆圈 -->
+                        <!-- 主圆圈（实心） -->
                         <circle cx="15" cy="15" r="14.5" :fill="item.color" opacity="0.95" />
                         <!-- 字母 -->
                         <text x="15" y="15" text-anchor="middle" dominant-baseline="middle"

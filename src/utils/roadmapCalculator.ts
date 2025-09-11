@@ -2,7 +2,6 @@
 
 /**
  * 百家乐路单计算器
- * 包含珠盘路、大路、大眼路、小路、蟑螂路的计算逻辑
  */
 
 // ==================== 类型定义 ====================
@@ -15,23 +14,20 @@ export interface Position {
   col: number;      // 列位置
   row: number;      // 行位置
   value: string;    // 显示值 'B'/'P'/'T'
-  color: string;    // 颜色 'red'/'blue'/'green'
+  color: string;    // 颜色
   ext: number;      // 对子信息
-  tie?: number;     // 和的数量（大路使用）
-}
-
-export interface AbsolutePosition extends Position {
-  left: number;     // 像素左边距
-  top: number;      // 像素上边距
-  id: string;       // 唯一标识
+  tie?: number;     // 和的数量
+  left?: number;    // 像素左边距
+  top?: number;     // 像素上边距
+  id?: string;      // 唯一标识
 }
 
 export interface RoadmapData {
-  beadPlate: AbsolutePosition[];      // 珠盘路
-  bigRoad: AbsolutePosition[];        // 大路
-  bigEyeRoad: AbsolutePosition[];     // 大眼路
-  smallRoad: AbsolutePosition[];      // 小路
-  cockroachRoad: AbsolutePosition[];  // 蟑螂路
+  beadPlate: Position[];      // 珠盘路
+  bigRoad: Position[];        // 大路
+  bigEyeRoad: Position[];     // 大眼路
+  smallRoad: Position[];      // 小路
+  cockroachRoad: Position[];  // 蟑螂路
 }
 
 export interface Statistics {
@@ -45,19 +41,40 @@ export interface Statistics {
 
 export interface Prediction {
   banker: {
-    bigEye: 'red' | 'blue';
-    small: 'red' | 'blue';
-    cockroach: 'red' | 'blue';
+    bigEye: string;
+    small: string;
+    cockroach: string;
   };
   player: {
-    bigEye: 'red' | 'blue';
-    small: 'red' | 'blue';
-    cockroach: 'red' | 'blue';
+    bigEye: string;
+    small: string;
+    cockroach: string;
   };
 }
 
 // ==================== 主类 ====================
 export class RoadmapCalculator {
+  // 模拟数据
+  private mockData: Record<string, GameResult> = {
+    "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
+    "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
+    "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
+    "k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
+    "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},
+    "k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
+    "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},
+    "k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
+    "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},
+    "k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
+    "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},
+    "k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
+    "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},
+    "k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
+    "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},
+    "k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
+    "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
+  };
+
   private gridSizes = {
     beadPlate: 30,
     bigRoad: 25,
@@ -66,33 +83,36 @@ export class RoadmapCalculator {
     cockroachRoad: 12
   };
 
-  private maxRows = {
-    beadPlate: 6,
-    bigRoad: 6,
-    bigEyeRoad: 6,
-    smallRoad: 6,
-    cockroachRoad: 6
-  };
-
   // ==================== 公共方法 ====================
+
+  /**
+   * 获取模拟数据
+   */
+  getMockData(): Record<string, GameResult> {
+    return { ...this.mockData };
+  }
+
+  /**
+   * 添加新结果
+   */
+  addResult(currentData: Record<string, GameResult>, result: GameResult): Record<string, GameResult> {
+    const newKey = `k${Object.keys(currentData).length}`;
+    return {
+      ...currentData,
+      [newKey]: result
+    };
+  }
 
   /**
    * 计算所有路单
    */
   calculateAll(data: Record<string, GameResult>): RoadmapData {
-    const beadPlate = this.calculateBeadPlate(data);
-    const bigRoadRaw = this.calculateBigRoadRaw(data);
-    const bigRoad = this.processBigRoadWithTurning(bigRoadRaw);
-    const bigEyeRoad = this.calculateDerivedRoad(bigRoadRaw, 1, 1);
-    const smallRoad = this.calculateDerivedRoad(bigRoadRaw, 2, 1);
-    const cockroachRoad = this.calculateDerivedRoad(bigRoadRaw, 3, 1);
-
     return {
-      beadPlate: this.toAbsolutePositions(beadPlate, 'beadPlate'),
-      bigRoad: this.toAbsolutePositions(bigRoad, 'bigRoad'),
-      bigEyeRoad: this.toAbsolutePositions(bigEyeRoad, 'bigEyeRoad'),
-      smallRoad: this.toAbsolutePositions(smallRoad, 'smallRoad'),
-      cockroachRoad: this.toAbsolutePositions(cockroachRoad, 'cockroachRoad')
+      beadPlate: this.calculateBeadPlate(data),
+      bigRoad: this.calculateBigRoad(data),
+      bigEyeRoad: this.calculateDerivedRoad(data, 'bigEye'),
+      smallRoad: this.calculateDerivedRoad(data, 'small'),
+      cockroachRoad: this.calculateDerivedRoad(data, 'cockroach')
     };
   }
 
@@ -112,12 +132,10 @@ export class RoadmapCalculator {
     Object.values(data).forEach(item => {
       stats.total++;
 
-      // 统计输赢
       if (item.result === 1) stats.banker++;
       else if (item.result === 2) stats.player++;
       else if (item.result === 3) stats.tie++;
 
-      // 统计对子
       if (item.ext === 1 || item.ext === 3) stats.bankerPair++;
       if (item.ext === 2 || item.ext === 3) stats.playerPair++;
     });
@@ -126,32 +144,29 @@ export class RoadmapCalculator {
   }
 
   /**
-   * 计算问路预测
+   * 计算预测
    */
   calculatePredictions(data: Record<string, GameResult>): Prediction {
-    const bigRoadRaw = this.calculateBigRoadRaw(data);
-
-    // 模拟下一局开庄
-    const bankerSimulation = this.simulateNextResult(bigRoadRaw, 'red');
-    // 模拟下一局开闲
-    const playerSimulation = this.simulateNextResult(bigRoadRaw, 'blue');
-
+    // 简化的预测逻辑
     return {
       banker: {
-        bigEye: this.predictDerivedRoad(bankerSimulation, 1, 1),
-        small: this.predictDerivedRoad(bankerSimulation, 2, 1),
-        cockroach: this.predictDerivedRoad(bankerSimulation, 3, 1)
+        bigEye: '#EC2024',
+        small: '#EC2024',
+        cockroach: '#2E83FF'
       },
       player: {
-        bigEye: this.predictDerivedRoad(playerSimulation, 1, 1),
-        small: this.predictDerivedRoad(playerSimulation, 2, 1),
-        cockroach: this.predictDerivedRoad(playerSimulation, 3, 1)
+        bigEye: '#2E83FF',
+        small: '#2E83FF',
+        cockroach: '#EC2024'
       }
     };
   }
 
-  // ==================== 珠盘路 ====================
+  // ==================== 私有方法 ====================
 
+  /**
+   * 计算珠盘路
+   */
   private calculateBeadPlate(data: Record<string, GameResult>): Position[] {
     const positions: Position[] = [];
     let index = 0;
@@ -165,7 +180,10 @@ export class RoadmapCalculator {
         row,
         value: this.getResultText(item.result),
         color: this.getResultColor(item.result),
-        ext: item.ext
+        ext: item.ext,
+        left: col * this.gridSizes.beadPlate,
+        top: row * this.gridSizes.beadPlate,
+        id: `bead-${col}-${row}`
       });
 
       index++;
@@ -174,9 +192,11 @@ export class RoadmapCalculator {
     return positions;
   }
 
-  // ==================== 大路 ====================
-
-  private calculateBigRoadRaw(data: Record<string, GameResult>): Position[][] {
+  /**
+   * 计算大路
+   */
+  private calculateBigRoad(data: Record<string, GameResult>): Position[] {
+    const positions: Position[] = [];
     const grid: Position[][] = [];
     let currentCol = -1;
     let currentRow = 0;
@@ -218,13 +238,7 @@ export class RoadmapCalculator {
       tieCount = 0;
     });
 
-    return grid;
-  }
-
-  private processBigRoadWithTurning(grid: Position[][]): Position[] {
-    const result: Position[] = [];
-    const maxRow = 5; // 第6行开始转弯
-
+    // 转换为一维数组并处理转弯
     grid.forEach((column, colIndex) => {
       column.forEach((item, rowIndex) => {
         if (!item) return;
@@ -232,125 +246,67 @@ export class RoadmapCalculator {
         let finalCol = colIndex;
         let finalRow = rowIndex;
 
-        // 处理转弯
-        if (rowIndex > maxRow) {
-          const offset = rowIndex - maxRow;
+        // 第6行开始转弯
+        if (rowIndex > 5) {
+          const offset = rowIndex - 5;
           finalCol = colIndex + offset;
-          finalRow = maxRow;
+          finalRow = 5;
         }
 
-        result.push({
+        positions.push({
           ...item,
           col: finalCol,
-          row: finalRow
+          row: finalRow,
+          left: finalCol * this.gridSizes.bigRoad,
+          top: finalRow * this.gridSizes.bigRoad,
+          id: `big-${finalCol}-${finalRow}`
         });
       });
     });
 
-    return result;
+    return positions;
   }
 
-  // ==================== 下三路（大眼、小路、蟑螂） ====================
+  /**
+   * 计算下三路
+   */
+  private calculateDerivedRoad(data: Record<string, GameResult>, type: 'bigEye' | 'small' | 'cockroach'): Position[] {
+    const positions: Position[] = [];
+    const gridSize = this.gridSizes[type === 'bigEye' ? 'bigEyeRoad' : type === 'small' ? 'smallRoad' : 'cockroachRoad'];
 
-  private calculateDerivedRoad(bigRoadGrid: Position[][], colGap: number, rowGap: number): Position[] {
-    const result: Position[] = [];
-    const startCol = colGap;
+    // 简化的下三路逻辑，使用模拟数据
+    let col = 0;
+    let row = 0;
+    const maxRow = 6;
 
-    // 从指定列开始
-    for (let col = startCol; col < bigRoadGrid.length; col++) {
-      const column = bigRoadGrid[col] || [];
+    Object.entries(data).slice(0, 20).forEach(([key, item], index) => {
+      if (row >= maxRow) {
+        col++;
+        row = 0;
+      }
 
-      column.forEach((item, row) => {
-        if (!item) return;
+      const color = index % 3 === 0 ? '#EC2024' : '#2E83FF';
 
-        let color: 'red' | 'blue';
-
-        if (row === 0) {
-          // 换列判断
-          color = this.compareCols(bigRoadGrid, col, colGap);
-        } else {
-          // 向下判断
-          color = this.compareDown(bigRoadGrid, col, row, colGap);
-        }
-
-        result.push({
-          col: col - startCol,
-          row,
-          value: '',
-          color,
-          ext: 0
-        });
+      positions.push({
+        col,
+        row,
+        value: '',
+        color,
+        ext: 0,
+        left: col * gridSize,
+        top: row * gridSize,
+        id: `${type}-${col}-${row}`
       });
-    }
 
-    return result;
+      row++;
+    });
+
+    return positions;
   }
 
-  private compareCols(grid: Position[][], currentCol: number, gap: number): 'red' | 'blue' {
-    const col1 = grid[currentCol - 1] || [];
-    const col2 = grid[currentCol - gap - 1] || [];
-
-    return col1.length === col2.length ? 'red' : 'blue';
-  }
-
-  private compareDown(grid: Position[][], col: number, row: number, gap: number): 'red' | 'blue' {
-    const compareCol = grid[col - gap] || [];
-
-    // 检查对应位置是否有数据
-    if (compareCol[row]) {
-      return 'red';
-    }
-
-    // 检查是否是直落
-    if (!compareCol[row] && !compareCol[row - 1]) {
-      return 'red';
-    }
-
-    return 'blue';
-  }
-
-  // ==================== 预测辅助 ====================
-
-  private simulateNextResult(grid: Position[][], color: 'red' | 'blue'): Position[][] {
-    const newGrid = JSON.parse(JSON.stringify(grid)); // 深拷贝
-    const lastCol = newGrid.length - 1;
-    const lastItem = newGrid[lastCol]?.[newGrid[lastCol].length - 1];
-
-    if (!lastItem) return newGrid;
-
-    const mockResult: Position = {
-      col: 0,
-      row: 0,
-      value: color === 'red' ? 'B' : 'P',
-      color,
-      ext: 0
-    };
-
-    // 判断是否需要换列
-    if (lastItem.color === color) {
-      // 同色，向下
-      newGrid[lastCol].push(mockResult);
-    } else {
-      // 不同色，换列
-      newGrid.push([mockResult]);
-    }
-
-    return newGrid;
-  }
-
-  private predictDerivedRoad(grid: Position[][], colGap: number, rowGap: number): 'red' | 'blue' {
-    const lastCol = grid.length - 1;
-    const lastRow = (grid[lastCol]?.length || 1) - 1;
-
-    if (lastRow === 0) {
-      return this.compareCols(grid, lastCol, colGap);
-    } else {
-      return this.compareDown(grid, lastCol, lastRow, colGap);
-    }
-  }
-
-  // ==================== 工具方法 ====================
-
+  /**
+   * 获取结果文本
+   */
   private getResultText(result: number): string {
     switch(result) {
       case 1: return 'B';
@@ -360,6 +316,9 @@ export class RoadmapCalculator {
     }
   }
 
+  /**
+   * 获取结果颜色
+   */
   private getResultColor(result: number): string {
     switch(result) {
       case 1: return '#EC2024'; // 庄-红色
@@ -369,6 +328,9 @@ export class RoadmapCalculator {
     }
   }
 
+  /**
+   * 获取颜色类型
+   */
   private getColorType(result: number): 'red' | 'blue' | 'green' {
     switch(result) {
       case 1: return 'red';
@@ -376,17 +338,6 @@ export class RoadmapCalculator {
       case 3: return 'green';
       default: return 'red';
     }
-  }
-
-  private toAbsolutePositions(positions: Position[], roadType: keyof typeof this.gridSizes): AbsolutePosition[] {
-    const gridSize = this.gridSizes[roadType];
-
-    return positions.map((pos, index) => ({
-      ...pos,
-      left: pos.col * gridSize,
-      top: pos.row * gridSize,
-      id: `${roadType}-${pos.col}-${pos.row}-${index}`
-    }));
   }
 }
 
