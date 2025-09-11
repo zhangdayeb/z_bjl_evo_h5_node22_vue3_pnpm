@@ -4,7 +4,7 @@
     <div class="main-betting-area">
 
       <!-- 闲家区域 -->
-      <div class="bet-spot player-spot">
+      <div class="bet-spot player-spot" @click="() => handleMainBet('player')">
         <!-- SVG形状 - 带凹陷效果 -->
         <svg class="svg-builder" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
@@ -88,7 +88,7 @@
       </div>
 
       <!-- 庄家区域 -->
-      <div class="bet-spot banker-spot">
+      <div class="bet-spot banker-spot" @click="() => handleMainBet('banker')">
         <!-- SVG形状 -->
         <svg class="svg-builder" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
@@ -172,7 +172,7 @@
       </div>
 
       <!-- 和局区域 -->
-      <div class="tie-spot" :class="{ 'highlight': resultData.winner === 'tie' }">
+      <div class="tie-spot" :class="{ 'highlight': resultData.winner === 'tie' }" @click="() => handleMainBet('tie')">
         <svg class="svg-builder" viewBox="0 0 140 190" preserveAspectRatio="none">
           <defs>
             <linearGradient id="tieGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -234,7 +234,7 @@
     <!-- 对子投注区域 -->
     <div class="pairs-row">
       <!-- 闲对 -->
-      <div class="pair-zone player-pair" @click="handlePairBet('player-pair')">
+      <div class="pair-zone player-pair" @click="() => handlePairBet('player-pair')">
         <div class="pair-zone-content">
           <div class="pair-zone-title">P PAIR</div>
           <div class="pair-zone-odds">11:1</div>
@@ -242,31 +242,42 @@
       </div>
 
       <!-- 庄对 -->
-      <div class="pair-zone banker-pair" @click="handlePairBet('banker-pair')">
+      <div class="pair-zone banker-pair" @click="() => handlePairBet('banker-pair')">
         <div class="pair-zone-content">
           <div class="pair-zone-title">B PAIR</div>
           <div class="pair-zone-odds">11:1</div>
         </div>
       </div>
     </div>
-
-    <!-- 控制按钮（仅供测试） -->
-    <div class="phase-controls">
-      <button @click="togglePhase" class="phase-btn">
-        切换到{{ gamePhase === 'betting' ? '开牌' : '投注' }}状态
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
-// 游戏阶段状态
-const gamePhase = ref<'betting' | 'dealing'>('betting')
+// 定义类型
+type BetZone = 'player' | 'banker' | 'tie'
+type PairZone = 'player-pair' | 'banker-pair'
+type GamePhase = 'betting' | 'dealing'
+
+interface Card {
+  value: string
+  suit: string
+  color: 'red' | 'black'
+}
+
+interface BettingInfo {
+  percentage: number
+  amount: number
+  count: number
+}
+
+// ========== 配置选项 ==========
+// 修改这里来设置显示状态：'betting'（投注） 或 'dealing'（开牌）
+const gamePhase = ref<GamePhase>('betting')
 
 // 投注数据
-const bettingData = ref({
+const bettingData = ref<Record<BetZone, BettingInfo>>({
   player: {
     percentage: 20,
     amount: 247.36,
@@ -285,7 +296,11 @@ const bettingData = ref({
 })
 
 // 开牌结果数据
-const resultData = ref({
+const resultData = ref<{
+  player: Card[]
+  banker: Card[]
+  winner: BetZone
+}>({
   player: [
     { value: '7', suit: '♣', color: 'black' },
     { value: '5', suit: '♦', color: 'red' },
@@ -296,28 +311,24 @@ const resultData = ref({
     { value: '6', suit: '♠', color: 'black' },
     { value: 'A', suit: '♦', color: 'red' }
   ],
-  winner: 'banker' as 'player' | 'banker' | 'tie'
+  winner: 'banker'
 })
 
-// 切换游戏阶段
-const togglePhase = () => {
-  gamePhase.value = gamePhase.value === 'betting' ? 'dealing' : 'betting'
-}
-
 // 处理主区域投注
-const handleMainBet = (zone: 'player' | 'banker' | 'tie') => {
+const handleMainBet = (zone: BetZone): void => {
   if (gamePhase.value !== 'betting') return
   console.log(`投注到 ${zone}`)
 }
 
 // 处理对子投注
-const handlePairBet = (pair: 'player-pair' | 'banker-pair') => {
+const handlePairBet = (pair: PairZone): void => {
   if (gamePhase.value !== 'betting') return
   console.log(`投注到 ${pair}`)
 }
 
 onMounted(() => {
   // 初始化逻辑
+  console.log(`游戏初始状态: ${gamePhase.value}`)
 })
 </script>
 
@@ -331,16 +342,12 @@ onMounted(() => {
 /* 主容器 - 带高度动画 */
 .betting-container {
   width: 100%;
-  max-width: 768px;
   position: relative;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 16px;
+  background: #35260d;
   padding-left: 8px;
   padding-right: 8px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
@@ -663,6 +670,7 @@ onMounted(() => {
   width: calc(31%);
   z-index: 10;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .betting-phase .tie-spot {
@@ -808,28 +816,6 @@ onMounted(() => {
   filter: brightness(1.1);
 }
 
-/* 控制按钮（测试用） */
-.phase-controls {
-  position: absolute;
-  top: -40px;
-  right: 10px;
-  z-index: 100;
-}
-
-.phase-btn {
-  padding: 8px 16px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.phase-btn:hover {
-  background: #2980b9;
-}
-
 /* 动画效果 */
 @keyframes fadeInCards {
   from {
@@ -851,67 +837,5 @@ onMounted(() => {
   }
 }
 
-/* 响应式调整 */
-@media (max-width: 480px) {
-  .betting-container.betting-phase {
-    height: 230px;
-  }
 
-  .betting-container.dealing-phase {
-    height: 180px;
-  }
-
-  .betting-phase .main-betting-area {
-    height: 190px;
-  }
-
-  .dealing-phase .main-betting-area {
-    height: 140px;
-  }
-
-  .zone-title {
-    font-size: 18px;
-  }
-
-  .zone-odds {
-    font-size: 12px;
-  }
-
-  .tie-spot .zone-title {
-    font-size: 16px;
-  }
-
-  .pairs-row {
-    height: 40px;
-  }
-
-  .pair-zone-title {
-    font-size: 12px;
-  }
-
-  .pair-zone-odds {
-    font-size: 11px;
-  }
-
-  .player-spot .spot-content {
-    right: 65px;
-  }
-
-  .banker-spot .spot-content {
-    left: 65px;
-  }
-
-  .card {
-    width: 30px;
-    height: 45px;
-  }
-
-  .card-value {
-    font-size: 16px;
-  }
-
-  .card-suit {
-    font-size: 14px;
-  }
-}
 </style>

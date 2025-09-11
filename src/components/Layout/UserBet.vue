@@ -46,7 +46,7 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
 /* 统计信息栏 - 固定在底部 */
 .game-count-section {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
@@ -58,41 +58,37 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
 /* 筹码操作栏 - 固定在统计栏上方 */
 .chip-action-section {
-  position: fixed;
+  position: absolute;
   bottom: 49px; /* 统计栏高度 */
   left: 0;
   right: 0;
   height: 45px;
   z-index: 99;
   background: rgba(0, 0, 0, 0.9);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 投注区域 - 固定在筹码操作栏上方 */
 .betting-area-section {
-  background-color: black;
-  position: fixed;
-  bottom: 170px; /* 统计栏50px + 筹码栏120px */
+  position: absolute;
+  bottom: 94px; /* 统计栏50px + 筹码栏120px */
   left: 0;
   right: 0;
   height: 230px;
   z-index: 98;
-  display: flex;
-  align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
 /* 悬浮按钮位置 */
 .floating-button-left {
-  position: fixed;
+  position: absolute;
   bottom: 49px; /* 在统计栏上方 */
   left: 20px;
   z-index: 500;
 }
 
 .floating-button-right {
-  position: fixed;
+  position: absolute;
   bottom: 49px; /* 在统计栏上方 */
   right: 20px;
   z-index: 500;

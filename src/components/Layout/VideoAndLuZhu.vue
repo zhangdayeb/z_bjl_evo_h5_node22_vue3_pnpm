@@ -194,7 +194,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #D2B48C;
+  background: #8d744c;
   overflow: hidden;
 }
 
