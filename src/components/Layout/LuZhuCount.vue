@@ -82,8 +82,6 @@
       <!-- 闲家预测 -->
       <div class="prediction">
         <div class="prediction-inner player-prediction">
-          <div class="background-border border-before"></div>
-          <div class="background-border border-after"></div>
           <div class="simple-svg-symbol">
             <svg width="100%" height="75%" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
               <text x="0" y="5" fill="#fff" dominant-baseline="central">P</text>
@@ -144,8 +142,6 @@
       <!-- 庄家预测 -->
       <div class="prediction">
         <div class="prediction-inner banker-prediction">
-          <div class="background-border border-before"></div>
-          <div class="background-border border-after"></div>
           <div class="simple-svg-symbol">
             <svg width="100%" height="75%" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
               <text x="0" y="5" fill="#fff" dominant-baseline="central">B</text>
@@ -289,59 +285,26 @@ const predictions = computed(() =>
   position: relative;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px 5px;
+  gap: 3px;
+  padding: 4px 6px;
   border-radius: 10px;
-  background-color: transparent;
-  border: 1px solid transparent;
-}
-
-/* 背景边框装饰 */
-.background-border {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.border-before {
-  z-index: 0;
-}
-
-.border-after {
-  z-index: 1;
+  box-sizing: border-box;
 }
 
 /* 闲家预测样式 */
 .player-prediction {
-  background: linear-gradient(135deg,
-    rgba(46, 131, 255, 0.15) 0%,
-    rgba(46, 131, 255, 0.05) 100%);
-  border-color: rgba(46, 131, 255, 0.3);
-}
-
-.player-prediction .border-before {
-  background: rgba(46, 131, 255, 0.1);
+  background: linear-gradient(177.86deg, #084094 39.22%, #1d1c2f 124.77%);
+  box-shadow: 3px 3px 4px 0 #0006,inset 2px 2px 2px 0 #2663d0,inset -2px -2px 2px 0 #091e42;
 }
 
 /* 庄家预测样式 */
 .banker-prediction {
-  background: linear-gradient(135deg,
-    rgba(236, 32, 36, 0.2) 0%,
-    rgba(236, 32, 36, 0.08) 100%);
-  border: 1px solid rgba(236, 32, 36, 0.35);
-}
-
-.banker-prediction .border-before {
-  background: linear-gradient(135deg,
-    rgba(236, 32, 36, 0.1) 0%,
-    rgba(236, 32, 36, 0.05) 100%);
+  background: linear-gradient(177.86deg,#af2929 39.22%,#430606 124.77%);
+  box-shadow: 3px 3px 4px 0 #0006,inset 2px 2px 2px 0 #de3333,inset -2px -2px 2px 0 #651717;
 }
 
 /* P/B 标签 */
 .simple-svg-symbol {
-  position: relative;
-  z-index: 2;
   width: 12px;
   height: 16px;
   display: flex;
@@ -350,13 +313,9 @@ const predictions = computed(() =>
 
 /* 预测图标 */
 .icons {
-  position: relative;
-  z-index: 2;
   display: flex;
   align-items: center;
   gap: 0;
-  background-color: transparent;
-  border-color: transparent;
 }
 
 .icon-item {
