@@ -344,10 +344,11 @@ onMounted(() => {
   width: 100%;
   position: relative;
   background: #35260d;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 4px;
+  padding-right: 2px;
   display: flex;
   flex-direction: column;
+  gap: 3px;
   overflow: hidden;
 }
 

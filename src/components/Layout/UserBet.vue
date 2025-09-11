@@ -70,7 +70,7 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 /* 投注区域 - 固定在筹码操作栏上方 */
 .betting-area-section {
   position: absolute;
-  bottom: 94px; /* 统计栏50px + 筹码栏120px */
+  bottom: 90px; /* 统计栏50px + 筹码栏120px */
   left: 0;
   right: 0;
   height: 230px;
@@ -107,7 +107,7 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
   }
 
   .betting-area-section {
-    bottom: calc(94px + env(safe-area-inset-bottom));
+    bottom: calc(90px + env(safe-area-inset-bottom));
   }
 
   .floating-button-left,

@@ -78,7 +78,7 @@ const configStore = useConfigStore()
 const isVideoOnTop = computed(() => configStore.isVideoOnTop)
 const containerWidth = ref(window.innerWidth)
 const videoHeight = ref(300)
-const luzhuHeight = ref(150)
+const luzhuHeight = ref(233) // 固定露珠高度为233px
 
 // 计算属性
 const currentVideoUrl = computed(() => {
@@ -93,8 +93,8 @@ const calculateHeights = () => {
   // 视频高度 = 宽度 * 9/16 (16:9比例)，但不超过300px
   videoHeight.value = Math.min(width * 9 / 16, 300)
 
-  // 露珠高度 = 宽度 / 2.73，但不超过150px
-  luzhuHeight.value = Math.min(width / 2.73, 150)
+  // 露珠高度固定为233px
+  luzhuHeight.value = 233
 }
 
 // 计算视频区域的样式
@@ -109,7 +109,7 @@ const videoStyles = computed(() => {
   } else {
     // 露珠在上，视频紧挨着露珠
     return {
-      top: `${luzhuHeight.value}px`,
+      top: '233px', // 露珠固定高度233px
       height: `${videoHeight.value}px`,
       zIndex: 1
     }
@@ -119,17 +119,17 @@ const videoStyles = computed(() => {
 // 计算露珠区域的样式
 const luzhuStyles = computed(() => {
   if (isVideoOnTop.value) {
-    // 视频在上，露珠贴着投注区域顶部
+    // 视频在上，露珠在底部
     return {
-      bottom: configStore.userBetHeightPercentage, // 直接贴着投注区域
-      height: `${luzhuHeight.value}px`,
+      bottom: '320px', // 固定距离底部320px
+      height: '233px', // 固定高度233px
       zIndex: 1
     }
   } else {
     // 露珠在上
     return {
       top: '0',
-      height: `${luzhuHeight.value}px`,
+      height: '233px', // 固定高度233px
       zIndex: 2
     }
   }
