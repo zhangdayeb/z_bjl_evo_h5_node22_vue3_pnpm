@@ -92,9 +92,9 @@ const currentChipColor = computed(() => {
 // 根据筹码值计算字体大小
 const chipFontSize = computed(() => {
   const value = currentChipValue.value
-  if (value >= 1000) return 18
-  if (value >= 100) return 24
-  return 30
+  if (value >= 1000) return 14
+  if (value >= 100) return 18
+  return 22
 })
 
 // 计算属性
@@ -141,36 +141,38 @@ defineExpose({
 </script>
 
 <style scoped>
-/* CSS 变量定义 */
+/* 主容器 - 固定高度45px，无边距，100%宽度 */
 .chip-action-container {
-  --size: 10px;
   width: 100%;
-  height: 100%;
-  min-height: 72px; /* 4.5em */
+  height: 45px;
+  margin: 0;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--size) * 1.5);
+  gap: 15px;
   background: linear-gradient(135deg,
     rgba(45, 25, 15, 0.98) 0%,
     rgba(61, 37, 20, 0.98) 100%
   );
-  padding: calc(var(--size) * 0.8);
   position: relative;
+  box-sizing: border-box;
 }
 
 /* 动作组 - 横向布局 */
 .action-group {
   display: flex;
   align-items: center;
-  gap: calc(var(--size) * 0.8);
+  gap: 8px;
+  height: 100%;
+  padding: 8px 0;
 }
 
-/* 按钮样式 */
+/* 按钮样式 - 适应容器高度 */
 .action-button {
-  width: calc(var(--size) * 3.8);
-  height: calc(var(--size) * 3.8);
-  border-radius: calc(var(--size) * 0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   background: linear-gradient(135deg,
     rgba(184, 134, 11, 0.3) 0%,
     rgba(218, 165, 32, 0.2) 100%
@@ -178,10 +180,11 @@ defineExpose({
   border: 1px solid rgba(255, 215, 0, 0.4);
   cursor: pointer;
   transition: all 0.2s ease;
-  padding: calc(var(--size) * 0.6);
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
 }
 
 .action-button:hover:not(:disabled) {
@@ -206,12 +209,15 @@ defineExpose({
 
 /* 标签文字 */
 .action-label {
-  font-size: calc(var(--size) * 1.2);
+  font-size: 11px;
   font-weight: 700;
   color: #ffd700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  padding: 0;
+  line-height: 1;
 }
 
 /* 禁用状态 */
@@ -228,11 +234,14 @@ defineExpose({
   color: #666;
 }
 
-/* 中间筹码 */
+/* 中间筹码 - 适应容器高度 */
 .chip-display {
-  width: calc(var(--size) * 5.2);
-  height: calc(var(--size) * 5.2);
+  width: 40px;
+  height: 40px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chip-svg {
@@ -268,18 +277,5 @@ defineExpose({
   opacity: 0;
 }
 
-/* 响应式 - 保持比例 */
-@media (max-width: 768px) {
-  .chip-action-container {
-    --size: 8px;
-    gap: calc(var(--size) * 1.2);
-  }
-}
-
-@media (max-width: 480px) {
-  .chip-action-container {
-    --size: 7px;
-    gap: calc(var(--size) * 1);
-  }
-}
+/* 移除所有响应式设计 - 保持固定尺寸 */
 </style>
