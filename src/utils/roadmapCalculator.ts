@@ -75,12 +75,22 @@ export class RoadmapCalculator {
     "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
   };
 
+  // 调整网格大小以适应6行布局
   private gridSizes = {
-    beadPlate: 30,
-    bigRoad: 25,
-    bigEyeRoad: 12,
-    smallRoad: 12,
-    cockroachRoad: 12
+    beadPlate: 30,      // 珠盘路
+    bigRoad: 20,        // 大路 - 适应6行 (125px可用高度 / 6 ≈ 20px)
+    bigEyeRoad: 10,     // 大眼路 - 适应6行 (63px可用高度 / 6 ≈ 10px)
+    smallRoad: 10,      // 小路
+    cockroachRoad: 10   // 蟑螂路
+  };
+
+  // 最大行数限制
+  private maxRows = {
+    beadPlate: 6,
+    bigRoad: 6,
+    bigEyeRoad: 6,
+    smallRoad: 6,
+    cockroachRoad: 6
   };
 
   // ==================== 公共方法 ====================
@@ -172,8 +182,8 @@ export class RoadmapCalculator {
     let index = 0;
 
     Object.entries(data).forEach(([key, item]) => {
-      const col = Math.floor(index / 6);
-      const row = index % 6;
+      const col = Math.floor(index / this.maxRows.beadPlate);
+      const row = index % this.maxRows.beadPlate;
 
       positions.push({
         col,
@@ -181,8 +191,8 @@ export class RoadmapCalculator {
         value: this.getResultText(item.result),
         color: this.getResultColor(item.result),
         ext: item.ext,
-        left: col * this.gridSizes.beadPlate,
-        top: row * this.gridSizes.beadPlate,
+        left: col * this.gridSizes.beadPlate + 5,  // 加上padding偏移
+        top: row * this.gridSizes.beadPlate + 5,
         id: `bead-${col}-${row}`
       });
 
@@ -247,18 +257,21 @@ export class RoadmapCalculator {
         let finalRow = rowIndex;
 
         // 第6行开始转弯
-        if (rowIndex > 5) {
-          const offset = rowIndex - 5;
+        if (rowIndex >= this.maxRows.bigRoad) {
+          const offset = rowIndex - this.maxRows.bigRoad + 1;
           finalCol = colIndex + offset;
-          finalRow = 5;
+          finalRow = this.maxRows.bigRoad - 1;
         }
+
+        // 确保不超出最大行数
+        finalRow = Math.min(finalRow, this.maxRows.bigRoad - 1);
 
         positions.push({
           ...item,
           col: finalCol,
           row: finalRow,
-          left: finalCol * this.gridSizes.bigRoad,
-          top: finalRow * this.gridSizes.bigRoad,
+          left: finalCol * this.gridSizes.bigRoad + 4,  // 加上padding偏移
+          top: finalRow * this.gridSizes.bigRoad + 4,
           id: `big-${finalCol}-${finalRow}`
         });
       });
@@ -273,13 +286,14 @@ export class RoadmapCalculator {
   private calculateDerivedRoad(data: Record<string, GameResult>, type: 'bigEye' | 'small' | 'cockroach'): Position[] {
     const positions: Position[] = [];
     const gridSize = this.gridSizes[type === 'bigEye' ? 'bigEyeRoad' : type === 'small' ? 'smallRoad' : 'cockroachRoad'];
+    const maxRow = this.maxRows[type === 'bigEye' ? 'bigEyeRoad' : type === 'small' ? 'smallRoad' : 'cockroachRoad'];
 
     // 简化的下三路逻辑，使用模拟数据
     let col = 0;
     let row = 0;
-    const maxRow = 6;
 
-    Object.entries(data).slice(0, 20).forEach(([key, item], index) => {
+    Object.entries(data).slice(0, 30).forEach(([_key, _item], index) => {
+      // 使用下划线前缀表示这些变量是故意不使用的
       if (row >= maxRow) {
         col++;
         row = 0;
@@ -293,8 +307,8 @@ export class RoadmapCalculator {
         value: '',
         color,
         ext: 0,
-        left: col * gridSize,
-        top: row * gridSize,
+        left: col * gridSize + 2,
+        top: row * gridSize + 2,
         id: `${type}-${col}-${row}`
       });
 

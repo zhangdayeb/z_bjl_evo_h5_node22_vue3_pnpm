@@ -31,48 +31,48 @@
                       top: item.top + 'px'
                     }"
                   >
-                    <svg viewBox="0 0 25 25">
+                    <svg viewBox="0 0 20 20">
                       <!-- 主圆环 -->
                       <circle
-                        cx="12.5"
-                        cy="12.5"
-                        r="10"
+                        cx="10"
+                        cy="10"
+                        r="8"
                         fill="none"
                         :stroke="item.color"
-                        stroke-width="2"
+                        stroke-width="1.5"
                       />
 
                       <!-- 庄对标记 -->
                       <circle
                         v-if="item.ext === 1 || item.ext === 3"
-                        cx="19.5"
-                        cy="19.5"
-                        r="2.25"
+                        cx="15.5"
+                        cy="15.5"
+                        r="2"
                         fill="#dc3545"
                         stroke="#1a1a1a"
-                        stroke-width="1.5"
+                        stroke-width="1"
                       />
 
                       <!-- 闲对标记 -->
                       <circle
                         v-if="item.ext === 2 || item.ext === 3"
-                        cx="5.5"
-                        cy="5.5"
-                        r="2.25"
+                        cx="4.5"
+                        cy="4.5"
+                        r="2"
                         fill="#007bff"
                         stroke="#1a1a1a"
-                        stroke-width="1.5"
+                        stroke-width="1"
                       />
 
                       <!-- 和局数字 -->
                       <text
                         v-if="item.tie"
-                        x="12.5"
-                        y="12.5"
+                        x="10"
+                        y="10"
                         text-anchor="middle"
                         dominant-baseline="middle"
                         fill="#ffc107"
-                        font-size="10"
+                        font-size="8"
                         font-weight="bold"
                       >
                         {{ item.tie }}
@@ -86,7 +86,7 @@
               <div class="three-roads-container">
                 <!-- 大眼路 -->
                 <div class="road-section small-road">
-                  <div class="road-container">
+                  <div class="road-container small-road-container">
                     <div
                       v-for="item in roadmapData.bigEyeRoad"
                       :key="item.id"
@@ -96,9 +96,9 @@
                         top: item.top + 'px'
                       }"
                     >
-                      <svg viewBox="0 0 12 12">
-                        <circle cx="6" cy="6" r="5" fill="none"
-                                :stroke="item.color" stroke-width="1.5" />
+                      <svg viewBox="0 0 10 10">
+                        <circle cx="5" cy="5" r="4" fill="none"
+                                :stroke="item.color" stroke-width="1.2" />
                       </svg>
                     </div>
                   </div>
@@ -106,7 +106,7 @@
 
                 <!-- 小路 -->
                 <div class="road-section small-road">
-                  <div class="road-container">
+                  <div class="road-container small-road-container">
                     <div
                       v-for="item in roadmapData.smallRoad"
                       :key="item.id"
@@ -116,8 +116,8 @@
                         top: item.top + 'px'
                       }"
                     >
-                      <svg viewBox="0 0 12 12">
-                        <circle cx="6" cy="6" r="5" :fill="item.color" />
+                      <svg viewBox="0 0 10 10">
+                        <circle cx="5" cy="5" r="4" :fill="item.color" />
                       </svg>
                     </div>
                   </div>
@@ -125,7 +125,7 @@
 
                 <!-- 蟑螂路 -->
                 <div class="road-section small-road">
-                  <div class="road-container">
+                  <div class="road-container small-road-container">
                     <div
                       v-for="item in roadmapData.cockroachRoad"
                       :key="item.id"
@@ -135,9 +135,9 @@
                         top: item.top + 'px'
                       }"
                     >
-                      <svg viewBox="0 0 12 12">
-                        <line x1="2" y1="2" x2="10" y2="10"
-                              :stroke="item.color" stroke-width="2" />
+                      <svg viewBox="0 0 10 10">
+                        <line x1="1.5" y1="1.5" x2="8.5" y2="8.5"
+                              :stroke="item.color" stroke-width="1.5" />
                       </svg>
                     </div>
                   </div>
@@ -161,7 +161,7 @@
                     <svg viewBox="0 0 30 30">
                       <circle cx="15" cy="15" r="14.5" :fill="item.color" />
                       <text x="15" y="15" text-anchor="middle" dominant-baseline="middle"
-                            fill="white" font-size="18" font-weight="bold">
+                            fill="white" font-size="16" font-weight="bold">
                         {{ item.value }}
                       </text>
 
@@ -316,7 +316,7 @@ defineExpose({
     rgba(255, 255, 255, 0.1) 1.3px,
     transparent 1.3px
   );
-  background-size: 25px 25px;
+  background-size: 20px 20px;
 }
 
 .right-screen {
@@ -331,36 +331,45 @@ defineExpose({
   background-size: 30px 30px;
 }
 
-/* 路单区域 */
+/* 路单区域 - 固定高度 */
 .road-section {
   position: relative;
-  padding: 8px;
 }
 
 .big-road-section {
-  flex: 2;
+  height: 133px;  /* 固定高度 */
+  padding: 4px;
+  box-sizing: border-box;
 }
 
 .bead-road-section {
   width: 100%;
   height: 100%;
+  padding: 5px;
+  box-sizing: border-box;
 }
 
+/* 下三路容器 - 固定高度 */
 .three-roads-container {
-  flex: 1;
+  height: 67px;  /* 固定高度 */
   display: flex;
   gap: 0;
-  padding: 4px;
+  padding: 0;
   background-image: radial-gradient(
     circle at center,
     rgba(255, 255, 255, 0.08) 1px,
     transparent 1px
   );
-  background-size: 15px 15px;
+  background-size: 10px 10px;
 }
 
+/* 下三路 - 精确三分之一 */
 .small-road {
-  flex: 1;
+  width: 33.333%;
+  height: 67px;
+  position: relative;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .road-container {
@@ -369,17 +378,22 @@ defineExpose({
   height: 100%;
 }
 
-/* 路单项目 */
+.small-road-container {
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+/* 路单项目 - 调整大小以适应6行 */
 .road-item {
   position: absolute;
-  width: 25px;
-  height: 25px;
+  width: 20px;  /* 适应6行 */
+  height: 20px;
 }
 
 .road-item-small {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: 10px;  /* 适应6行 */
+  height: 10px;
 }
 
 .bead-item {
@@ -398,15 +412,15 @@ defineExpose({
 /* 响应式 */
 @media (max-width: 768px) {
   .left-screen {
-    background-size: 22px 22px;
+    background-size: 18px 18px;
   }
 
   .right-screen {
-    background-size: 27px 27px;
+    background-size: 28px 28px;
   }
 
   .three-roads-container {
-    background-size: 13px 13px;
+    background-size: 9px 9px;
   }
 }
 </style>
