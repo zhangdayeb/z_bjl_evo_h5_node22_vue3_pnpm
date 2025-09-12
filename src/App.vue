@@ -66,6 +66,5 @@ const themeOverrides = {
   width: 100%;
   height: 100%;
   position: relative;
-  background: linear-gradient(135deg, #0d1b2a 0%, #1b4332 100%);
 }
 </style>

@@ -287,13 +287,17 @@ onMounted(() => {
 <style scoped>
 .chip-choose-container {
   --size: 10px;
-  flex: 1;
+  position: fixed;
+  bottom: 49px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(var(--size) * 20);
+  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  height: 180px;
   cursor: pointer;
+  z-index: 1000;
 }
 
 .revolver-container {
@@ -438,22 +442,7 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
-/* 点击提示 */
-.click-hint {
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-}
 
-.click-hint.hidden {
-  opacity: 0;
-}
 
 /* 展开状态的hover效果 */
 .chip-item:hover .chip {

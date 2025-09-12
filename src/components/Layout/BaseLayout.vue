@@ -79,7 +79,6 @@ onUnmounted(() => {
 .game-section {
   width: 100%;
   height: 100vh;
-  background: linear-gradient(135deg, #0d1b2a 0%, #1b4332 100%);
   position: relative;
   overflow: hidden;
   margin: 0;

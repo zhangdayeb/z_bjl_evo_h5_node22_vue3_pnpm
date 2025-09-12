@@ -1,13 +1,13 @@
 <!-- src/components/Layout/GameRun.vue -->
 <template>
-  <div class="game-run-container">
+  <div class="game-run-container" style="background: none;">
     <!-- 第一层：底层 - 视频和路珠背景层 -->
-    <div class="layer-bottom">
+    <div class="layer-bottom" style="display: none;">
       <VideoAndLuZhu />
     </div>
 
     <!-- 第二层：中间层 - 用户投注操作层 -->
-    <div class="layer-middle">
+    <div class="layer-middle" style="display: none;">
       <UserBet />
     </div>
 
