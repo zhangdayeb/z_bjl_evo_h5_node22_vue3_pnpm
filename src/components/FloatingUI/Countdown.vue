@@ -30,36 +30,29 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 
-// Props
-interface Props {
-  maxTime?: number
-  size?: number  // 画布大小
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  maxTime: 30,
-  size: 100  // 默认100px
-})
-
 // Store
 const gameStore = useGameStore()
+
+// 固定配置
+const MAX_TIME = 30  // 固定30秒倒计时
+const CANVAS_SIZE = 80  // 固定80px画布大小
 
 // Refs
 const glowCanvas = ref<HTMLCanvasElement>()
 const mainCanvas = ref<HTMLCanvasElement>()
 
 // 响应式数据
-const timeLeft = ref(props.maxTime)
+const timeLeft = ref(MAX_TIME)
 const isRunning = ref(false)
 const showCountdown = ref(true)
 let timer: number | null = null
 let animationFrame: number | null = null
 
 // Canvas相关
-const canvasSize = computed(() => props.size)
-const centerX = computed(() => props.size / 2)
-const centerY = computed(() => props.size / 2)
-const radius = computed(() => props.size * 0.35)
+const canvasSize = CANVAS_SIZE
+const centerX = CANVAS_SIZE / 2
+const centerY = CANVAS_SIZE / 2
+const radius = CANVAS_SIZE * 0.35
 
 // 计算属性
 const displayTime = computed(() => {
@@ -71,7 +64,7 @@ const isUrgent = computed(() => {
 })
 
 const progress = computed(() => {
-  return timeLeft.value / props.maxTime
+  return timeLeft.value / MAX_TIME
 })
 
 // 绘制倒计时圆环
@@ -84,8 +77,8 @@ const drawCountdown = () => {
   if (!glowCtx || !mainCtx) return
 
   // 清空画布
-  glowCtx.clearRect(0, 0, canvasSize.value, canvasSize.value)
-  mainCtx.clearRect(0, 0, canvasSize.value, canvasSize.value)
+  glowCtx.clearRect(0, 0, canvasSize, canvasSize)
+  mainCtx.clearRect(0, 0, canvasSize, canvasSize)
 
   // 计算角度
   const startAngle = -Math.PI / 2
@@ -93,7 +86,7 @@ const drawCountdown = () => {
 
   // 1. 绘制黑色半透明背景圆
   mainCtx.beginPath()
-  mainCtx.arc(centerX.value, centerY.value, radius.value, 0, Math.PI * 2)
+  mainCtx.arc(centerX, centerY, radius, 0, Math.PI * 2)
   mainCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'
   mainCtx.fill()
 
@@ -108,7 +101,7 @@ const drawCountdown = () => {
     glowCtx.save()
     glowCtx.filter = 'blur(10px)'
     glowCtx.beginPath()
-    glowCtx.arc(centerX.value, centerY.value, radius.value, startAngle, endAngle)
+    glowCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.2)`
     glowCtx.lineWidth = 12
     glowCtx.lineCap = 'round'
@@ -119,7 +112,7 @@ const drawCountdown = () => {
     glowCtx.save()
     glowCtx.filter = 'blur(6px)'
     glowCtx.beginPath()
-    glowCtx.arc(centerX.value, centerY.value, radius.value, startAngle, endAngle)
+    glowCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.3)`
     glowCtx.lineWidth = 10
     glowCtx.lineCap = 'round'
@@ -130,7 +123,7 @@ const drawCountdown = () => {
     glowCtx.save()
     glowCtx.filter = 'blur(3px)'
     glowCtx.beginPath()
-    glowCtx.arc(centerX.value, centerY.value, radius.value, startAngle, endAngle)
+    glowCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.4)`
     glowCtx.lineWidth = 8
     glowCtx.lineCap = 'round'
@@ -140,7 +133,7 @@ const drawCountdown = () => {
 
   // 3. 绘制背景圆环
   mainCtx.beginPath()
-  mainCtx.arc(centerX.value, centerY.value, radius.value, 0, Math.PI * 2)
+  mainCtx.arc(centerX, centerY, radius, 0, Math.PI * 2)
   mainCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
   mainCtx.lineWidth = 8
   mainCtx.stroke()
@@ -151,7 +144,7 @@ const drawCountdown = () => {
     mainCtx.shadowBlur = 8
     mainCtx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.5)`
     mainCtx.beginPath()
-    mainCtx.arc(centerX.value, centerY.value, radius.value, startAngle, endAngle)
+    mainCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     mainCtx.strokeStyle = color.hex
     mainCtx.lineWidth = 8
     mainCtx.lineCap = 'round'
@@ -161,7 +154,7 @@ const drawCountdown = () => {
     // 5. 绘制中心亮线（霓虹灯管效果）
     mainCtx.save()
     mainCtx.beginPath()
-    mainCtx.arc(centerX.value, centerY.value, radius.value, startAngle, endAngle)
+    mainCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     mainCtx.strokeStyle = 'rgba(255, 255, 255, 0.6)'
     mainCtx.lineWidth = 2
     mainCtx.lineCap = 'round'
@@ -183,7 +176,7 @@ const startCountdown = () => {
   if (timer) clearInterval(timer)
 
   isRunning.value = true
-  timeLeft.value = props.maxTime
+  timeLeft.value = MAX_TIME
   showCountdown.value = true
 
   // 开始动画
@@ -215,7 +208,7 @@ const stopCountdown = () => {
 // 重置倒计时
 const resetCountdown = () => {
   stopCountdown()
-  timeLeft.value = props.maxTime
+  timeLeft.value = MAX_TIME
   showCountdown.value = false
 }
 
@@ -273,8 +266,8 @@ defineExpose({
 
 .countdown-container {
   position: relative;
-  width: v-bind('canvasSize + "px"');
-  height: v-bind('canvasSize + "px"');
+  width: 80px;
+  height: 80px;
 }
 
 /* 画布层叠 */
@@ -299,7 +292,7 @@ defineExpose({
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: calc(v-bind('canvasSize + "px"') * 0.3);
+  font-size: 24px;
   font-weight: bold;
   color: white;
   font-family: 'Arial', sans-serif;
@@ -344,13 +337,13 @@ defineExpose({
 /* 响应式设计 */
 @media (max-width: 768px) {
   .countdown-number {
-    font-size: calc(v-bind('canvasSize + "px"') * 0.28);
+    font-size: 22px;
   }
 }
 
 @media (max-width: 480px) {
   .countdown-number {
-    font-size: calc(v-bind('canvasSize + "px"') * 0.25);
+    font-size: 20px;
   }
 }
 </style>

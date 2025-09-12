@@ -14,15 +14,13 @@
           @videoLoad="handleVideoLoad"
           @videoError="handleVideoError"
         />
-      </div>
 
-      <!-- 倒计时 - 悬浮在视频右上角 -->
-      <div class="countdown-overlay">
-        <Countdown :maxTime="30" :size="80" />
-      </div>
+        <!-- 倒计时 - 悬浮在视频右上角 -->
+        <div class="countdown-overlay">
+          <Countdown />
+        </div>
 
-      <!-- 投注信息滚动列表 - 悬浮在视频左下角 -->
-      <div class="userbet-overlay">
+        <!-- 投注信息滚动列表 - 悬浮在视频左侧 -->
         <OtherUserBetList />
       </div>
     </div>
@@ -206,7 +204,7 @@ defineExpose({
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* 视频播放器包装 */
+/* 视频播放器包装 - 作为定位容器 */
 .video-player-wrapper {
   width: 100%;
   height: 100%;
@@ -214,6 +212,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   background: #000;
+  position: relative; /* 为子组件提供定位上下文 */
 }
 
 /* 露珠区域 */
@@ -234,17 +233,6 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* 投注信息浮层 - 左下角 */
-.userbet-overlay {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  width: 200px;
-  height: 150px;
-  z-index: 10;
-  overflow: hidden;
 }
 
 /* 切换按钮 - 圆形设计 */
@@ -290,13 +278,6 @@ defineExpose({
     right: 15px;
   }
 
-  .userbet-overlay {
-    bottom: 15px;
-    left: 15px;
-    width: 180px;
-    height: 130px;
-  }
-
   .switch-button {
     width: 40px;
     height: 40px;
@@ -316,13 +297,6 @@ defineExpose({
     right: 10px;
   }
 
-  .userbet-overlay {
-    bottom: 10px;
-    left: 10px;
-    width: 160px;
-    height: 110px;
-  }
-
   .switch-button {
     width: 38px;
     height: 38px;
@@ -340,13 +314,6 @@ defineExpose({
   .countdown-overlay {
     top: 8px;
     right: 8px;
-  }
-
-  .userbet-overlay {
-    bottom: 8px;
-    left: 8px;
-    width: 140px;
-    height: 90px;
   }
 
   .switch-button {
