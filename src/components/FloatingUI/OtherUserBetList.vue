@@ -192,7 +192,7 @@ export default {
   position: absolute;
   left: 5%;
   top: 15%;
-  width: 25%;
+  width: 35%;
   height: 70%;
   background: rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -248,34 +248,70 @@ export default {
   text-overflow: ellipsis;
 }
 
-/* 渐变遮罩效果 */
+/* 渐变遮罩效果 - 四周透明淡出 */
 .gradient-mask {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 60px;
   pointer-events: none;
   z-index: 10;
 }
 
+/* 上下渐变 - 边缘完全透明 */
 .gradient-top {
   top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.05) 50%,
-    transparent 100%
+    transparent 0%,              /* 顶部完全透明 */
+    transparent 20%,             /* 保持透明 */
+    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
+    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
   );
 }
 
 .gradient-bottom {
   bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.05) 50%,
-    transparent 100%
+    transparent 0%,              /* 底部完全透明 */
+    transparent 20%,             /* 保持透明 */
+    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
+    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
   );
 }
 
+/* 左右渐变 - 边缘完全透明 */
+.gradient-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,              /* 左边完全透明 */
+    transparent 20%,             /* 保持透明 */
+    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
+    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+  );
+}
+
+.gradient-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 50px;
+  background: linear-gradient(
+    to left,
+    transparent 0%,              /* 右边完全透明 */
+    transparent 20%,             /* 保持透明 */
+    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
+    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+  );
+}
+
+/* 响应式调整 - 已移除 */
 </style>
