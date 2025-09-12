@@ -5,7 +5,7 @@
       <!-- 路珠显示区域 -->
       <div class="luzhu-display-area">
         <div class="viewport-container">
-          <!-- 滑动容器 -->
+          <!-- 正常显示容器 -->
           <div
             class="scrollable-container"
             ref="scrollContainer"
@@ -14,70 +14,73 @@
             @touchend="handleTouchEnd"
             :style="{
               transform: `translateX(${currentTranslateX}px)`,
-              transition: isDragging ? 'none' : 'transform 0.3s'
+              transition: isDragging ? 'none' : 'transform 0.3s',
+              display: fullscreenMode !== 'none' ? 'none' : 'flex'
             }"
           >
             <!-- 左屏：大路 + 下三路 -->
             <div class="screen left-screen">
               <!-- 大路区域 -->
-              <div class="road-section big-road-section">
-                <div class="road-container">
-                  <div
-                    v-for="(item, index) in roadmapData.bigRoad"
-                    :key="`big-${index}`"
-                    class="road-item"
-                    :style="{
-                      left: item.left + 'px',
-                      top: item.top + 'px'
-                    }"
-                  >
-                    <svg viewBox="0 0 20 20">
-                      <!-- 主圆环 -->
-                      <circle
-                        cx="10"
-                        cy="10"
-                        r="8"
-                        fill="none"
-                        :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
-                        stroke-width="1.5"
-                      />
+              <div class="road-section big-road-section" @click="toggleFullscreen('bigRoad')">
+                <div class="road-viewport">
+                  <div class="road-container" ref="bigRoadContainer" :style="{ transform: `translateX(${bigRoadOffset}px)` }">
+                    <div
+                      v-for="(item, index) in roadmapData.bigRoad"
+                      :key="`big-${index}`"
+                      class="road-item"
+                      :style="{
+                        left: item.left + 'px',
+                        top: item.top + 'px'
+                      }"
+                    >
+                      <svg viewBox="0 0 20 20">
+                        <!-- 主圆环 -->
+                        <circle
+                          cx="10"
+                          cy="10"
+                          r="8"
+                          fill="none"
+                          :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                          stroke-width="1.5"
+                        />
 
-                      <!-- 庄对标记 -->
-                      <circle
-                        v-if="item.ext === 1 || item.ext === 3"
-                        cx="15.5"
-                        cy="15.5"
-                        r="2"
-                        fill="#dc3545"
-                        stroke="#1a1a1a"
-                        stroke-width="1"
-                      />
+                        <!-- 庄对标记 -->
+                        <circle
+                          v-if="item.ext === 1 || item.ext === 3"
+                          cx="15.5"
+                          cy="15.5"
+                          r="2"
+                          fill="#dc3545"
+                          stroke="#1a1a1a"
+                          stroke-width="1"
+                        />
 
-                      <!-- 闲对标记 -->
-                      <circle
-                        v-if="item.ext === 2 || item.ext === 3"
-                        cx="4.5"
-                        cy="4.5"
-                        r="2"
-                        fill="#007bff"
-                        stroke="#1a1a1a"
-                        stroke-width="1"
-                      />
+                        <!-- 闲对标记 -->
+                        <circle
+                          v-if="item.ext === 2 || item.ext === 3"
+                          cx="4.5"
+                          cy="4.5"
+                          r="2"
+                          fill="#007bff"
+                          stroke="#1a1a1a"
+                          stroke-width="1"
+                        />
 
-                      <!-- 和局数字 -->
-                      <text
-                        v-if="item.tieCount"
-                        x="10"
-                        y="10"
-                        text-anchor="middle"
-                        dominant-baseline="middle"
-                        fill="#ffc107"
-                        font-size="8"
-                        font-weight="bold"
-                      >
-                        {{ item.tieCount }}
-                      </text>
-                    </svg>
+                        <!-- 和局数字 -->
+                        <text
+                          v-if="item.tieCount"
+                          x="10"
+                          y="10"
+                          text-anchor="middle"
+                          dominant-baseline="middle"
+                          fill="#ffc107"
+                          font-size="8"
+                          font-weight="bold"
+                        >
+                          {{ item.tieCount }}
+                        </text>
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -85,63 +88,69 @@
               <!-- 下三路容器 -->
               <div class="three-roads-container">
                 <!-- 大眼路 -->
-                <div class="road-section small-road">
-                  <div class="road-container small-road-container">
-                    <div
-                      v-for="(item, index) in roadmapData.bigEyeRoad"
-                      :key="`eye-${index}`"
-                      class="road-item-small"
-                      :style="{
-                        left: item.left + 'px',
-                        top: item.top + 'px'
-                      }"
-                    >
-                      <svg viewBox="0 0 10 10">
-                        <circle cx="5" cy="5" r="4" fill="none"
-                                :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
-                                stroke-width="1.2" />
-                      </svg>
+                <div class="road-section small-road" @click.stop="toggleFullscreen('bigEyeRoad')">
+                  <div class="road-viewport-small">
+                    <div class="road-container small-road-container" ref="bigEyeRoadContainer" :style="{ transform: `translateX(${bigEyeRoadOffset}px)` }">
+                      <div
+                        v-for="(item, index) in roadmapData.bigEyeRoad"
+                        :key="`eye-${index}`"
+                        class="road-item-small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 10 10">
+                          <circle cx="5" cy="5" r="4" fill="none"
+                                  :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                                  stroke-width="1.2" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- 小路 -->
-                <div class="road-section small-road">
-                  <div class="road-container small-road-container">
-                    <div
-                      v-for="(item, index) in roadmapData.smallRoad"
-                      :key="`small-${index}`"
-                      class="road-item-small"
-                      :style="{
-                        left: item.left + 'px',
-                        top: item.top + 'px'
-                      }"
-                    >
-                      <svg viewBox="0 0 10 10">
-                        <circle cx="5" cy="5" r="4"
-                                :fill="item.result === 1 ? '#EC2024' : '#2E83FF'" />
-                      </svg>
+                <div class="road-section small-road" @click.stop="toggleFullscreen('smallRoad')">
+                  <div class="road-viewport-small">
+                    <div class="road-container small-road-container" ref="smallRoadContainer" :style="{ transform: `translateX(${smallRoadOffset}px)` }">
+                      <div
+                        v-for="(item, index) in roadmapData.smallRoad"
+                        :key="`small-${index}`"
+                        class="road-item-small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 10 10">
+                          <circle cx="5" cy="5" r="4"
+                                  :fill="item.result === 1 ? '#EC2024' : '#2E83FF'" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- 蟑螂路 -->
-                <div class="road-section small-road">
-                  <div class="road-container small-road-container">
-                    <div
-                      v-for="(item, index) in roadmapData.cockroachRoad"
-                      :key="`roach-${index}`"
-                      class="road-item-small"
-                      :style="{
-                        left: item.left + 'px',
-                        top: item.top + 'px'
-                      }"
-                    >
-                      <svg viewBox="0 0 10 10">
-                        <line x1="8.5" y1="1.5" x2="1.5" y2="8.5"
-                              :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
-                              stroke-width="1.5" />
-                      </svg>
+                <div class="road-section small-road" @click.stop="toggleFullscreen('cockroachRoad')">
+                  <div class="road-viewport-small">
+                    <div class="road-container small-road-container" ref="cockroachRoadContainer" :style="{ transform: `translateX(${cockroachRoadOffset}px)` }">
+                      <div
+                        v-for="(item, index) in roadmapData.cockroachRoad"
+                        :key="`roach-${index}`"
+                        class="road-item-small"
+                        :style="{
+                          left: item.left + 'px',
+                          top: item.top + 'px'
+                        }"
+                      >
+                        <svg viewBox="0 0 10 10">
+                          <line x1="1.5" y1="8.5" x2="8.5" y2="1.5"
+                                :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                                stroke-width="1.5" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -182,6 +191,103 @@
               </div>
             </div>
           </div>
+
+          <!-- 展开显示容器（占满显示区域） -->
+          <div v-if="fullscreenMode !== 'none'" class="expanded-container" @click="toggleFullscreen('none')">
+            <!-- 大路展开 -->
+            <div v-if="fullscreenMode === 'bigRoad'" class="expanded-road">
+              <div class="road-container expanded-road-container">
+                <div
+                  v-for="(item, index) in roadmapData.bigRoad"
+                  :key="`big-exp-${index}`"
+                  class="road-item-expanded"
+                  :style="{
+                    left: (item.left * 1.5) + 'px',
+                    top: (item.top * 1.5) + 'px'
+                  }"
+                >
+                  <svg viewBox="0 0 20 20">
+                    <circle cx="10" cy="10" r="8" fill="none"
+                            :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                            stroke-width="1.5" />
+                    <circle v-if="item.ext === 1 || item.ext === 3"
+                            cx="15.5" cy="15.5" r="2" fill="#dc3545"
+                            stroke="#1a1a1a" stroke-width="1" />
+                    <circle v-if="item.ext === 2 || item.ext === 3"
+                            cx="4.5" cy="4.5" r="2" fill="#007bff"
+                            stroke="#1a1a1a" stroke-width="1" />
+                    <text v-if="item.tieCount" x="10" y="10"
+                          text-anchor="middle" dominant-baseline="middle"
+                          fill="#ffc107" font-size="8" font-weight="bold">
+                      {{ item.tieCount }}
+                    </text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- 大眼路展开 -->
+            <div v-if="fullscreenMode === 'bigEyeRoad'" class="expanded-road">
+              <div class="road-container expanded-road-container-small">
+                <div
+                  v-for="(item, index) in roadmapData.bigEyeRoad"
+                  :key="`eye-exp-${index}`"
+                  class="road-item-expanded-small"
+                  :style="{
+                    left: (item.left * 2) + 'px',
+                    top: (item.top * 2) + 'px'
+                  }"
+                >
+                  <svg viewBox="0 0 10 10">
+                    <circle cx="5" cy="5" r="4" fill="none"
+                            :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                            stroke-width="1.2" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- 小路展开 -->
+            <div v-if="fullscreenMode === 'smallRoad'" class="expanded-road">
+              <div class="road-container expanded-road-container-small">
+                <div
+                  v-for="(item, index) in roadmapData.smallRoad"
+                  :key="`small-exp-${index}`"
+                  class="road-item-expanded-small"
+                  :style="{
+                    left: (item.left * 2) + 'px',
+                    top: (item.top * 2) + 'px'
+                  }"
+                >
+                  <svg viewBox="0 0 10 10">
+                    <circle cx="5" cy="5" r="4"
+                            :fill="item.result === 1 ? '#EC2024' : '#2E83FF'" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- 蟑螂路展开 -->
+            <div v-if="fullscreenMode === 'cockroachRoad'" class="expanded-road">
+              <div class="road-container expanded-road-container-small">
+                <div
+                  v-for="(item, index) in roadmapData.cockroachRoad"
+                  :key="`roach-exp-${index}`"
+                  class="road-item-expanded-small"
+                  :style="{
+                    left: (item.left * 2) + 'px',
+                    top: (item.top * 2) + 'px'
+                  }"
+                >
+                  <svg viewBox="0 0 10 10">
+                    <line x1="1.5" y1="8.5" x2="8.5" y2="1.5"
+                          :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                          stroke-width="1.5" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -192,7 +298,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import LuZhuCount from './LuZhuCount.vue'
 import roadmapCalculator, {
   type GameResult,
@@ -210,6 +316,22 @@ const roadmapData = ref<RoadmapData>({
   cockroachRoad: [],
   sanxing: []
 })
+
+// 全屏模式
+type FullscreenMode = 'none' | 'bigRoad' | 'bigEyeRoad' | 'smallRoad' | 'cockroachRoad'
+const fullscreenMode = ref<FullscreenMode>('none')
+
+// 路单偏移量
+const bigRoadOffset = ref(0)
+const bigEyeRoadOffset = ref(0)
+const smallRoadOffset = ref(0)
+const cockroachRoadOffset = ref(0)
+
+// 路单容器引用
+const bigRoadContainer = ref<HTMLElement>()
+const bigEyeRoadContainer = ref<HTMLElement>()
+const smallRoadContainer = ref<HTMLElement>()
+const cockroachRoadContainer = ref<HTMLElement>()
 
 // 滑动控制
 const scrollContainer = ref<HTMLElement>()
@@ -241,6 +363,69 @@ const getBeadText = (item: BeadPlatePosition): string => {
   }
 }
 
+// 切换全屏模式
+const toggleFullscreen = (mode: FullscreenMode) => {
+  fullscreenMode.value = fullscreenMode.value === mode ? 'none' : mode
+}
+
+// 计算路单偏移量
+const calculateOffsets = () => {
+  nextTick(() => {
+    // 大路偏移
+    if (roadmapData.value.bigRoad.length > 0) {
+      const lastItem = roadmapData.value.bigRoad[roadmapData.value.bigRoad.length - 1]
+      const maxX = lastItem.left + 22
+      const viewportWidth = window.innerWidth / 2 // 左屏宽度
+      if (maxX > viewportWidth) {
+        bigRoadOffset.value = -(maxX - viewportWidth + 10)
+      } else {
+        bigRoadOffset.value = 0
+      }
+    }
+
+    // 大眼路偏移
+    if (roadmapData.value.bigEyeRoad.length > 0) {
+      const lastItem = roadmapData.value.bigEyeRoad[roadmapData.value.bigEyeRoad.length - 1]
+      const maxX = lastItem.left + 11
+      const viewportWidth = window.innerWidth / 6 // 下三路每个占1/3
+      if (maxX > viewportWidth) {
+        bigEyeRoadOffset.value = -(maxX - viewportWidth + 5)
+      } else {
+        bigEyeRoadOffset.value = 0
+      }
+    }
+
+    // 小路偏移
+    if (roadmapData.value.smallRoad.length > 0) {
+      const lastItem = roadmapData.value.smallRoad[roadmapData.value.smallRoad.length - 1]
+      const maxX = lastItem.left + 11
+      const viewportWidth = window.innerWidth / 6
+      if (maxX > viewportWidth) {
+        smallRoadOffset.value = -(maxX - viewportWidth + 5)
+      } else {
+        smallRoadOffset.value = 0
+      }
+    }
+
+    // 蟑螂路偏移
+    if (roadmapData.value.cockroachRoad.length > 0) {
+      const lastItem = roadmapData.value.cockroachRoad[roadmapData.value.cockroachRoad.length - 1]
+      const maxX = lastItem.left + 11
+      const viewportWidth = window.innerWidth / 6
+      if (maxX > viewportWidth) {
+        cockroachRoadOffset.value = -(maxX - viewportWidth + 5)
+      } else {
+        cockroachRoadOffset.value = 0
+      }
+    }
+  })
+}
+
+// 监听数据变化，自动计算偏移
+watch(roadmapData, () => {
+  calculateOffsets()
+}, { deep: true })
+
 // 初始化数据（使用模拟数据）
 const initData = () => {
   // 使用模拟数据
@@ -271,6 +456,9 @@ const initData = () => {
 
   // 计算路单
   roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
+
+  // 计算偏移量
+  calculateOffsets()
 }
 
 // 添加新结果
@@ -281,16 +469,18 @@ const addResult = (result: GameResult) => {
     [newKey]: result
   }
   roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
+  calculateOffsets()
 }
 
 // 触摸事件处理
 const handleTouchStart = (e: TouchEvent) => {
+  if (fullscreenMode.value !== 'none') return
   isDragging.value = true
   startX.value = e.touches[0].clientX - currentTranslateX.value
 }
 
 const handleTouchMove = (e: TouchEvent) => {
-  if (!isDragging.value) return
+  if (!isDragging.value || fullscreenMode.value !== 'none') return
   e.preventDefault()
 
   const x = e.touches[0].clientX - startX.value
@@ -299,6 +489,7 @@ const handleTouchMove = (e: TouchEvent) => {
 }
 
 const handleTouchEnd = () => {
+  if (fullscreenMode.value !== 'none') return
   isDragging.value = false
   // 自动吸附
   const threshold = scrollContainer.value!.offsetWidth / 4
@@ -321,7 +512,7 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 样式保持不变 */
+/* 主容器 */
 .luzhu-component {
   width: 100%;
   height: 233px;
@@ -348,6 +539,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 
 .scrollable-container {
@@ -392,15 +584,34 @@ defineExpose({
   background-size: 33px 33px;
 }
 
-/* 路单区域 - 固定高度 */
+/* 路单区域 */
 .road-section {
   position: relative;
+  cursor: pointer;
+}
+
+.road-section:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .big-road-section {
-  height: 133px;  /* 固定高度 */
+  height: 133px;
   padding: 4px;
   box-sizing: border-box;
+}
+
+.road-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.road-viewport-small {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
 .bead-road-section {
@@ -410,9 +621,9 @@ defineExpose({
   box-sizing: border-box;
 }
 
-/* 下三路容器 - 固定高度 */
+/* 下三路容器 */
 .three-roads-container {
-  height: 67px;  /* 固定高度 */
+  height: 67px;
   display: flex;
   gap: 0;
   padding: 0;
@@ -424,7 +635,7 @@ defineExpose({
   background-size: 11px 11px;
 }
 
-/* 下三路 - 精确三分之一 */
+/* 下三路 */
 .small-road {
   width: 33.333%;
   height: 67px;
@@ -444,16 +655,16 @@ defineExpose({
   box-sizing: border-box;
 }
 
-/* 路单项目 - 调整大小以适应6行 */
+/* 路单项目 */
 .road-item {
   position: absolute;
-  width: 22px;  /* 适应6行 */
+  width: 22px;
   height: 22px;
 }
 
 .road-item-small {
   position: absolute;
-  width: 11px;  /* 适应6行 */
+  width: 11px;
   height: 11px;
 }
 
@@ -468,6 +679,67 @@ defineExpose({
 .bead-item svg {
   width: 100%;
   height: 100%;
+}
+
+/* 展开显示容器（占满显示区域200px） */
+.expanded-container {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(37, 37, 37, 0.95), rgb(30, 30, 30));
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.expanded-road {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.expanded-road-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.1) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 33px 33px;
+}
+
+.expanded-road-container-small {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.08) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 22px 22px;
+}
+
+/* 展开模式的路单项目 */
+.road-item-expanded {
+  position: absolute;
+  width: 33px;
+  height: 33px;
+}
+
+.road-item-expanded-small {
+  position: absolute;
+  width: 22px;
+  height: 22px;
 }
 
 /* 响应式 */
