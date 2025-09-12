@@ -1,6 +1,6 @@
 <!-- src/components/Layout/GameRun.vue -->
 <template>
-  <div class="game-run-container" style="background: none;">
+  <div class="game-run-container">
     <!-- 第一层：底层 - 视频和路珠背景层 -->
     <div class="layer-bottom" style="display: none;">
       <VideoAndLuZhu />
