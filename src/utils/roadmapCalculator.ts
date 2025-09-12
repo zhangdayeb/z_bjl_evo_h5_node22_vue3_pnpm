@@ -106,12 +106,12 @@ export class RoadmapCalculator {
 
   // 网格大小设置
   private gridSizes = {
-    beadPlate: 33,      // 珠盘路格子大小
-    bigRoad: 22,        // 大路格子大小
-    bigEyeRoad: 11,     // 大眼路格子大小
-    smallRoad: 11,      // 小路格子大小
-    cockroachRoad: 11,  // 蟑螂路格子大小
-    sanxing: 22         // 三星路格子大小
+    beadPlate: 30,      // 珠盘路格子大小
+    bigRoad: 20,        // 大路格子大小
+    bigEyeRoad: 10,     // 大眼路格子大小
+    smallRoad: 10,      // 小路格子大小
+    cockroachRoad: 10,  // 蟑螂路格子大小
+    sanxing: 20         // 三星路格子大小
   };
 
   // 最大行数限制

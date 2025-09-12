@@ -93,7 +93,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.player.bigEye" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.player.bigEye === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M275 764 c-103 -37 -194 -110 -228 -184 -81 -174 -56 -342 67 -466
                         154 -153 398 -153 552 0 123 124 148 292 67 466 -21 44 -109 132 -153 153
@@ -113,7 +115,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.player.small" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.player.small === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
                         205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
@@ -127,7 +131,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.player.cockroach" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.player.cockroach === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M260 360 l-255 -255 60 -60 60 -60 410 410 255 255 -60 60 -60 60" />
                     </g>
@@ -153,7 +159,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.banker.bigEye" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.banker.bigEye === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M275 764 c-103 -37 -194 -110 -228 -184 -81 -174 -56 -342 67 -466
                         154 -153 398 -153 552 0 123 124 148 292 67 466 -21 44 -109 132 -153 153
@@ -173,7 +181,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.banker.small" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.banker.small === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
                         205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
@@ -187,7 +197,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                    <g transform="translate(0,78) scale(0.1,-0.1)" :fill="predictions.banker.cockroach" stroke="none">
+                    <g transform="translate(0,78) scale(0.1,-0.1)"
+                       :fill="predictions.banker.cockroach === 'red' ? '#EC2024' : '#2E83FF'"
+                       stroke="none">
                       <path d="
                         M260 360 l-255 -255 60 -60 60 -60 410 410 255 255 -60 60 -60 60" />
                     </g>
@@ -204,7 +216,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import roadmapCalculator, { type GameResult } from '@/utils/roadmapCalculator'
+import roadmapCalculator, {
+  type GameResult,
+  type Statistics,
+  type Prediction
+} from '@/utils/roadmapCalculator'
 
 // Props
 interface Props {
@@ -214,20 +230,20 @@ interface Props {
 const props = defineProps<Props>()
 
 // 计算属性
-const statistics = computed(() =>
+const statistics = computed<Statistics>(() =>
   roadmapCalculator.calculateStatistics(props.gameData)
 )
 
-const predictions = computed(() =>
+const predictions = computed<Prediction>(() =>
   roadmapCalculator.calculatePredictions(props.gameData)
 )
 </script>
 
 <style scoped>
-/* 主容器 */
+/* 样式保持不变 */
 .statistics-bar {
   background: rgb(37, 37, 37);
-  height: 28.7152px;
+  height: 33px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -235,11 +251,10 @@ const predictions = computed(() =>
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* 左侧统计组 */
 .statistics-group {
   display: flex;
   align-items: center;
-  height: 28.7152px;
+  height: 33px;
   font-size: 14px;
   gap: 12px;
 }
@@ -271,7 +286,6 @@ const predictions = computed(() =>
   font-weight: 600;
 }
 
-/* 右侧预测组 */
 .predictions-group {
   display: flex;
   gap: 6px;
@@ -291,19 +305,16 @@ const predictions = computed(() =>
   box-sizing: border-box;
 }
 
-/* 闲家预测样式 */
 .player-prediction {
   background: linear-gradient(177.86deg, #084094 39.22%, #1d1c2f 124.77%);
   box-shadow: 3px 3px 4px 0 #0006,inset 2px 2px 2px 0 #2663d0,inset -2px -2px 2px 0 #091e42;
 }
 
-/* 庄家预测样式 */
 .banker-prediction {
   background: linear-gradient(177.86deg,#af2929 39.22%,#430606 124.77%);
   box-shadow: 3px 3px 4px 0 #0006,inset 2px 2px 2px 0 #de3333,inset -2px -2px 2px 0 #651717;
 }
 
-/* P/B 标签 */
 .simple-svg-symbol {
   width: 15px;
   height: 28px;
@@ -312,7 +323,6 @@ const predictions = computed(() =>
   font-family: "Inter, Arial, sans-serif";
 }
 
-/* 预测图标 */
 .icons {
   display: flex;
   align-items: center;

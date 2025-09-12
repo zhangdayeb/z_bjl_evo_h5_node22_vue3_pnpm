@@ -23,8 +23,8 @@
               <div class="road-section big-road-section">
                 <div class="road-container">
                   <div
-                    v-for="item in roadmapData.bigRoad"
-                    :key="item.id"
+                    v-for="(item, index) in roadmapData.bigRoad"
+                    :key="`big-${index}`"
                     class="road-item"
                     :style="{
                       left: item.left + 'px',
@@ -38,7 +38,7 @@
                         cy="10"
                         r="8"
                         fill="none"
-                        :stroke="item.color"
+                        :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
                         stroke-width="1.5"
                       />
 
@@ -66,7 +66,7 @@
 
                       <!-- 和局数字 -->
                       <text
-                        v-if="item.tie"
+                        v-if="item.tieCount"
                         x="10"
                         y="10"
                         text-anchor="middle"
@@ -75,7 +75,7 @@
                         font-size="8"
                         font-weight="bold"
                       >
-                        {{ item.tie }}
+                        {{ item.tieCount }}
                       </text>
                     </svg>
                   </div>
@@ -88,8 +88,8 @@
                 <div class="road-section small-road">
                   <div class="road-container small-road-container">
                     <div
-                      v-for="item in roadmapData.bigEyeRoad"
-                      :key="item.id"
+                      v-for="(item, index) in roadmapData.bigEyeRoad"
+                      :key="`eye-${index}`"
                       class="road-item-small"
                       :style="{
                         left: item.left + 'px',
@@ -98,7 +98,8 @@
                     >
                       <svg viewBox="0 0 10 10">
                         <circle cx="5" cy="5" r="4" fill="none"
-                                :stroke="item.color" stroke-width="1.2" />
+                                :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                                stroke-width="1.2" />
                       </svg>
                     </div>
                   </div>
@@ -108,8 +109,8 @@
                 <div class="road-section small-road">
                   <div class="road-container small-road-container">
                     <div
-                      v-for="item in roadmapData.smallRoad"
-                      :key="item.id"
+                      v-for="(item, index) in roadmapData.smallRoad"
+                      :key="`small-${index}`"
                       class="road-item-small"
                       :style="{
                         left: item.left + 'px',
@@ -117,7 +118,8 @@
                       }"
                     >
                       <svg viewBox="0 0 10 10">
-                        <circle cx="5" cy="5" r="4" :fill="item.color" />
+                        <circle cx="5" cy="5" r="4"
+                                :fill="item.result === 1 ? '#EC2024' : '#2E83FF'" />
                       </svg>
                     </div>
                   </div>
@@ -127,8 +129,8 @@
                 <div class="road-section small-road">
                   <div class="road-container small-road-container">
                     <div
-                      v-for="item in roadmapData.cockroachRoad"
-                      :key="item.id"
+                      v-for="(item, index) in roadmapData.cockroachRoad"
+                      :key="`roach-${index}`"
                       class="road-item-small"
                       :style="{
                         left: item.left + 'px',
@@ -137,7 +139,8 @@
                     >
                       <svg viewBox="0 0 10 10">
                         <line x1="1.5" y1="1.5" x2="8.5" y2="8.5"
-                              :stroke="item.color" stroke-width="1.5" />
+                              :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
+                              stroke-width="1.5" />
                       </svg>
                     </div>
                   </div>
@@ -150,8 +153,8 @@
               <div class="road-section bead-road-section">
                 <div class="road-container">
                   <div
-                    v-for="item in roadmapData.beadPlate"
-                    :key="item.id"
+                    v-for="(item, index) in roadmapData.beadPlate"
+                    :key="`bead-${index}`"
                     class="bead-item"
                     :style="{
                       left: item.left + 'px',
@@ -159,10 +162,11 @@
                     }"
                   >
                     <svg viewBox="0 0 30 30">
-                      <circle cx="15" cy="15" r="14.5" :fill="item.color" />
+                      <circle cx="15" cy="15" r="14.5"
+                              :fill="getBeadColor(item)" />
                       <text x="15" y="15" text-anchor="middle" dominant-baseline="middle"
                             fill="white" font-size="16" font-weight="bold">
-                        {{ item.value }}
+                        {{ getBeadText(item) }}
                       </text>
 
                       <!-- 闲对标记 -->
@@ -192,7 +196,8 @@ import { ref, onMounted } from 'vue'
 import LuZhuCount from './LuZhuCount.vue'
 import roadmapCalculator, {
   type GameResult,
-  type RoadmapData
+  type RoadmapData,
+  type BeadPlatePosition
 } from '@/utils/roadmapCalculator'
 
 // 数据状态
@@ -202,7 +207,8 @@ const roadmapData = ref<RoadmapData>({
   bigRoad: [],
   bigEyeRoad: [],
   smallRoad: [],
-  cockroachRoad: []
+  cockroachRoad: [],
+  sanxing: []
 })
 
 // 滑动控制
@@ -211,15 +217,69 @@ const isDragging = ref(false)
 const startX = ref(0)
 const currentTranslateX = ref(0)
 
-// 初始化数据
+// 获取珠盘颜色
+const getBeadColor = (item: BeadPlatePosition): string => {
+  if (item.result === 1) return '#EC2024' // 庄-红色
+  if (item.result === 2) return '#2E83FF' // 闲-蓝色
+  if (item.result === 3) return '#159252' // 和-绿色
+  return '#666666'
+}
+
+// 获取珠盘文字
+const getBeadText = (item: BeadPlatePosition): string => {
+  // 根据原始结果显示不同文字
+  switch(item.result_original) {
+    case 1: return 'B' // 庄
+    case 2: return 'P' // 闲
+    case 3: return 'T' // 和
+    case 4: return '6' // 幸运6
+    case 6: return 'S' // 小老虎
+    case 7: return '7' // 龙7
+    case 8: return '8' // 熊8
+    case 9: return 'L' // 大老虎
+    default: return ''
+  }
+}
+
+// 初始化数据（使用模拟数据）
 const initData = () => {
-  gameData.value = roadmapCalculator.getMockData()
+  // 使用模拟数据
+  const mockData: Record<string, GameResult> = {
+    "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
+    "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
+    "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
+    "k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
+    "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},
+    "k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
+    "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},
+    "k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
+    "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},
+    "k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
+    "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},
+    "k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
+    "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},
+    "k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
+    "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},
+    "k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
+    "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
+  }
+
+  gameData.value = mockData
+
+  // 开启调试模式（可选）
+  roadmapCalculator.setDebug(false)
+
+  // 计算路单
   roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
 }
 
 // 添加新结果
 const addResult = (result: GameResult) => {
-  gameData.value = roadmapCalculator.addResult(gameData.value, result)
+  const newKey = `k${Object.keys(gameData.value).length}`
+  gameData.value = {
+    ...gameData.value,
+    [newKey]: result
+  }
   roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
 }
 
@@ -261,6 +321,7 @@ defineExpose({
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 .luzhu-component {
   width: 100%;
   height: 233px;
@@ -316,7 +377,7 @@ defineExpose({
     rgba(255, 255, 255, 0.1) 1.3px,
     transparent 1.3px
   );
-  background-size: 20px 20px;
+  background-size: 22px 22px;
 }
 
 .right-screen {
@@ -328,7 +389,7 @@ defineExpose({
     rgba(255, 255, 255, 0.12) 1.5px,
     transparent 1.5px
   );
-  background-size: 30px 30px;
+  background-size: 33px 33px;
 }
 
 /* 路单区域 - 固定高度 */
@@ -360,7 +421,7 @@ defineExpose({
     rgba(255, 255, 255, 0.08) 1px,
     transparent 1px
   );
-  background-size: 10px 10px;
+  background-size: 11px 11px;
 }
 
 /* 下三路 - 精确三分之一 */
@@ -386,20 +447,20 @@ defineExpose({
 /* 路单项目 - 调整大小以适应6行 */
 .road-item {
   position: absolute;
-  width: 20px;  /* 适应6行 */
-  height: 20px;
+  width: 22px;  /* 适应6行 */
+  height: 22px;
 }
 
 .road-item-small {
   position: absolute;
-  width: 10px;  /* 适应6行 */
-  height: 10px;
+  width: 11px;  /* 适应6行 */
+  height: 11px;
 }
 
 .bead-item {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 33px;
+  height: 33px;
 }
 
 .road-item svg,
@@ -412,15 +473,15 @@ defineExpose({
 /* 响应式 */
 @media (max-width: 768px) {
   .left-screen {
-    background-size: 18px 18px;
+    background-size: 20px 20px;
   }
 
   .right-screen {
-    background-size: 28px 28px;
+    background-size: 30px 30px;
   }
 
   .three-roads-container {
-    background-size: 9px 9px;
+    background-size: 10px 10px;
   }
 }
 </style>
