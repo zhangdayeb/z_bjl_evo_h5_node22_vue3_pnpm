@@ -138,7 +138,7 @@
                       }"
                     >
                       <svg viewBox="0 0 10 10">
-                        <line x1="1.5" y1="1.5" x2="8.5" y2="8.5"
+                        <line x1="8.5" y1="1.5" x2="1.5" y2="8.5"
                               :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
                               stroke-width="1.5" />
                       </svg>
