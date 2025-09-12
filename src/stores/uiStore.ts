@@ -1,14 +1,14 @@
 // src/stores/uiStore.ts
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 type PanelType = 'chipSelector' | 'winningEffect' | 'luZhuList' | 'settingsPanel' | 'cashier'
 
 export const useUIStore = defineStore('ui', () => {
-  // 当前打开的面板（只能有一个）
+  // 当前打开的面板
   const activePanel = ref<PanelType | null>(null)
 
-  // 打开面板（自动关闭其他）
+  // 打开面板
   const open = (panel: PanelType) => {
     activePanel.value = panel
   }
@@ -18,22 +18,23 @@ export const useUIStore = defineStore('ui', () => {
     activePanel.value = null
   }
 
-  // 检查面板是否打开
-  const isOpen = (panel: PanelType) => {
-    return activePanel.value === panel
-  }
+  // 使用 computed 创建响应式属性
+  const chipSelector = computed(() => activePanel.value === 'chipSelector')
+  const winningEffect = computed(() => activePanel.value === 'winningEffect')
+  const luZhuList = computed(() => activePanel.value === 'luZhuList')
+  const settingsPanel = computed(() => activePanel.value === 'settingsPanel')
+  const cashier = computed(() => activePanel.value === 'cashier')
 
   return {
     activePanel,
     open,
     close,
-    isOpen,
 
-    // 为了兼容性，提供计算属性
-    get chipSelector() { return isOpen('chipSelector') },
-    get winningEffect() { return isOpen('winningEffect') },
-    get luZhuList() { return isOpen('luZhuList') },
-    get settingsPanel() { return isOpen('settingsPanel') },
-    get cashier() { return isOpen('cashier') }
+    // 导出计算属性
+    chipSelector,
+    winningEffect,
+    luZhuList,
+    settingsPanel,
+    cashier
   }
 })
