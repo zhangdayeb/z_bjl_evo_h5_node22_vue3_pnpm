@@ -192,7 +192,7 @@ export default {
   position: absolute;
   left: 5%;
   top: 15%;
-  width: 35%;
+  width: 25%;
   height: 70%;
   background: rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -278,16 +278,4 @@ export default {
   );
 }
 
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .bet-container {
-    width: 50%;
-    left: 3%;
-  }
-
-  .bet-item {
-    font-size: 13px;
-    height: 22px;
-  }
-}
 </style>
