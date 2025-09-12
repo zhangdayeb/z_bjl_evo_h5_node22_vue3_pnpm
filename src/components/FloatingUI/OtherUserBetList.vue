@@ -190,10 +190,10 @@ export default {
 <style scoped>
 .bet-container {
   position: absolute;
-  left: 5%;
-  top: 15%;
-  width: 35%;
-  height: 70%;
+  left: 0;
+  top: 20%;
+  width: 30%;
+  height: 60%;
   background: rgba(0, 0, 0, 0.05);
   overflow: hidden;
   border-radius: 8px;
@@ -213,10 +213,10 @@ export default {
 
 .bet-item {
   color: rgba(255, 255, 255, 0.9);
-  padding: 2px 15px;
-  height: 24px;
-  line-height: 20px;
-  font-size: 14px;
+  padding: 1px 15px;  /* 减少上下padding，从2px改为1px */
+  height: 20px;  /* 减小高度，从24px改为20px */
+  line-height: 18px;  /* 调整行高 */
+  font-size: 13px;  /* 稍微减小字体，从14px改为13px */
   display: flex;
   align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
