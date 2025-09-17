@@ -64,7 +64,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
-  uiStore.open('settingsPanel') // 测试用，初始打开筹码选择器
+  uiStore.open('luZhuList') // 测试用，初始打开筹码选择器
   document.addEventListener('keydown', handleKeydown)
 })
 
