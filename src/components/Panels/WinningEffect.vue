@@ -1,4 +1,4 @@
-<!-- src/components/Effects/WinningEffect.vue -->
+<!-- src/components/Panels/WinningEffect.vue -->
 <template>
   <div class="winning-effect-overlay">
     <div class="winning-display">
