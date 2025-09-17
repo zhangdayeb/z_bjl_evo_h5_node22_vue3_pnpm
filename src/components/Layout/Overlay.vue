@@ -64,7 +64,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
-  uiStore.open('chipSelector') // 测试用，初始打开筹码选择器
+  uiStore.open('winningEffect') // 测试用，初始打开筹码选择器
   document.addEventListener('keydown', handleKeydown)
 })
 
