@@ -121,13 +121,13 @@ function createAudioSystem() {
 
         sound.once('end', () => resolve())
         sound.once('loaderror', (id, error) => {
-          console.warn(`音效加载失败 ${filename}:`, error)
+          console.warn(`音效加载失败 ${id} ${filename}:`, error)
           resolve() // 失败也继续
         })
 
         sound.once('playerror', (id, error) => {
-          console.warn(`音效播放失败 ${filename}:`, error)
-          resolve() // 失败也继续
+          console.warn(`音效播放失败 ${id} ${filename}:`, error)
+          reject() // 失败也继续
         })
       })
 
@@ -190,10 +190,10 @@ function createAudioSystem() {
 
         // 错误处理
         onloaderror: (id, error) => {
-          console.error('背景音乐加载失败:', error)
+          console.error(id +' 背景音乐加载失败:', error)
         },
         onplayerror: (id, error) => {
-          console.error('背景音乐播放失败:', error)
+          console.error(id +' 背景音乐播放失败:', error)
         }
       })
 

@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useGameStore } from '@/stores/gameStore'
 import { useConfigStore } from '@/stores/configStore'
 
 // 导入三层组件
@@ -29,7 +28,6 @@ import UserBet from './UserBet.vue'
 import Overlay from './Overlay.vue'
 
 // Stores
-const gameStore = useGameStore()
 const configStore = useConfigStore()
 
 onMounted(() => {

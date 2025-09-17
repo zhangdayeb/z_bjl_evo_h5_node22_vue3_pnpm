@@ -1,4 +1,4 @@
-import { ref, reactive, computed, readonly, watch } from 'vue'
+import { reactive, computed} from 'vue'
 import { getValidatedParams } from '@/utils/urlParams'
 import { getGlobalApiService, setGlobalApiService, createGameApiService } from '@/services/gameApi'
 import { getWebSocketService } from '@/services/websocket'
@@ -384,7 +384,7 @@ async function handleGameResult(data: any) {
     await updateAllGameData('开牌')
 
     // 3. 🔥 显示开牌效果弹窗
-    uiStore.showCardResult()
+    // uiStore.showCardResult()
 
     // 4. 🔥 播放开牌音效序列：kai.mp3 + 闪烁区域音效
     if (cardResult.audioFiles.length > 0) {
@@ -401,7 +401,7 @@ async function handleGameResult(data: any) {
 
     // 6. 🔥 5秒后自动关闭开牌效果
     setTimeout(() => {
-      uiStore.hideCardResult()
+      // uiStore.hideCardResult()
     }, 5000)
 
     console.log('🎯 开牌结果处理完成')
@@ -437,11 +437,11 @@ async function handleBetResult(data: any) {
   await updateAllGameData('中奖信息')
 
   // 3. 🔥 显示中奖效果
-  uiStore.showWinEffect()
+  uiStore.open('winningEffect')
 
   // 4. 🔥 5秒后自动关闭
   setTimeout(() => {
-    uiStore.hideWinEffect()
+    uiStore.close()
   }, 5000)
 
   console.log('🏆 中奖信息处理完成')

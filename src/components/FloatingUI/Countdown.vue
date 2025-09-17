@@ -44,7 +44,6 @@ const gameStore = useGameStore()
 // 固定配置
 const MAX_TIME = 30  // 固定30秒倒计时
 const CANVAS_SIZE = 80  // 固定80px画布大小
-const SCALE_RATIO = 0.4  // 相对于HTML版本的缩放比例 (80/200)
 
 // Refs
 const backgroundCanvas = ref<HTMLCanvasElement>()
