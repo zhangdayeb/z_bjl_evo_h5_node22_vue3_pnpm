@@ -2,12 +2,12 @@
 <template>
   <div class="game-run-container">
     <!-- 第一层：底层 - 视频和路珠背景层 -->
-    <div class="layer-bottom" style="display: none;">
+    <div class="layer-bottom">
       <VideoAndLuZhu />
     </div>
 
     <!-- 第二层：中间层 - 用户投注操作层 -->
-    <div class="layer-middle" style="display: none;">
+    <div class="layer-middle">
       <UserBet />
     </div>
 
