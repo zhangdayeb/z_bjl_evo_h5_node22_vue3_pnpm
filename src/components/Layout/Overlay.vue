@@ -64,7 +64,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 onMounted(() => {
-  uiStore.open('cashier') // 测试用，初始打开筹码选择器
+  uiStore.open('settingsPanel') // 测试用，初始打开筹码选择器
   document.addEventListener('keydown', handleKeydown)
 })
 
