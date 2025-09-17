@@ -18,7 +18,6 @@ export const useGameStore = defineStore('game', {
  state: () => ({
     // 用户信息 - 类型为 UserInfo 或 null
     userInfo: null as UserInfo | null,
-
     // 桌子信息
     tableInfo: null as TableInfo | null,
 
