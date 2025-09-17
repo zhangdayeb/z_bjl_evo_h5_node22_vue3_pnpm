@@ -1,299 +1,418 @@
-<!-- src/components/Panels/Cashier.vue 收银台 -->
+<!-- src/components/Panels/Deposit.vue 充值页面 -->
 <template>
-  <div class="cashier-overlay" @click.self="handleClose">
-    <div class="cashier-container">
-      <!-- 头部 -->
-      <div class="cashier-header">
-        <h2 class="cashier-title">收银台</h2>
-        <button class="close-button" @click="handleClose">
-          <svg viewBox="0 0 24 24" class="close-icon">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
-        </button>
+  <div class="overlay">
+    <div class="modal">
+      <!-- 关闭按钮 -->
+      <button class="close-btn"></button>
+
+      <!-- 顶部装饰图片区 -->
+      <div class="header-image"></div>
+
+      <!-- 标题栏 -->
+      <div class="header">MAKE DEPOSIT</div>
+
+      <!-- 内容区 -->
+      <div class="content">
+        <!-- 支付方式选择 -->
+        <div class="form-section">
+          <label class="form-label">Choose payment method</label>
+          <div class="select-box">Click to select</div>
+        </div>
+
+        <!-- 支付金额 -->
+        <div class="form-section">
+          <label class="form-label">Payment amount</label>
+          <div class="amount-section">
+            <span class="currency-symbol">€</span>
+            <input
+              type="number"
+              class="amount-input"
+              placeholder="0"
+              inputmode="numeric"
+            >
+          </div>
+          <div class="quick-amounts">
+            <button class="quick-amount-btn">€5</button>
+            <button class="quick-amount-btn">€10</button>
+            <button class="quick-amount-btn">€20</button>
+          </div>
+        </div>
+
+        <!-- 持卡人姓名和卡号 -->
+        <div class="card-row">
+          <div class="input-group">
+            <label class="input-label">Name on card</label>
+            <input
+              type="text"
+              class="text-input"
+              placeholder="NAME SURNAME"
+              autocapitalize="words"
+            >
+          </div>
+          <div class="input-group">
+            <label class="input-label">Card number</label>
+            <div class="card-number-input">
+              <input
+                type="text"
+                class="text-input"
+                placeholder="0000 0000 0000 0000"
+                inputmode="numeric"
+                maxlength="19"
+              >
+              <div class="card-icon"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 有效期和安全码 -->
+        <div class="card-row">
+          <div class="input-group">
+            <label class="input-label">Expiry date</label>
+            <input
+              type="text"
+              class="text-input"
+              placeholder="mm/yyyy"
+              inputmode="numeric"
+            >
+          </div>
+          <div class="input-group">
+            <label class="input-label">Security code</label>
+            <div class="security-input">
+              <input
+                type="text"
+                class="text-input"
+                placeholder="xxx"
+                inputmode="numeric"
+                maxlength="4"
+              >
+              <div class="help-icon">?</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提交按钮 -->
+        <button class="submit-btn">PROCEED WITH PAYMENT</button>
       </div>
 
-      <!-- 主体内容 -->
-      <div class="cashier-body">
-        <!-- 余额显示 -->
-        <div class="balance-section">
-          <div class="balance-label">当前余额</div>
-          <div class="balance-amount">€{{ balance.toLocaleString() }}</div>
-        </div>
-
-        <!-- 操作按钮组 -->
-        <div class="action-buttons">
-          <button class="action-button deposit">
-            <svg viewBox="0 0 24 24" class="button-icon">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-            </svg>
-            <span>充值</span>
-          </button>
-
-          <button class="action-button withdraw">
-            <svg viewBox="0 0 24 24" class="button-icon">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
-            </svg>
-            <span>提现</span>
-          </button>
-        </div>
-
-        <!-- 占位内容 -->
-        <div class="placeholder-content">
-          <div class="placeholder-icon">💰</div>
-          <p class="placeholder-text">收银台功能开发中...</p>
-        </div>
-      </div>
-
-      <!-- 底部 -->
-      <div class="cashier-footer">
-        <button class="footer-button" @click="handleClose">关闭</button>
+      <!-- 底部余额显示 -->
+      <div class="footer">
+        Balance: <span class="balance-text">€881,217.16</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// Props
-interface Props {
-  balance?: number
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  balance: 0
-})
-
-// Emits
-const emit = defineEmits<{
-  close: []
-}>()
-
-// 数据
-const balance = ref(props.balance || 931889.82)
-
-// 方法
-const handleClose = () => {
-  emit('close')
-}
+// 纯静态展示，暂无逻辑
 </script>
 
 <style scoped>
-.cashier-overlay {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 背景遮罩 */
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
   z-index: 10000;
-  animation: fadeIn 0.3s ease;
 }
 
-.cashier-container {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-  border-radius: 16px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
+/* 模态框主体 - 移动端全宽 */
+.modal {
+  position: fixed;
+  top: 5vh;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 90vh;
+  background: #f5f5f5;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease;
 }
 
-/* 头部 */
-.cashier-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.cashier-title {
-  color: white;
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.close-button {
-  width: 32px;
-  height: 32px;
+/* 关闭按钮 */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
   border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  z-index: 10;
+  transition: background 0.3s;
 }
 
-.close-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
+.close-btn:hover,
+.close-btn:active {
+  background: rgba(0, 0, 0, 0.8);
 }
 
-.close-icon {
+.close-btn::before,
+.close-btn::after {
+  content: '';
+  position: absolute;
   width: 20px;
-  height: 20px;
-  fill: white;
+  height: 2px;
+  background: white;
 }
 
-/* 主体 */
-.cashier-body {
+.close-btn::before {
+  transform: rotate(45deg);
+}
+
+.close-btn::after {
+  transform: rotate(-45deg);
+}
+
+/* 顶部图片区域 */
+.header-image {
+  height: 70px;
+  background: linear-gradient(135deg, #8B9DC3 0%, #5B7FA6 100%);
+  position: relative;
+}
+
+/* 标题栏 */
+.header {
+  background: #5B7FA6;
+  color: white;
+  padding: 18px 20px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+}
+
+/* 内容区域 */
+.content {
   flex: 1;
-  padding: 24px;
+  padding: 25px 20px;
+  background: white;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* 余额显示 */
-.balance-section {
-  background: rgba(255, 215, 0, 0.1);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 24px;
+/* 表单部分 */
+.form-section {
+  margin-bottom: 28px;
 }
 
-.balance-label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 8px;
-}
-
-.balance-amount {
-  color: #ffd700;
-  font-size: 32px;
-  font-weight: bold;
-}
-
-/* 操作按钮 */
-.action-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.action-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.action-button.deposit {
-  border-color: rgba(82, 196, 26, 0.3);
-  background: rgba(82, 196, 26, 0.1);
-}
-
-.action-button.withdraw {
-  border-color: rgba(250, 173, 20, 0.3);
-  background: rgba(250, 173, 20, 0.1);
-}
-
-.action-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.button-icon {
-  width: 32px;
-  height: 32px;
-  fill: currentColor;
-}
-
-.action-button span {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 占位内容 */
-.placeholder-content {
-  text-align: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.placeholder-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.placeholder-text {
+.form-label {
+  color: #333;
   font-size: 16px;
-  margin: 0;
+  margin-bottom: 12px;
+  display: block;
 }
 
-/* 底部 */
-.cashier-footer {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  justify-content: center;
-}
-
-.footer-button {
-  padding: 10px 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.select-box {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
+  background: white;
+  color: #999;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.footer-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+/* 金额输入区 */
+.amount-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.currency-symbol {
+  font-size: 20px;
+  color: #333;
+  padding: 0 12px;
+  font-weight: 500;
+}
+
+.amount-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 17px;
+  -webkit-appearance: none;
+}
+
+/* 快捷金额按钮 */
+.quick-amounts {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.quick-amount-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  background: white;
+  color: #666;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.quick-amount-btn:active {
+  background: #f0f0f0;
+  border-color: #5B7FA6;
+  transform: scale(0.98);
+}
+
+/* 卡片信息输入 */
+.card-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.input-group {
+  flex: 1;
+}
+
+.input-label {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.text-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  -webkit-appearance: none;
+}
+
+.text-input::placeholder {
+  color: #bbb;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #5B7FA6;
+}
+
+/* 卡号输入特殊样式 */
+.card-number-input {
+  position: relative;
+}
+
+.card-number-input input {
+  padding-right: 55px;
+}
+
+.card-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 25px;
+  background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjUiIHZpZXdCb3g9IjAgMCA0MCAyNSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTQiIGN5PSIxMi41IiByPSIxMSIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIyNiIgY3k9IjEyLjUiIHI9IjExIiBmaWxsPSIjRkZBNTAwIiBvcGFjaXR5PSIwLjkiLz4KPC9zdmc+') no-repeat center;
+  background-size: contain;
+}
+
+/* 安全码输入 */
+.security-input {
+  position: relative;
+}
+
+.help-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  background: #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: #5B7FA6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 10px;
+}
+
+.submit-btn:active {
+  background: #4a6b8a;
+  transform: scale(0.98);
+}
+
+/* 底部余额栏 */
+.footer {
+  background: #1a1a1a;
+  color: #888;
+  padding: 15px 20px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.balance-text {
+  color: #f39c12;
+  font-weight: 600;
+  margin-left: 5px;
 }
 
 /* 滚动条 */
-.cashier-body::-webkit-scrollbar {
+.content::-webkit-scrollbar {
   width: 6px;
 }
 
-.cashier-body::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+.content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
 }
 
-.cashier-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+.content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
 
 /* 动画 */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -305,23 +424,24 @@ const handleClose = () => {
   }
 }
 
-/* 响应式 */
-@media (max-width: 480px) {
-  .cashier-container {
-    width: 95%;
-    max-height: 90vh;
+/* 移动端适配 */
+@media screen and (max-width: 380px) {
+  .content {
+    padding: 20px 15px;
   }
 
-  .cashier-body {
-    padding: 16px;
+  .card-row {
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .balance-amount {
-    font-size: 24px;
+  .quick-amounts {
+    gap: 8px;
   }
 
-  .action-buttons {
-    grid-template-columns: 1fr;
+  .quick-amount-btn {
+    font-size: 14px;
+    padding: 10px 8px;
   }
 }
 </style>
