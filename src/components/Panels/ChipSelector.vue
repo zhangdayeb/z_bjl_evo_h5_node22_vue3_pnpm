@@ -1,7 +1,10 @@
 <template>
   <div class="chips-container">
     <!-- 1元筹码 -->
-    <div class="chip-wrapper chip-wrapper-1" @click="selectChip(1)">
+    <div
+      class="chip-wrapper chip-wrapper-1"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(1)">
       <svg viewBox="0 0 78 78" class="chip chip-1">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -14,7 +17,10 @@
     </div>
 
     <!-- 2元筹码 -->
-    <div class="chip-wrapper chip-wrapper-2" @click="selectChip(2)">
+    <div
+      class="chip-wrapper chip-wrapper-2"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(2)">
       <svg viewBox="0 0 78 78" class="chip chip-2">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -27,7 +33,10 @@
     </div>
 
     <!-- 5元筹码 -->
-    <div class="chip-wrapper chip-wrapper-5" @click="selectChip(5)">
+    <div
+      class="chip-wrapper chip-wrapper-5"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(5)">
       <svg viewBox="0 0 78 78" class="chip chip-5">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -40,7 +49,10 @@
     </div>
 
     <!-- 25元筹码 -->
-    <div class="chip-wrapper chip-wrapper-25" @click="selectChip(25)">
+    <div
+      class="chip-wrapper chip-wrapper-25"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(25)">
       <svg viewBox="0 0 78 78" class="chip chip-25">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -53,7 +65,10 @@
     </div>
 
     <!-- 100元筹码 -->
-    <div class="chip-wrapper chip-wrapper-100" @click="selectChip(100)">
+    <div
+      class="chip-wrapper chip-wrapper-100"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(100)">
       <svg viewBox="0 0 78 78" class="chip chip-100">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -66,7 +81,10 @@
     </div>
 
     <!-- 500元筹码 -->
-    <div class="chip-wrapper chip-wrapper-500" @click="selectChip(500)">
+    <div
+      class="chip-wrapper chip-wrapper-500"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(500)">
       <svg viewBox="0 0 78 78" class="chip chip-500">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -79,7 +97,10 @@
     </div>
 
     <!-- 1000元筹码 -->
-    <div class="chip-wrapper chip-wrapper-1000" @click="selectChip(1000)">
+    <div
+      class="chip-wrapper chip-wrapper-1000"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="selectChip(1000)">
       <svg viewBox="0 0 78 78" class="chip chip-1000">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -91,19 +112,29 @@
       </svg>
     </div>
 
-    <!-- 收银台 -->
-    <div class="chip-wrapper chip-wrapper-cashier" @click="handleCashier" v-if="showCashier">
-      <svg viewBox="0 0 78 78" class="chip chip-cashier">
-        <g>
-          <circle class="chip-outer" cx="39" cy="39" r="38.5" style="fill: #000"></circle>
-          <circle class="chip-center" cx="39" cy="39" r="25.5" style="fill: #000"></circle>
-        </g>
-        <text class="chip-value" x="50%" y="50%" style="font-size: 16px; fill: #fff">€</text>
-      </svg>
+    <!-- 收银台 - 新样式 -->
+    <div
+      class="chip-wrapper chip-wrapper-cashier cashier-button"
+      :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
+      @click="handleCashier"
+      v-if="showCashier"
+      data-role="cashier-button">
+      <div class="cashier-button-up" data-role="chip-stack-cashier">
+        <div class="button-inner">
+          <svg viewBox="0 0 100 100" class="iconWrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon" height="75%" width="75%" x="12.5%" y="12.5%">
+              <path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2Zm2.77 8.02-.36 1.51H9.16v.83h5.13l-.36 1.51H9.35c.25.88.72 1.51 1.43 1.94.56.31 1.18.47 1.86.47.93 0 1.65-.22 2.12-.66l.42-.39v2.25l-.15.06c-.73.31-1.5.47-2.27.47-2.51 0-4.16-.94-5.05-2.88a6.39 6.39 0 0 1-.39-1.19H5.99l.36-1.51h.79v-.83H6.05l.36-1.51h.9c.35-1.52 1.25-2.69 2.62-3.38.87-.46 1.86-.7 2.94-.7.98 0 1.88.22 2.6.65l.17.1-.52 1.76-.29-.22a3.26 3.26 0 0 0-2.02-.68c-.81 0-1.5.19-2.09.57-.31.19-.59.48-.89.94-.2.3-.35.61-.44.9h5.37l.01-.01Z" fill="white"></path>
+            </svg>
+          </svg>
+        </div>
+        <div class="title">
+          <span class="text">CASHIER</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 选中的筹码圆环 -->
-    <div class="chip-wrapper chip-wrapper-select" :class="`select-${selectedChip}`">
+    <!-- 选中的筹码圆环 - 始终显示在最上层 -->
+    <div class="chip-wrapper chip-wrapper-select" :class="`select-${selectedChip}`" @click="toggleExpand">
       <svg viewBox="0 0 78 78" class="chip" :class="`chip-${selectedChip}`" style="width: 40px; height: 40px;">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
@@ -118,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 
 interface Props {
   showCashier?: boolean
@@ -134,10 +165,19 @@ const emit = defineEmits<{
 }>()
 
 const selectedChip = ref(100) // 默认选中100
+const isCollapsed = ref(true) // 初始状态为收起
 
+// 选择筹码
 const selectChip = (value: number) => {
   selectedChip.value = value
   emit('change', value)
+  // 选中后收起所有筹码
+  isCollapsed.value = true
+}
+
+// 切换展开/收起状态
+const toggleExpand = () => {
+  isCollapsed.value = !isCollapsed.value
 }
 
 const handleCashier = () => {
@@ -154,22 +194,16 @@ const getChipValueClass = (value: number) => {
   if (value >= 1000) return 'chip-value-small-more'
   return 'chip-value-normal'
 }
+
+// 组件挂载后自动展开
+onMounted(() => {
+  setTimeout(() => {
+    isCollapsed.value = false
+  }, 300)
+})
 </script>
 
 <style scoped>
-html {
-  height: 100%;
-}
-
-body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  min-height: 100vh;
-}
-
 .chips-container {
   display: flex;
   flex-wrap: wrap;
@@ -178,7 +212,6 @@ body {
   background: #ffffff;
   height: 170px;
   width: 170px;
-  border: #8B008B 1px solid;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -190,50 +223,129 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   cursor: pointer;
 }
 
-/* 半圆形分布位置 */
-.chip-wrapper-1 {
-  transform: translateX(-95px) translateY(50px);
-}
-.chip-wrapper-2 {
-  transform: translateX(-90px) translateY(10px);
-}
-.chip-wrapper-5 {
-  transform: translateX(-70px) translateY(-25px);
-}
-.chip-wrapper-25 {
-  transform: translateX(-38px) translateY(-50px);
-}
-.chip-wrapper-100 {
-  transform: translateX(3px) translateY(-50px);
-}
-.chip-wrapper-500 {
-  transform: translateX(35px) translateY(-25px);
-}
-.chip-wrapper-1000 {
-  transform: translateX(55px) translateY(10px);
-}
+/* 初始状态：所有筹码在中心位置 */
+.chip-wrapper-1,
+.chip-wrapper-2,
+.chip-wrapper-5,
+.chip-wrapper-25,
+.chip-wrapper-100,
+.chip-wrapper-500,
+.chip-wrapper-1000,
 .chip-wrapper-cashier {
-  transform: translateX(60px) translateY(50px);
+  /* 初始位置在中心 */
+  transform: translateX(-30px) translateY(10px);
+  opacity: 0;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* 选中的筹码圆环 */
+/* 展开状态：筹码飞到各自位置 */
+.chip-wrapper-1.chip-expanded {
+  transform: translateX(-95px) translateY(50px);
+  opacity: 1;
+}
+.chip-wrapper-2.chip-expanded {
+  transform: translateX(-90px) translateY(10px);
+  opacity: 1;
+}
+.chip-wrapper-5.chip-expanded {
+  transform: translateX(-70px) translateY(-25px);
+  opacity: 1;
+}
+.chip-wrapper-25.chip-expanded {
+  transform: translateX(-38px) translateY(-50px);
+  opacity: 1;
+}
+.chip-wrapper-100.chip-expanded {
+  transform: translateX(3px) translateY(-50px);
+  opacity: 1;
+}
+.chip-wrapper-500.chip-expanded {
+  transform: translateX(35px) translateY(-25px);
+  opacity: 1;
+}
+.chip-wrapper-1000.chip-expanded {
+  transform: translateX(55px) translateY(10px);
+  opacity: 1;
+}
+.chip-wrapper-cashier.chip-expanded {
+  transform: translateX(60px) translateY(50px);
+  opacity: 1;
+}
+
+/* 收起状态：筹码回到中心并隐藏 */
+.chip-collapsed {
+  transform: translateX(-30px) translateY(10px) !important;
+  opacity: 0 !important;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 收银台按钮特殊样式 */
+.chip-wrapper-cashier {
+  width: 32px;
+  height: 32px;
+}
+
+.cashier-button-up {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-inner {
+  width: 32px;
+  height: 32px;
+  background: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.iconWrapper {
+  height: 100%;
+  width: 100%;
+}
+
+.icon {
+  opacity: 80%;
+}
+
+.title {
+  margin-top: 2px;
+}
+
+.text {
+  font-size: 8px;
+  color: #999;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* 选中的筹码圆环 - 始终显示在最上层 */
 .chip-wrapper-select {
   border: 3px solid sandybrown;
   width: 50px;
   height: 50px;
   border-radius: 50px;
-  transform: translateX(-30px) translateY(10px);
+  transform: translateX(-30px) translateY(10px) !important;
   display: flex;
   align-items: center;
   justify-content: center;
   position: absolute;
   top: 50%;
   left: 50%;
-  pointer-events: none;
+  z-index: 100 !important;
+  cursor: pointer;
+}
+
+.chip-wrapper-select:hover {
+  transform: translateX(-30px) translateY(10px) scale(1.05) !important;
 }
 
 .chip {
@@ -299,16 +411,35 @@ body {
   stroke-width: 0.5;
 }
 
-/* 边缘白色条纹效果 */
-.chip-stripes {
-  fill: white;
-  opacity: 0.9;
+/* 筹码展开状态的悬停效果 */
+.chip-wrapper:not(.chip-wrapper-select).chip-expanded:hover {
+  filter: brightness(1.2);
+  transform: scale(1.1);
+  z-index: 10;
 }
 
-/* 筹码悬停效果 */
-.chip-wrapper:not(.chip-wrapper-select):hover {
-  transform: translateX(var(--hover-x, -95px)) translateY(var(--hover-y, 50px)) scale(1.1);
-  filter: brightness(1.2);
-  z-index: 10;
+.chip-wrapper-1.chip-expanded:hover {
+  transform: translateX(-95px) translateY(50px) scale(1.1);
+}
+.chip-wrapper-2.chip-expanded:hover {
+  transform: translateX(-90px) translateY(10px) scale(1.1);
+}
+.chip-wrapper-5.chip-expanded:hover {
+  transform: translateX(-70px) translateY(-25px) scale(1.1);
+}
+.chip-wrapper-25.chip-expanded:hover {
+  transform: translateX(-38px) translateY(-50px) scale(1.1);
+}
+.chip-wrapper-100.chip-expanded:hover {
+  transform: translateX(3px) translateY(-50px) scale(1.1);
+}
+.chip-wrapper-500.chip-expanded:hover {
+  transform: translateX(35px) translateY(-25px) scale(1.1);
+}
+.chip-wrapper-1000.chip-expanded:hover {
+  transform: translateX(55px) translateY(10px) scale(1.1);
+}
+.chip-wrapper-cashier.chip-expanded:hover {
+  transform: translateX(60px) translateY(50px) scale(1.1);
 }
 </style>
