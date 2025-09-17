@@ -6,18 +6,13 @@ import { useGameStore } from '@/stores/gameStore'
 // 导入工具函数
 import {
   BET_ZONE_CONFIGS,
-  type BetZoneConfig,
   type BetLimits,
   type BetResult,
   type BetHistoryStep,
-  getBetZoneConfig,
-  findBetTypeByRateId,
   updateBetLimitsFromTableInfo,
   calculateBetAmount,
   buildBetApiData,
-  validateBetData,
   getBetZoneDisplayName,
-  getBetZoneOdds,
   hasValidBets,
   calculateTotalBetAmount,
   clearBetsData,
@@ -40,20 +35,14 @@ import {
 import {
   type GameStatus,
   type GameResultData,
-  type WinResultData,
   parseFlashAreas,
-  parseWinAmount,
   mapRateIdsToBetTypes,
   canPlaceBet,
-  createClearBettingEvent,
   addClearBettingListener
 } from '@/utils/gameUtils'
 
 import {
-  isValidAmount,
   ensureNumber,
-  ensureString,
-  ensureBoolean
 } from '@/utils/validationUtils'
 
 import {

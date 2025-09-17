@@ -4,40 +4,40 @@
     <!-- 筹码选择器 -->
     <transition name="panel-fade">
       <ChipSelector
-        v-if="uiStore.chipSelector"
-        @close="uiStore.close"
+        v-if="overLayerStore.chipSelector"
+        @close="overLayerStore.close"
       />
     </transition>
 
     <!-- 中奖效果 -->
     <transition name="effect-fade">
       <WinningEffect
-        v-if="uiStore.winningEffect"
-        @close="uiStore.close"
+        v-if="overLayerStore.winningEffect"
+        @close="overLayerStore.close"
       />
     </transition>
 
     <!-- 露珠列表 -->
     <transition name="panel-fade">
       <LuZhuList
-        v-if="uiStore.luZhuList"
-        @close="uiStore.close"
+        v-if="overLayerStore.luZhuList"
+        @close="overLayerStore.close"
       />
     </transition>
 
     <!-- 设置面板 -->
     <transition name="panel-fade">
       <SettingsPanel
-        v-if="uiStore.settingsPanel"
-        @close="uiStore.close"
+        v-if="overLayerStore.settingsPanel"
+        @close="overLayerStore.close"
       />
     </transition>
 
     <!-- 收银台 -->
     <transition name="panel-fade">
       <Cashier
-        v-if="uiStore.cashier"
-        @close="uiStore.close"
+        v-if="overLayerStore.cashier"
+        @close="overLayerStore.close"
       />
     </transition>
   </div>
@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import { useUIStore } from '@/stores/uiStore'
+import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // 组件导入
 import ChipSelector from '@/components/Panels/ChipSelector.vue'
@@ -54,12 +54,12 @@ import LuZhuList from '@/components/Panels/LuZhuList.vue'
 import SettingsPanel from '@/components/Panels/SettingsPanel.vue'
 import Cashier from '@/components/Panels/Cashier.vue'
 
-const uiStore = useUIStore()
+const overLayerStore = useoverLayerStore()
 
 // ESC 关闭当前面板
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    uiStore.close()
+    overLayerStore.close()
   }
 }
 

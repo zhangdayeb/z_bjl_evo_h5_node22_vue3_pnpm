@@ -3,7 +3,7 @@ import { getValidatedParams } from '@/utils/urlParams'
 import { getGlobalApiService, setGlobalApiService, createGameApiService } from '@/services/gameApi'
 import { getWebSocketService } from '@/services/websocket'
 import { useGameStore } from '@/stores/gameStore'
-import { useUIStore } from '@/stores/uiStore'
+import { useoverLayerStore } from '@/stores/overLayerStore'
 import { useAudio } from '@/services/Audio'
 import { buildVideoUrl, formatGameNumberFromApi } from '@/utils/formatters'
 
@@ -354,7 +354,7 @@ async function handleCountdownMessage(data: any) {
 // 🔥 修改：处理开牌结果 - 增加防重复、数据更新、增强日志和音效
 async function handleGameResult(data: any) {
   const gameStore = useGameStore()
-  const uiStore = useUIStore()
+  const overLayerStore = useoverLayerStore()
 
   // 🔥 防重复处理：检查当前铺是否已处理过开牌
   if (gameProcessingState.cardResultProcessed) {
@@ -384,7 +384,7 @@ async function handleGameResult(data: any) {
     await updateAllGameData('开牌')
 
     // 3. 🔥 显示开牌效果弹窗
-    // uiStore.showCardResult()
+    // overLayerStore.showCardResult()
 
     // 4. 🔥 播放开牌音效序列：kai.mp3 + 闪烁区域音效
     if (cardResult.audioFiles.length > 0) {
@@ -401,7 +401,7 @@ async function handleGameResult(data: any) {
 
     // 6. 🔥 5秒后自动关闭开牌效果
     setTimeout(() => {
-      // uiStore.hideCardResult()
+      // overLayerStore.hideCardResult()
     }, 5000)
 
     console.log('🎯 开牌结果处理完成')
@@ -413,7 +413,7 @@ async function handleGameResult(data: any) {
 // 🔥 修改：处理中奖信息 - 增加防重复、数据更新、增强日志
 async function handleBetResult(data: any) {
   const gameStore = useGameStore()
-  const uiStore = useUIStore()
+  const overLayerStore = useoverLayerStore()
 
   // 🔥 防重复处理：检查当前铺是否已处理过中奖
   if (gameProcessingState.betResultProcessed) {
@@ -437,11 +437,11 @@ async function handleBetResult(data: any) {
   await updateAllGameData('中奖信息')
 
   // 3. 🔥 显示中奖效果
-  uiStore.open('winningEffect')
+  overLayerStore.open('winningEffect')
 
   // 4. 🔥 5秒后自动关闭
   setTimeout(() => {
-    uiStore.close()
+    overLayerStore.close()
   }, 5000)
 
   console.log('🏆 中奖信息处理完成')

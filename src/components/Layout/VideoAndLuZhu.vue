@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
-import { useConfigStore } from '@/stores/configStore'
+import { useVideoAndLuZhuTopConfigStore } from '@/stores/VideoAndLuZhuTopConfigStore'
 
 // 组件导入
 import VideoPlayer from '@/components/VideoPlayer/VideoPlayer.vue'
@@ -70,10 +70,10 @@ import LuZhu from './LuZhu.vue'
 
 // 使用 Stores
 const gameStore = useGameStore()
-const configStore = useConfigStore()
+const VideoAndLuZhuTopConfigStore = useVideoAndLuZhuTopConfigStore()
 
 // 响应式数据
-const isVideoOnTop = computed(() => configStore.isVideoOnTop)
+const isVideoOnTop = computed(() => VideoAndLuZhuTopConfigStore.isVideoOnTop)
 const containerWidth = ref(window.innerWidth)
 const videoHeight = ref(300)
 const luzhuHeight = ref(233) // 固定露珠高度为233px
@@ -150,9 +150,9 @@ const iconStyles = computed(() => {
 
 // 切换位置
 const togglePosition = () => {
-  console.log('切换前:', configStore.videoAndLuZhuWhoIsTop)
-  configStore.togglePosition()
-  console.log('切换后:', configStore.videoAndLuZhuWhoIsTop)
+  console.log('切换前:', VideoAndLuZhuTopConfigStore.videoAndLuZhuWhoIsTop)
+  VideoAndLuZhuTopConfigStore.togglePosition()
+  console.log('切换后:', VideoAndLuZhuTopConfigStore.videoAndLuZhuWhoIsTop)
 }
 
 // 视频事件处理器

@@ -1,8 +1,8 @@
-// src/stores/configStore.ts
+// src/stores/VideoAndLuZhuTopConfigStore.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-export const useConfigStore = defineStore('config', () => {
+export const useVideoAndLuZhuTopConfigStore = defineStore('config', () => {
   // ==================== 核心配置 ====================
 
   // 视频和露珠谁在上面：'LuZhu' | 'Video'

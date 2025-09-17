@@ -20,33 +20,16 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useConfigStore } from '@/stores/configStore'
 
 // 导入三层组件
 import VideoAndLuZhu from './VideoAndLuZhu.vue'
 import UserBet from './UserBet.vue'
 import Overlay from './Overlay.vue'
 
-// Stores
-const configStore = useConfigStore()
+
 
 onMounted(() => {
-  console.log('🎮 GameRun 三层布局已加载')
 
-  // ========== 手动配置区域 ==========
-
-  // 配置1：设置视频/露珠位置 ('Video' 或 'LuZhu')
-  configStore.videoAndLuZhuWhoIsTop = 'Video'  // 修改这里测试
-
-  // 配置2：设置显示比例 (false: 60%/40%, true: 50%/50%)
-  configStore.userBetExpanded = false  // 修改这里测试
-
-  // ========== 配置结束 ==========
-
-  console.log('📐 当前配置:')
-  console.log('├─ 顶部显示:', configStore.videoAndLuZhuWhoIsTop)
-  console.log('├─ 展开状态:', configStore.userBetExpanded)
-  console.log('└─ 显示比例:', configStore.userBetExpanded ? '50%/50%' : '60%/40%')
 })
 </script>
 

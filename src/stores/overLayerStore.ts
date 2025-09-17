@@ -1,10 +1,10 @@
-// src/stores/uiStore.ts
+// src/stores/overLayerStore.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 type PanelType = 'chipSelector' | 'winningEffect' | 'luZhuList' | 'settingsPanel' | 'cashier'
 
-export const useUIStore = defineStore('ui', () => {
+export const useoverLayerStore = defineStore('ui', () => {
   // 当前打开的面板
   const activePanel = ref<PanelType | null>(null)
 
