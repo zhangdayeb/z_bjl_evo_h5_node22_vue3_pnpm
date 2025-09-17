@@ -117,7 +117,6 @@
       class="chip-wrapper chip-wrapper-cashier cashier-button"
       :class="{ 'chip-expanded': !isCollapsed, 'chip-collapsed': isCollapsed }"
       @click="handleCashier"
-      v-if="showCashier"
       data-role="cashier-button">
       <div class="cashier-button-up" data-role="chip-stack-cashier">
         <div class="button-inner">
@@ -150,14 +149,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
-interface Props {
-  showCashier?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  showCashier: true
-})
 
 const emit = defineEmits<{
   'change': [value: number]
@@ -226,19 +217,27 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* 初始状态：所有筹码在中心位置 */
+/* 初始状态：所有筹码在中心位置（包括收银台） */
 .chip-wrapper-1,
 .chip-wrapper-2,
 .chip-wrapper-5,
 .chip-wrapper-25,
 .chip-wrapper-100,
 .chip-wrapper-500,
-.chip-wrapper-1000,
-.chip-wrapper-cashier {
+.chip-wrapper-1000 {
   /* 初始位置在中心 */
   transform: translateX(-30px) translateY(10px);
   opacity: 0;
   transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 收银台按钮初始状态 */
+.chip-wrapper-cashier {
+  transform: translateX(-30px) translateY(10px);
+  opacity: 0;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 32px;
+  height: 32px;
 }
 
 /* 展开状态：筹码飞到各自位置 */
