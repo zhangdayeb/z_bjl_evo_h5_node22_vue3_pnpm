@@ -2,14 +2,14 @@
 <template>
   <div class="winning-effect-overlay">
     <div class="winning-display">
-      <!-- 背景光晕 -->
-      <div class="glow-bg"></div>
+      <canvas ref="arcCanvas" class="arc-canvas"></canvas>
 
-      <!-- YOU WIN 文字 -->
-      <div class="win-text">YOU WIN</div>
+      <!-- 文字内容 -->
+      <div class="content-wrapper">
+        <!-- YOU WIN 文字 -->
+        <div class="win-text">YOU WIN</div>
 
-      <!-- 金额显示 -->
-      <div class="amount-container">
+        <!-- 金额显示 -->
         <div class="amount">
           <span class="currency">€</span>13,271.04
         </div>
@@ -19,7 +19,159 @@
 </template>
 
 <script setup lang="ts">
-// 暂时静态，不需要任何props或逻辑
+import { onMounted, onUnmounted, ref } from 'vue';
+
+const arcCanvas = ref<HTMLCanvasElement | null>(null);
+
+function drawArc() {
+  if (!arcCanvas.value) return;
+
+  const canvas = arcCanvas.value;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  // 设置参数
+  const width = window.innerWidth; // 100% 宽度
+  const arcDegrees = 180; // 180度
+  const squashFactor = 0.6; // 压扁程度 60%
+  const centerOpacity = 1; // 中心透明度 100%
+
+  // 将角度转换为弧度
+  const arcRadians = (arcDegrees * Math.PI) / 180;
+
+  // 计算椭圆的半径
+  const radiusX = width / 2;
+  const radiusY = radiusX * squashFactor;
+
+  // 计算弧形的实际高度
+  const startAngle = (Math.PI - arcRadians) / 2;
+  const endAngle = Math.PI - startAngle;
+  const arcHeight = radiusY * (1 - Math.cos(arcRadians / 2));
+
+  // 调整canvas尺寸
+  canvas.width = width;
+  canvas.height = arcHeight + 40;
+
+  // 清除画布
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 计算椭圆中心位置
+  const centerX = canvas.width / 2;
+  const centerY = radiusY - arcHeight + 20;
+
+  // 保存上下文状态
+  ctx.save();
+
+  // 创建椭圆弧形裁剪路径
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, startAngle, endAngle, false);
+  ctx.lineTo(centerX, centerY);
+  ctx.closePath();
+  ctx.clip();
+
+  // 创建椭圆形径向渐变
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.scale(1, squashFactor);
+
+  const gradient = ctx.createRadialGradient(
+    0, 0, 0,
+    0, 0, radiusX
+  );
+
+  // 慢-快渐变模式：前60%缓慢，后40%快速
+  gradient.addColorStop(0, `rgba(0, 0, 0, ${centerOpacity})`);
+  gradient.addColorStop(0.2, `rgba(0, 0, 0, ${centerOpacity * 0.95})`);
+  gradient.addColorStop(0.4, `rgba(0, 0, 0, ${centerOpacity * 0.85})`);
+  gradient.addColorStop(0.6, `rgba(0, 0, 0, ${centerOpacity * 0.7})`);
+  gradient.addColorStop(0.75, `rgba(0, 0, 0, ${centerOpacity * 0.4})`);
+  gradient.addColorStop(0.85, `rgba(0, 0, 0, ${centerOpacity * 0.15})`);
+  gradient.addColorStop(0.95, `rgba(0, 0, 0, ${centerOpacity * 0.03})`);
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(-radiusX, -radiusY / squashFactor, radiusX * 2, radiusY * 2 / squashFactor);
+
+  ctx.restore();
+  ctx.restore();
+
+  // 绘制顶部发光金边
+  ctx.save();
+
+  // 计算顶部直线的起点和终点
+  const topLineStartX = centerX - radiusX * Math.sin(arcRadians / 2);
+  const topLineEndX = centerX + radiusX * Math.sin(arcRadians / 2);
+  const topLineY = centerY + radiusY * Math.cos(arcRadians / 2);
+
+  // 创建线性渐变，两边透明，中间金色
+  const edgeGradient = ctx.createLinearGradient(topLineStartX, topLineY, topLineEndX, topLineY);
+  edgeGradient.addColorStop(0, 'rgba(255, 215, 0, 0)');
+  edgeGradient.addColorStop(0.05, 'rgba(255, 215, 0, 0.2)');
+  edgeGradient.addColorStop(0.15, 'rgba(255, 215, 0, 0.6)');
+  edgeGradient.addColorStop(0.25, 'rgba(255, 215, 0, 0.9)');
+  edgeGradient.addColorStop(0.5, 'rgba(255, 215, 0, 1)');
+  edgeGradient.addColorStop(0.75, 'rgba(255, 215, 0, 0.9)');
+  edgeGradient.addColorStop(0.85, 'rgba(255, 215, 0, 0.6)');
+  edgeGradient.addColorStop(0.95, 'rgba(255, 215, 0, 0.2)');
+  edgeGradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+  // 设置金边样式
+  ctx.strokeStyle = edgeGradient;
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+
+  // 添加强烈的发光效果
+  ctx.shadowColor = '#FFD700';
+  ctx.shadowBlur = 15;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 3;
+
+  // 绘制顶部直线
+  ctx.beginPath();
+  ctx.moveTo(topLineStartX, topLineY);
+  ctx.lineTo(topLineEndX, topLineY);
+  ctx.stroke();
+
+  // 绘制第二层发光增强效果
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 1;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(topLineStartX, topLineY);
+  ctx.lineTo(topLineEndX, topLineY);
+  ctx.stroke();
+
+  // 绘制第三层柔和光晕
+  ctx.shadowBlur = 20;
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.4;
+  ctx.beginPath();
+  ctx.moveTo(topLineStartX, topLineY);
+  ctx.lineTo(topLineEndX, topLineY);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+let resizeTimeout: number;
+
+function handleResize() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    drawArc();
+  }, 100);
+}
+
+onMounted(() => {
+  drawArc();
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+  clearTimeout(resizeTimeout);
+});
 </script>
 
 <style scoped>
@@ -37,159 +189,88 @@
 
 .winning-display {
   position: relative;
-  text-align: center;
-  padding: 30px 120px 40px;
-  /* 非常浅的弧形背景 */
-  background: #0f0f0f;
-  border-radius: 0 0 50% 50% / 0 0 15% 15%;
-  min-width: 400px;
-  /* 顶部金色边框 */
-  border-top: 3px solid #ffd700;
-  box-shadow:
-    0 -3px 20px rgba(255, 215, 0, 0.5),
-    inset 0 -2px 10px rgba(255, 215, 0, 0.2);
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* 背景光晕 */
-.glow-bg {
+.arc-canvas {
   position: absolute;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 350px;
-  height: 150px;
-  background: radial-gradient(ellipse at center,
-    rgba(255, 215, 0, 0.15) 0%,
-    rgba(255, 215, 0, 0.08) 30%,
-    rgba(255, 215, 0, 0.03) 60%,
-    transparent 100%);
-  filter: blur(20px);
-  z-index: 0;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  z-index: 1;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  /* 删除所有内边距 */
+  padding: 0;
+  /* 稍微向上偏移 */
+  transform: translateY(-8px);
 }
 
 /* YOU WIN 文字 */
 .win-text {
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  opacity: 0.95;
+  color: #FFFFFF;
+  font-size: 26px;
+  /* 删除 font-weight: bold; */
+  text-align: center;
+  /* 删除所有外边距，让文字紧凑 */
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  text-shadow:
+    0 0 4px rgba(0, 0, 0, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* 金额显示容器 */
-.amount-container {
-  position: relative;
-  display: inline-block;
-}
-
-/* 金额文字 - 立体金色效果 */
+/* 金额显示 */
 .amount {
   color: #FFD700;
-  font-size: 48px;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  position: relative;
-  z-index: 2;
-  /* 立体文字效果 */
+  font-size: 42px;
+  font-weight: bold;
+  text-align: center;
+  /* 删除所有外边距，让文字紧凑 */
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  margin-top: 10px; /* 只保留很小的间距 */
   text-shadow:
-    /* 底部阴影 - 创建厚度 */
-    0 1px 0 #B8860B,
-    0 2px 0 #B8860B,
-    0 3px 0 #B8860B,
-    0 4px 0 #B8860B,
-    0 5px 0 #B8860B,
-    0 6px 0 #B8860B,
-    /* 深色边缘 */
-    0 7px 1px rgba(0, 0, 0, 0.4),
-    0 8px 2px rgba(0, 0, 0, 0.3),
-    0 9px 3px rgba(0, 0, 0, 0.2),
-    /* 外发光 */
-    0 0 20px rgba(255, 215, 0, 0.5),
-    0 0 40px rgba(255, 215, 0, 0.3),
-    0 0 60px rgba(255, 215, 0, 0.2);
-  /* 渐变填充 */
-  background: linear-gradient(
-    180deg,
-    #FFED4E 0%,
-    #FFD700 20%,
-    #FFC700 40%,
-    #FFB300 60%,
-    #B8860B 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+    0 0 4px rgba(0, 0, 0, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
 }
-
-/* 移除之前的伪元素发光效果 */
 
 /* 货币符号稍小 */
 .currency {
-  font-size: 0.85em;
-  margin-right: 3px;
-  /* 同样应用立体效果 */
-  background: linear-gradient(
-    180deg,
-    #FFED4E 0%,
-    #FFD700 20%,
-    #FFC700 40%,
-    #FFB300 60%,
-    #B8860B 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 0.9em;
+  margin-right: 2px;
 }
 
-/* 简单的呼吸光效 */
-@keyframes amountGlow {
-  0%, 100% {
+/* 删除所有移动端适配 */
+
+/* 可选：添加简单的淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
     opacity: 1;
+    transform: translateY(0);
   }
-  50% {
-    opacity: 0.85;
-  }
+}
+
+.win-text {
+  animation: fadeIn 0.6s ease-out;
 }
 
 .amount {
-  animation: amountGlow 3s ease-in-out infinite;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .winning-display {
-    padding: 25px 80px 35px;
-    min-width: 320px;
-  }
-
-  .amount {
-    font-size: 36px;
-  }
-
-  .win-text {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .winning-display {
-    padding: 20px 60px 30px;
-    min-width: 280px;
-  }
-
-  .amount {
-    font-size: 32px;
-  }
-
-  .win-text {
-    font-size: 14px;
-  }
-
-  .glow-bg {
-    width: 250px;
-    height: 120px;
-  }
+  animation: fadeIn 0.6s ease-out 0.2s both;
 }
 </style>
