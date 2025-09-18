@@ -69,7 +69,7 @@ const displayTime = computed(() => {
 })
 
 const isUrgent = computed(() => {
-  return timeLeft.value <= 5 && timeLeft.value > 0  // 保持5秒紧急状态
+  return timeLeft.value <= 3 && timeLeft.value > 0  // 最后3秒紧急状态
 })
 
 const progress = computed(() => {
@@ -80,11 +80,11 @@ const progress = computed(() => {
 const getColors = () => {
   if (isUrgent.value) {
     return {
-      r: 255,
-      g: 68,
-      b: 68,
-      hex: '#ff4444',
-      dark: '#cc2222'
+      r: 186,
+      g: 173,
+      b: 21,
+      hex: '#baad15',
+      dark: '#998f11'  // 稍微深一点的黄色
     }
   }
   return {
@@ -433,17 +433,23 @@ defineExpose({
 /* 紧急状态时数字保持白色，只改变光晕 */
 .countdown-number.urgent {
   color: white;
-  text-shadow: 0 0 6px rgba(255, 255, 150, 0.4);
-  animation: pulse 1s ease-in-out infinite;
+  text-shadow: 0 0 8px rgba(186, 173, 21, 0.6);
+  animation: pulse 1s ease-out infinite;
 }
 
-/* 脉动动画 */
+/* 脉动动画 - 每秒跳动一次 */
 @keyframes pulse {
-  0%, 100% {
+  0% {
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  80% {
     transform: translate(-50%, -50%) scale(1);
   }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
+  100% {
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
