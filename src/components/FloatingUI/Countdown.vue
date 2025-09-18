@@ -1,4 +1,4 @@
-<!-- src/components/FloatingUI/Countdown.vue - 霓虹灯效果倒计时 -->
+<!-- src/components/FloatingUI/Countdown.vue - 霓虹灯效果倒计时（圆环加宽版） -->
 <template>
   <div class="countdown-wrapper" v-show="showCountdown">
     <div class="countdown-container">
@@ -120,11 +120,11 @@ const drawCountdown = () => {
   bgCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'
   bgCtx.fill()
 
-  // 2. 绘制极淡的背景圆环轨道
+  // 2. 绘制极淡的背景圆环轨道（调整为8）
   bgCtx.beginPath()
   bgCtx.arc(centerX, centerY, radius, 0, Math.PI * 2)
   bgCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-  bgCtx.lineWidth = 4  // 10 * 0.4
+  bgCtx.lineWidth = 8  // 保持8的宽度
   bgCtx.stroke()
 
   // 3. 定义圆环的起始和结束角度
@@ -132,26 +132,26 @@ const drawCountdown = () => {
   const totalAngle = Math.PI * 2 * progress.value
   const endAngle = startAngle + totalAngle
 
-  // 4. 绘制发光效果（减弱光晕强度）
+  // 4. 绘制发光效果（加强光晕以配合更粗的圆环）
   if (progress.value > 0) {
     // 外层大光晕
     glowCtx.save()
-    glowCtx.filter = 'blur(5px)'  // 12px * 0.4 ≈ 5px
+    glowCtx.filter = 'blur(6px)'  // 稍微增加模糊度
     glowCtx.beginPath()
     glowCtx.arc(centerX, centerY, radius, startAngle, endAngle)
-    glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
-    glowCtx.lineWidth = 10  // 25 * 0.4
+    glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.2)`  // 稍微增加透明度
+    glowCtx.lineWidth = 12  // 增加光晕宽度
     glowCtx.lineCap = 'round'
     glowCtx.stroke()
     glowCtx.restore()
 
     // 中层光晕
     glowCtx.save()
-    glowCtx.filter = 'blur(2px)'  // 6px * 0.4 ≈ 2px
+    glowCtx.filter = 'blur(3px)'  // 稍微增加模糊度
     glowCtx.beginPath()
     glowCtx.arc(centerX, centerY, radius, startAngle, endAngle)
-    glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.2)`
-    glowCtx.lineWidth = 6  // 15 * 0.4
+    glowCtx.strokeStyle = `rgba(${color.r}, ${color.g}, ${color.b}, 0.25)`  // 稍微增加透明度
+    glowCtx.lineWidth = 10  // 增加光晕宽度
     glowCtx.lineCap = 'round'
     glowCtx.stroke()
     glowCtx.restore()
@@ -159,23 +159,23 @@ const drawCountdown = () => {
 
   // 5. 绘制双层圆环（深色底色 + 亮色边框）
   if (progress.value > 0) {
-    // 5.1 先绘制深色底层（更粗）
+    // 5.1 先绘制深色底层（调整为8的宽度）
     mainCtx.save()
     mainCtx.beginPath()
     mainCtx.arc(centerX, centerY, radius, startAngle, endAngle)
     mainCtx.strokeStyle = color.dark  // 深色
-    mainCtx.lineWidth = 4  // 10 * 0.4
+    mainCtx.lineWidth = 8  // 调整为8
     mainCtx.lineCap = 'round'
     mainCtx.stroke()
     mainCtx.restore()
 
-    // 5.2 绘制亮色边框（上下两条细线）
+    // 5.2 绘制亮色边框（上下两条细线，调整位置以适应8的宽度）
     // 外边缘亮线
     mainCtx.save()
     mainCtx.beginPath()
-    mainCtx.arc(centerX, centerY, radius + 1.6, startAngle, endAngle)  // 4 * 0.4
+    mainCtx.arc(centerX, centerY, radius + 3.5, startAngle, endAngle)  // 调整到外边缘
     mainCtx.strokeStyle = color.hex  // 亮色
-    mainCtx.lineWidth = 1  // 2 * 0.4 ≈ 1
+    mainCtx.lineWidth = 1  // 保持细线
     mainCtx.lineCap = 'round'
     mainCtx.stroke()
     mainCtx.restore()
@@ -183,9 +183,9 @@ const drawCountdown = () => {
     // 内边缘亮线
     mainCtx.save()
     mainCtx.beginPath()
-    mainCtx.arc(centerX, centerY, radius - 1.6, startAngle, endAngle)  // 4 * 0.4
+    mainCtx.arc(centerX, centerY, radius - 3.5, startAngle, endAngle)  // 调整到内边缘
     mainCtx.strokeStyle = color.hex  // 亮色
-    mainCtx.lineWidth = 1  // 2 * 0.4 ≈ 1
+    mainCtx.lineWidth = 1  // 保持细线
     mainCtx.lineCap = 'round'
     mainCtx.stroke()
     mainCtx.restore()
@@ -219,7 +219,7 @@ const drawCountdown = () => {
         // 创建径向渐变（中心完全透明，边缘不透明）
         const radialGradient = mainCtx.createRadialGradient(
           tailX, tailY, 0,      // 内圆中心
-          tailX, tailY, 8       // 外圆半径（20 * 0.4）
+          tailX, tailY, 10      // 增加外圆半径以适应更粗的圆环
         )
 
         // 设置渐变（更陡峭的过渡）
@@ -231,7 +231,7 @@ const drawCountdown = () => {
 
         // 应用径向渐变遮罩
         mainCtx.fillStyle = radialGradient
-        mainCtx.fillRect(tailX - 8, tailY - 8, 16, 16)  // 40 * 0.4 = 16
+        mainCtx.fillRect(tailX - 10, tailY - 10, 20, 20)  // 增加遮罩区域
 
         mainCtx.restore()
 
@@ -244,7 +244,7 @@ const drawCountdown = () => {
         mainCtx.beginPath()
         mainCtx.arc(centerX, centerY, radius, startAngle, safeEndAngle)
         mainCtx.strokeStyle = color.dark
-        mainCtx.lineWidth = 4
+        mainCtx.lineWidth = 8  // 保持8的宽度
         mainCtx.lineCap = 'round'
         mainCtx.stroke()
         mainCtx.restore()
@@ -252,7 +252,7 @@ const drawCountdown = () => {
         // 外边缘亮线
         mainCtx.save()
         mainCtx.beginPath()
-        mainCtx.arc(centerX, centerY, radius + 1.6, startAngle, safeEndAngle)
+        mainCtx.arc(centerX, centerY, radius + 3.5, startAngle, safeEndAngle)
         mainCtx.strokeStyle = color.hex
         mainCtx.lineWidth = 1
         mainCtx.lineCap = 'round'
@@ -262,7 +262,7 @@ const drawCountdown = () => {
         // 内边缘亮线
         mainCtx.save()
         mainCtx.beginPath()
-        mainCtx.arc(centerX, centerY, radius - 1.6, startAngle, safeEndAngle)
+        mainCtx.arc(centerX, centerY, radius - 3.5, startAngle, safeEndAngle)
         mainCtx.strokeStyle = color.hex
         mainCtx.lineWidth = 1
         mainCtx.lineCap = 'round'
@@ -271,14 +271,14 @@ const drawCountdown = () => {
       }
     }
 
-    // 7. 绘制圆环起点的亮点
+    // 7. 绘制圆环起点的亮点（稍微增大以配合更粗的圆环）
     mainCtx.save()
-    mainCtx.shadowBlur = 4  // 10 * 0.4
+    mainCtx.shadowBlur = 6  // 增加光晕
     mainCtx.shadowColor = color.hex
     mainCtx.beginPath()
     const startX = centerX + Math.cos(startAngle) * radius
     const startY = centerY + Math.sin(startAngle) * radius
-    mainCtx.arc(startX, startY, 2, 0, Math.PI * 2)  // 5 * 0.4 = 2
+    mainCtx.arc(startX, startY, 3, 0, Math.PI * 2)  // 稍微增大亮点
     mainCtx.fillStyle = color.hex
     mainCtx.fill()
     mainCtx.restore()
