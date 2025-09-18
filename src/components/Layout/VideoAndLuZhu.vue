@@ -77,6 +77,8 @@ const isVideoOnTop = computed(() => VideoAndLuZhuTopConfigStore.isVideoOnTop)
 const containerWidth = ref(window.innerWidth)
 const videoHeight = ref(300)
 const luzhuHeight = ref(233) // 固定露珠高度为233px
+// 计算属性：获取当前游戏状态
+const gameStatus = computed(() => gameStore.gameStatus)
 
 // 计算属性
 const currentVideoUrl = computed(() => {
@@ -117,12 +119,21 @@ const videoStyles = computed(() => {
 // 计算露珠区域的样式
 const luzhuStyles = computed(() => {
   if (isVideoOnTop.value) {
-    // 视频在上，露珠在底部
+    // 视频在上，露珠在下
+    if (gameStatus.value === 'betting') {
     return {
-      bottom: '320px', // 固定距离底部320px
+      bottom: '324px', // 固定距离底部320px
       height: '233px', // 固定高度233px
       zIndex: 1
     }
+    }else {
+      return {
+        bottom: '247px',  // 固定距离底部247px
+        height: '233px', // 固定高度233px
+        zIndex: 1
+      }
+    }
+
   } else {
     // 露珠在上
     return {

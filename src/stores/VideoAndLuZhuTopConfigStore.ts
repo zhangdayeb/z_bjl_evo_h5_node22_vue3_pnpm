@@ -6,7 +6,7 @@ export const useVideoAndLuZhuTopConfigStore = defineStore('config', () => {
   // ==================== 核心配置 ====================
 
   // 视频和露珠谁在上面：'LuZhu' | 'Video'
-  const videoAndLuZhuWhoIsTop = ref<'LuZhu' | 'Video'>('LuZhu')
+  const videoAndLuZhuWhoIsTop = ref<'LuZhu' | 'Video'>('Video')
 
   // UserBet展开状态：false = 40%高度，true = 50%高度
   const userBetExpanded = ref(false)
