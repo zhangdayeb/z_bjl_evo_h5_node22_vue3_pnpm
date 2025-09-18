@@ -1,12 +1,12 @@
 <template>
-  <div class="chip-action-container">
-    <!-- 内容包装器 - 整体居中 -->
-    <div class="content-wrapper">
+  <div class="chip-action-container" :class="{ 'dealing-mode': gameStatus === 'dealing' }">
+    <!-- 内容包装器 - 投注状态时显示 -->
+    <div class="content-wrapper" v-show="gameStatus === 'betting'">
 
       <!-- UNDO 组 -->
       <div class="action-group">
         <span class="action-label">UNDO</span>
-        <button class="circle-button">
+        <button class="circle-button" @click="handleUndo">
           <svg viewBox="0 0 24 24">
             <path d="M13 6H9V4L4 7l5 3V8h4a4.5 4.5 0 1 1 0 9H5v2h8a6.5 6.5 0 1 0 0-13Z"/>
           </svg>
@@ -57,7 +57,7 @@
 
       <!-- DOUBLE 组 -->
       <div class="action-group">
-        <button class="circle-button">
+        <button class="circle-button" @click="handleDouble">
           <svg viewBox="0 0 24 24">
             <path d="M12.017 18.881v-1.49l4.63-4.81c.458-.477.841-.92 1.148-1.275l.082-.095c.287-.344.529-.724.72-1.13a2.57 2.57 0 0 0 .25-1.14 2.12 2.12 0 0 0-.33-1.18 2.17 2.17 0 0 0-.87-.77 2.83 2.83 0 0 0-1.25-.27 2.67 2.67 0 0 0-1.29.3 2.21 2.21 0 0 0-.84.85 2.67 2.67 0 0 0-.29 1.29h-2a4.14 4.14 0 0 1 .58-2.19 3.88 3.88 0 0 1 1.58-1.45 4.85 4.85 0 0 1 2.28-.52 4.84 4.84 0 0 1 2.27.51 3.87 3.87 0 0 1 1.55 1.39c.373.6.564 1.294.55 2a4.107 4.107 0 0 1-.28 1.5 6.777 6.777 0 0 1-1 1.62c-.473.593-1.14 1.313-2 2.16l-2.72 2.85v.1h6.16v1.77l-8.93-.02zm-4.654-8.02L5.061 8.557 4 9.618l2.303 2.303-2.3 2.3 1.06 1.06 2.3-2.3 2.294 2.294 1.06-1.06-2.293-2.294 2.296-2.296-1.06-1.06-2.297 2.295Z"/>
           </svg>
@@ -70,7 +70,31 @@
 </template>
 
 <script setup lang="ts">
-// 暂时保留为空，纯静态版本
+import { computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
+
+// 获取游戏状态管理器
+const gameStore = useGameStore()
+
+// 计算属性：获取当前游戏状态
+const gameStatus = computed(() => gameStore.gameStatus)
+
+// 事件处理函数
+const handleUndo = () => {
+  // 只在投注状态下才能执行撤销
+  if (gameStatus.value === 'betting') {
+    console.log('执行撤销操作')
+    // TODO: 调用撤销投注的逻辑
+  }
+}
+
+const handleDouble = () => {
+  // 只在投注状态下才能执行双倍
+  if (gameStatus.value === 'betting') {
+    console.log('执行双倍操作')
+    // TODO: 调用双倍投注的逻辑
+  }
+}
 </script>
 
 <style scoped>
@@ -86,6 +110,12 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: height 0.3s ease;
+}
+
+/* 开牌状态：高度减少到22px */
+.chip-action-container.dealing-mode {
+  height: 22px;
 }
 
 /* 内容包装器 - 三个元素整体居中 */
@@ -93,6 +123,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: opacity 0.2s ease;
 }
 
 /* 圆形按钮组 - UNDO 和 DOUBLE */
@@ -120,6 +151,10 @@
 .circle-button:hover {
   background: rgba(128, 128, 128, 0.2);
   transform: scale(1.05);
+}
+
+.circle-button:active {
+  transform: scale(0.95);
 }
 
 .circle-button svg {
@@ -175,6 +210,15 @@
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
+/* 鼠标悬停效果 */
+.chips-display:hover .left-chip {
+  transform: translateX(-10px);
+}
+
+.chips-display:hover .right-chip {
+  transform: translateX(10px);
+}
+
 /* SVG 筹码样式 */
 .chip {
   width: 100%;
@@ -200,10 +244,6 @@
   font-size: 18px;
 }
 
-.chip-value-small-more {
-  font-size: 14px;
-}
-
 /* 筹码颜色 */
 /* 2元 - 粉色 */
 .chip-2 .chip-outer { fill: #ff82d6; }
@@ -219,14 +259,4 @@
 .chip-100 .chip-outer { fill: #1a1a1a; }
 .chip-100 .chip-border { fill: rgba(26, 26, 26, 0.3); }
 .chip-100 .chip-center { fill: #1a1a1a; }
-
-/* 500元 - 紫色 */
-.chip-500 .chip-outer { fill: #8548b0; }
-.chip-500 .chip-border { fill: rgba(133, 72, 176, 0.3); }
-.chip-500 .chip-center { fill: #8548b0; }
-
-/* 1000元 - 金色 */
-.chip-1000 .chip-outer { fill: #de9807; }
-.chip-1000 .chip-border { fill: rgba(222, 152, 7, 0.3); }
-.chip-1000 .chip-center { fill: #de9807; }
 </style>

@@ -1,12 +1,12 @@
 <template>
   <div class="user-bet-container">
     <!-- 投注区域 - 固定高度和位置 -->
-    <div class="betting-area-section">
+    <div class="betting-area-section"  :class="{ 'dealing-mode': gameStatus === 'dealing' }">
       <BettingArea />
     </div>
 
     <!-- 筹码操作栏 - 固定高度和位置 -->
-    <div class="chip-action-section">
+    <div class="chip-action-section"  :class="{ 'dealing-mode': gameStatus === 'dealing' }">
       <ChipAction />
     </div>
 
@@ -28,6 +28,16 @@ import ChipAction from '@/components/BetArea/ChipAction.vue'
 import GameCount from '@/components/BetArea/GameCount.vue'
 import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
 import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
+
+import { computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
+
+// 获取游戏状态管理器
+const gameStore = useGameStore()
+
+// 计算属性：获取当前游戏状态
+const gameStatus = computed(() => gameStore.gameStatus)
+
 </script>
 
 <style scoped>
@@ -64,19 +74,25 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
   right: 0;
   height: 45px;
   z-index: 99;
-  background: rgba(0, 0, 0, 0.9);
+}
+.chip-action-section.dealing-mode {
+  height: 22px;
 }
 
 /* 投注区域 - 固定在筹码操作栏上方 */
 .betting-area-section {
   position: absolute;
-  bottom: 90px; /* 统计栏50px + 筹码栏120px */
+  bottom: 90px;
   left: 0;
   right: 0;
   height: 230px;
   z-index: 98;
   justify-content: center;
   overflow: hidden;
+}
+.betting-area-section.dealing-mode {
+  height: 180px;
+  bottom: 68px;
 }
 
 /* 悬浮按钮位置 */
@@ -108,6 +124,9 @@ import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
   .betting-area-section {
     bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+  .betting-area-section.dealing-mode {
+    bottom: calc(68px + env(safe-area-inset-bottom));
   }
 
   .floating-button-left,
