@@ -2,10 +2,7 @@
   <div class="button-luzhu-container">
     <button
       class="button-luzhu"
-      :class="{ 'active': isActive }"
       @click="handleClick"
-      @mouseenter="isHovered = true"
-      @mouseleave="isHovered = false"
     >
       <span class="button-content">
         <div class="button-base"></div>
@@ -25,29 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// Props
-interface Props {
-  active?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  active: false
-})
-
 // Emits
 const emit = defineEmits<{
   click: []
 }>()
 
-// State
-const isHovered = ref(false)
-const isActive = ref(props.active)
-
 // Methods
 const handleClick = () => {
-  isActive.value = !isActive.value
   emit('click')
 }
 </script>
@@ -63,38 +44,15 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   background: rgba(26, 26, 26, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 44px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-}
-
-.button-luzhu:hover {
-  background: rgba(40, 40, 40, 0.95);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(255, 255, 255, 0.05);
-}
-
-.button-luzhu.active {
-  background: rgba(133, 72, 176, 0.15);
-  border-color: rgba(133, 72, 176, 0.3);
-}
-
-.button-luzhu.active:hover {
-  background: rgba(133, 72, 176, 0.2);
-  border-color: rgba(133, 72, 176, 0.4);
-  box-shadow:
-    0 4px 12px rgba(133, 72, 176, 0.2),
-    0 0 20px rgba(133, 72, 176, 0.1);
 }
 
 .button-content {
@@ -109,7 +67,7 @@ const handleClick = () => {
 .button-base {
   position: absolute;
   inset: 1px;
-  border-radius: 6px;
+  border-radius: 44px;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.03) 0%,
     rgba(255, 255, 255, 0) 100%
@@ -121,108 +79,14 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   color: rgba(255, 255, 255, 0.8);
-  transition: color 0.3s ease;
-}
-
-.button-luzhu:hover .icon-wrapper {
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.button-luzhu.active .icon-wrapper {
-  color: #8548b0;
 }
 
 .icon {
   width: 100%;
   height: 100%;
   fill: currentColor;
-}
-
-/* 动画效果 */
-@keyframes pulse-luzhu {
-  0% {
-    box-shadow: 0 0 0 0 rgba(133, 72, 176, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(133, 72, 176, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(133, 72, 176, 0);
-  }
-}
-
-.button-luzhu.active {
-  animation: pulse-luzhu 2s infinite;
-}
-
-/* 悬浮提示 */
-.button-luzhu::before {
-  content: '露珠列表';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 8px;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  font-size: 12px;
-  border-radius: 4px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.button-luzhu::after {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 4px;
-  border: 4px solid transparent;
-  border-top-color: rgba(0, 0, 0, 0.9);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.button-luzhu:hover::before,
-.button-luzhu:hover::after {
-  opacity: 1;
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-  .button-luzhu {
-    width: 36px;
-    height: 36px;
-  }
-
-  .icon-wrapper {
-    width: 18px;
-    height: 18px;
-  }
-
-  .button-luzhu::before,
-  .button-luzhu::after {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .button-luzhu {
-    width: 32px;
-    height: 32px;
-  }
-
-  .icon-wrapper {
-    width: 16px;
-    height: 16px;
-  }
 }
 </style>
