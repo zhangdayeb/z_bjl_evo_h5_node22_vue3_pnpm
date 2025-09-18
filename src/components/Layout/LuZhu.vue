@@ -38,10 +38,10 @@
                         <circle
                           cx="10"
                           cy="10"
-                          r="8"
+                          r="7"
                           fill="none"
                           :stroke="item.result === 1 ? '#EC2024' : '#2E83FF'"
-                          stroke-width="1.5"
+                          stroke-width="3"
                         />
 
                         <!-- 庄对标记 -->
@@ -49,10 +49,10 @@
                           v-if="item.ext === 1 || item.ext === 3"
                           cx="15.5"
                           cy="15.5"
-                          r="2"
+                          r="4"
                           fill="#dc3545"
                           stroke="#1a1a1a"
-                          stroke-width="1"
+                          stroke-width="2"
                         />
 
                         <!-- 闲对标记 -->
@@ -60,10 +60,10 @@
                           v-if="item.ext === 2 || item.ext === 3"
                           cx="4.5"
                           cy="4.5"
-                          r="2"
+                          r="4"
                           fill="#007bff"
                           stroke="#1a1a1a"
-                          stroke-width="1"
+                          stroke-width="2"
                         />
 
                         <!-- 和局数字 -->
@@ -74,7 +74,7 @@
                           text-anchor="middle"
                           dominant-baseline="middle"
                           fill="#ffc107"
-                          font-size="8"
+                          font-size="12"
                           font-weight="bold"
                         >
                           {{ item.tieCount }}
@@ -171,20 +171,20 @@
                     }"
                   >
                     <svg viewBox="0 0 30 30">
-                      <circle cx="15" cy="15" r="14.5"
+                      <circle cx="15" cy="15" r="12"
                               :fill="getBeadColor(item)" />
-                      <text x="15" y="15" text-anchor="middle" dominant-baseline="middle"
+                      <text x="15" y="16" text-anchor="middle" dominant-baseline="middle"
                             fill="white" font-size="16" font-weight="bold">
                         {{ getBeadText(item) }}
                       </text>
 
                       <!-- 闲对标记 -->
                       <circle v-if="item.ext === 2 || item.ext === 3"
-                              cx="6" cy="6" r="2.5" fill="#2E83FF" />
+                              cx="6" cy="6" r="5" fill="#2E83FF" stroke="#1a1a1a" stroke-width="2" />
 
                       <!-- 庄对标记 -->
                       <circle v-if="item.ext === 1 || item.ext === 3"
-                              cx="24" cy="24" r="2.5" fill="#EC2024" />
+                              cx="24" cy="24" r="5" fill="#EC2024" stroke="#1a1a1a" stroke-width="2" />
                     </svg>
                   </div>
                 </div>
@@ -596,7 +596,6 @@ defineExpose({
 
 .big-road-section {
   height: 133px;
-  padding: 4px;
   box-sizing: border-box;
 }
 
