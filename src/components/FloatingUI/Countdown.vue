@@ -105,7 +105,10 @@ const displayTime = computed(() => {
  * @description 仅在投注状态时显示
  */
 const showCountdown = computed(() => {
-  return gameStore.gameStatus === 'betting'
+  if(gameStore.countdown == 0)
+    return false
+  else
+    return gameStore.gameStatus === 'betting'
 })
 
 /**
