@@ -2,7 +2,7 @@
   <div class="user-bet-container">
     <!-- 投注区域 - 固定高度和位置 -->
     <div class="betting-area-section"  :class="{ 'dealing-mode': gameStatus === 'dealing' }">
-      <BettingArea />
+      <BettingAreaLayout />
     </div>
 
     <!-- 筹码操作栏 - 固定高度和位置 -->
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 // 组件导入
-import BettingArea from '@/components/BetArea/BettingArea.vue'
+import BettingAreaLayout from '@/components/BetArea/BettingAreaLayout.vue'
 import ChipAction from '@/components/Layout/ChipAction.vue'
 import GameCount from '@/components/Layout/GameCount.vue'
 import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
