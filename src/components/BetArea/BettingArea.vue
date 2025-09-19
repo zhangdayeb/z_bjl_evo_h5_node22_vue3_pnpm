@@ -934,7 +934,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   display: flex;
-  gap: 6px;
   align-items: center;
   flex-direction: column;
 }
