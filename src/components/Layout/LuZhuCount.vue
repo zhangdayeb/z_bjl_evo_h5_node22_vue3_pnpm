@@ -247,7 +247,7 @@ const predictions = computed<Prediction>(() =>
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8px;
+  padding: 0px 6px 2px 6px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
