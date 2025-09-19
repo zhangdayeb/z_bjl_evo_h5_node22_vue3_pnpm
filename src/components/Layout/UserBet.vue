@@ -24,8 +24,8 @@
 <script setup lang="ts">
 // 组件导入
 import BettingArea from '@/components/BetArea/BettingArea.vue'
-import ChipAction from '@/components/BetArea/ChipAction.vue'
-import GameCount from '@/components/BetArea/GameCount.vue'
+import ChipAction from '@/components/Layout/ChipAction.vue'
+import GameCount from '@/components/Layout/GameCount.vue'
 import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
 import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
 
