@@ -33,7 +33,7 @@ import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // ========================= Store =========================
 const chipFlyStore = useChipFlyStore()
-const overlayStore = useoverLayerStore()
+const overLayerStore = useoverLayerStore()
 
 // ========================= 状态 =========================
 const isVisible = ref(false)
@@ -82,7 +82,7 @@ watch(() => chipFlyStore.currentChip, (newChip) => {
 const startAnimation = (chip: any) => {
   // 显示图层
   isVisible.value = true
-  overlayStore.open('chipFly')
+  overLayerStore.open('chipFly')
 
   // 设置飞行筹码
   flyingChip.value = { ...chip }
@@ -122,7 +122,7 @@ const onTransitionEnd = () => {
   isVisible.value = false
 
   // 关闭图层
-  overlayStore.close()
+  overLayerStore.close()
 }
 
 /**
