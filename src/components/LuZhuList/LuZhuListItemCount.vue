@@ -1,4 +1,4 @@
-<!-- LuZhuCount.vue - 统计栏组件 -->
+<!-- LuZhuListItemCount.vue - 统计栏组件 -->
 <template>
   <div class="statistics-bar">
     <!-- 左侧：统计数据组 -->

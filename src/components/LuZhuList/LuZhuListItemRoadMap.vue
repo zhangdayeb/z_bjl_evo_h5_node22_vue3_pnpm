@@ -1,4 +1,4 @@
-<!-- LuZhu.vue - 主露珠组件 -->
+<!-- LuZhuListItemRoadMap.vue - 主露珠组件 -->
 <template>
   <div class="luzhu-component">
     <div class="luzhu-wrapper">
