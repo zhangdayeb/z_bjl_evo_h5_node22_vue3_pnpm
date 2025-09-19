@@ -63,7 +63,7 @@ onMounted(async () => {
   setTimeout(() => {
     showLoading.value = false
     console.log('✅ 加载页面已隐藏，游戏界面激活')
-  }, 3000)
+  }, 100)
 })
 
 onUnmounted(() => {
