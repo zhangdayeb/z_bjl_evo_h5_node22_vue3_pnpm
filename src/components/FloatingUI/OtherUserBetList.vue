@@ -1,13 +1,13 @@
 <!-- src/components/FloatingUI/OtherUserBetList.vue - 其他用户投注列表 -->
 <template>
   <!-- 🔴 修改点1: v-show 改为使用 computed 属性 -->
-  <div class="bet-container" v-show="showBetList">
+  <div class="bet-container" v-show="showBetList" ref="betContainer">
     <!-- 顶部渐变遮罩 -->
     <div class="gradient-mask gradient-top"></div>
 
     <!-- 滚动内容 -->
     <div class="bet-scroll-wrapper">
-      <div class="bet-list" :style="{
+      <div class="bet-list" ref="betList" :style="{
         transform: `translate3d(0, ${translateY}px, 0)`,
         transition: `transform ${totalDuration}s linear`
       }">
@@ -82,8 +82,8 @@ export default {
   },
   computed: {
     totalDuration() {
-      const containerEl = this.$el;
-      const containerHeight = containerEl ? containerEl.offsetHeight : 400;
+      // 🔴 修复：使用 ref 获取容器
+      const containerHeight = this.$refs.betContainer ? this.$refs.betContainer.offsetHeight : 400;
       const totalDistance = this.currentBets.length * this.itemHeight + containerHeight + 100;
       return totalDistance / this.scrollSpeed;
     }
@@ -114,7 +114,7 @@ export default {
       })
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {  // 🔴 修复：Vue 3 使用 beforeUnmount 而不是 beforeDestroy
     this.stopAnimation();
   },
   methods: {
@@ -186,13 +186,14 @@ export default {
 
     // 开始滚动
     startScrolling() {
-      const containerEl = this.$el;
-      const containerHeight = containerEl ? containerEl.offsetHeight : 400;
+      // 🔴 修复：使用 ref 获取元素
+      const containerHeight = this.$refs.betContainer ? this.$refs.betContainer.offsetHeight : 400;
       const totalHeight = this.currentBets.length * this.itemHeight + 100;
 
       this.translateY = -totalHeight;
 
-      const betList = this.$el.querySelector('.bet-list');
+      // 🔴 修复：使用 ref 获取 betList 元素
+      const betList = this.$refs.betList;
       if (betList) {
         betList.style.paddingTop = `${containerHeight}px`;
       }

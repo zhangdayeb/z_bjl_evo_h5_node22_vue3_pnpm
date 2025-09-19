@@ -6,7 +6,7 @@
       :style="flyingChipStyle"
       @transitionend="onTransitionEnd"
     >
-      <svg viewBox="0 0 78 78" class="flying-chip" :class="`chip-${flyingChip.value}`">
+      <svg viewBox="0 0 78 78" class="flying-chip" :class="getChipClass(flyingChip.value)">
         <g>
           <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
           <path class="chip-border" d="M38.94 12.5A26.5 26.5 0 1 0 65.44 39a26.529 26.529 0 0 0-26.5-26.5zm0 52A25.5 25.5 0 1 1 64.439 39 25.53 25.53 0 0 1 38.94 64.5z"></path>
@@ -66,6 +66,7 @@ const flyingChipStyle = computed(() => {
 })
 
 // ========================= 监听 Store 变化 =========================
+
 watch(() => chipFlyStore.currentChip, (newChip) => {
   if (newChip) {
     startAnimation(newChip)
@@ -124,6 +125,20 @@ const onTransitionEnd = () => {
 
   // 关闭图层
   overlayStore.close()
+}
+
+/**
+ * 根据金额获取筹码样式类
+ */
+const getChipClass = (amount: number): string => {
+  // 根据金额选择最接近的筹码面值样式
+  if (amount >= 1000) return 'chip-1000'
+  if (amount >= 500) return 'chip-500'
+  if (amount >= 100) return 'chip-100'
+  if (amount >= 25) return 'chip-25'
+  if (amount >= 5) return 'chip-5'
+  if (amount >= 2) return 'chip-2'
+  return 'chip-1'
 }
 
 /**
