@@ -42,10 +42,10 @@ export default {
 <style scoped>
 .luzhu-container {
   position: fixed;
-  top: 0;
+  bottom: 0;  /* 靠底部对齐 */
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 85vh;  /* 设置高度为视口高度的85% */
   background: linear-gradient(135deg, #1a1a1f 0%, #2d2d35 100%);
   display: flex;
   align-items: center;
@@ -190,6 +190,10 @@ export default {
 
   .powered-text {
     font-size: 12px;
+  }
+
+  .luzhu-container {
+    height: 85vh;  /* 保持85%高度在移动端 */
   }
 }
 </style>
