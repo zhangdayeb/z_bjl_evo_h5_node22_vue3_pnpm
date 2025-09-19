@@ -24,7 +24,7 @@
             <svg class="icon-currency" viewBox="0 0 24 24" fill="white">
               <path d="M15 18.5C12.5 18.5 10.3 17.1 9.2 15H15L16 13H8.6C8.5 12.5 8.5 12 8.5 11.5S8.5 10.5 8.6 10H16L17 8H9.2C10.3 5.9 12.5 4.5 15 4.5C16.3 4.5 17.5 4.9 18.5 5.6L20 4.1C18.6 3 16.9 2.5 15 2.5C11.5 2.5 8.5 4.6 7.1 7.5H4L3 9.5H6.5C6.5 10 6.5 10.5 6.5 11S6.5 12 6.5 12.5H3L2 14.5H7.1C8.5 17.4 11.5 19.5 15 19.5C16.9 19.5 18.6 19 20 17.9L18.5 16.4C17.5 17.1 16.3 17.5 15 18.5Z"/>
             </svg>
-            <span class="amount">{{ bettingData.player.amount }}</span>
+            <span class="amount">{{ formatAmount(bettingData.player.amount) }}</span>
           </div>
           <div class="info-line">
             <svg class="icon-person" viewBox="0 0 24 24" fill="#00BFFF">
@@ -60,7 +60,7 @@
             <svg class="icon-currency" viewBox="0 0 24 24" fill="white">
               <path d="M15 18.5C12.5 18.5 10.3 17.1 9.2 15H15L16 13H8.6C8.5 12.5 8.5 12 8.5 11.5S8.5 10.5 8.6 10H16L17 8H9.2C10.3 5.9 12.5 4.5 15 4.5C16.3 4.5 17.5 4.9 18.5 5.6L20 4.1C18.6 3 16.9 2.5 15 2.5C11.5 2.5 8.5 4.6 7.1 7.5H4L3 9.5H6.5C6.5 10 6.5 10.5 6.5 11S6.5 12 6.5 12.5H3L2 14.5H7.1C8.5 17.4 11.5 19.5 15 19.5C16.9 19.5 18.6 19 20 17.9L18.5 16.4C17.5 17.1 16.3 17.5 15 18.5Z"/>
             </svg>
-            <span class="amount">{{ bettingData.banker.amount }}</span>
+            <span class="amount">{{ formatAmount(bettingData.banker.amount) }}</span>
           </div>
           <div class="info-line">
             <svg class="icon-person" viewBox="0 0 24 24" fill="#DAA520">
@@ -96,7 +96,7 @@
             <svg class="icon-currency" viewBox="0 0 24 24" fill="white">
               <path d="M15 18.5C12.5 18.5 10.3 17.1 9.2 15H15L16 13H8.6C8.5 12.5 8.5 12 8.5 11.5S8.5 10.5 8.6 10H16L17 8H9.2C10.3 5.9 12.5 4.5 15 4.5C16.3 4.5 17.5 4.9 18.5 5.6L20 4.1C18.6 3 16.9 2.5 15 2.5C11.5 2.5 8.5 4.6 7.1 7.5H4L3 9.5H6.5C6.5 10 6.5 10.5 6.5 11S6.5 12 6.5 12.5H3L2 14.5H7.1C8.5 17.4 11.5 19.5 15 19.5C16.9 19.5 18.6 19 20 17.9L18.5 16.4C17.5 17.1 16.3 17.5 15 18.5Z"/>
             </svg>
-            <span class="amount">{{ bettingData.tie.amount }}</span>
+            <span class="amount">{{ formatAmount(bettingData.tie.amount) }}</span>
           </div>
           <div class="info-line">
             <svg class="icon-person" viewBox="0 0 24 24" fill="#00FF00">
@@ -114,47 +114,103 @@
 /**
  * @fileoverview 百家乐投注统计信息显示层
  * @description 显示各投注区域的百分比、金额和人数统计
+ * @version 2.0.0 - 实现动态数据（真实投注+模拟数据）
  */
 
-import { ref } from 'vue'
-// import { useGameStore } from '@/stores/gameStore'
+import { computed } from 'vue'
+import { useBettingStore } from '@/stores/bettingStore'
 
 // ========================= 类型定义 =========================
 
 type BetZone = 'player' | 'banker' | 'tie'
 
 interface BettingInfo {
-  percentage: number
-  amount: number
-  count: number
+  percentage: number  // 百分比
+  amount: number      // 总金额
+  count: number       // 总人数
 }
 
-// ========================= Store =========================
-// const gameStore = useGameStore()
-// TODO: 实际项目中从 gameStore 获取数据
-// const bettingData = computed(() => gameStore.bettingStatistics)
+// ========================= Store 集成 =========================
+const bettingStore = useBettingStore()
 
-// ========================= 模拟数据 =========================
-const bettingData = ref<Record<BetZone, BettingInfo>>({
-  player: {
-    percentage: 20,
-    amount: 247.36,
-    count: 14
-  },
-  banker: {
-    percentage: 75,
-    amount: 1844.34,
-    count: 47
-  },
-  tie: {
-    percentage: 5,
-    amount: 141.39,
-    count: 11
+// ========================= 辅助函数 =========================
+
+/**
+ * 格式化金额显示
+ * @param amount 金额
+ * @returns 格式化后的字符串
+ */
+const formatAmount = (amount: number): string => {
+  // 保留2位小数
+  return amount.toFixed(2)
+}
+
+/**
+ * 计算单个区域的统计数据
+ * @param betType 投注类型
+ * @returns 该区域的统计信息
+ */
+const calculateZoneData = (betType: BetZone): { amount: number; count: number } => {
+  // 从 bettingStore 获取数据
+  const displayData = bettingStore.getBetZoneDisplayData(betType)
+
+  // 真实用户投注
+  const userAmount = displayData.userAmount || 0
+  const userCount = userAmount > 0 ? 1 : 0  // 如果用户有投注，算作1人
+
+  // 模拟的其他玩家数据
+  const otherAmount = displayData.otherTotalAmount || 0
+  const otherCount = displayData.otherPlayerCount || 0
+
+  // 合并真实和模拟数据
+  return {
+    amount: userAmount + otherAmount,
+    count: userCount + otherCount
+  }
+}
+
+// ========================= 计算属性 - 动态数据 =========================
+
+/**
+ * 计算所有区域的投注统计数据
+ * 包括真实投注和模拟数据的混合
+ */
+const bettingData = computed<Record<BetZone, BettingInfo>>(() => {
+  // 获取三个主要区域的数据
+  const playerData = calculateZoneData('player')
+  const bankerData = calculateZoneData('banker')
+  const tieData = calculateZoneData('tie')
+
+  // 计算总金额（用于百分比计算）
+  const totalAmount = playerData.amount + bankerData.amount + tieData.amount
+
+  // 避免除零错误
+  const safeTotal = totalAmount > 0 ? totalAmount : 1
+
+  // 计算百分比并返回结果
+  return {
+    player: {
+      percentage: Math.round((playerData.amount / safeTotal) * 100),
+      amount: playerData.amount,
+      count: playerData.count
+    },
+    banker: {
+      percentage: Math.round((bankerData.amount / safeTotal) * 100),
+      amount: bankerData.amount,
+      count: bankerData.count
+    },
+    tie: {
+      percentage: Math.round((tieData.amount / safeTotal) * 100),
+      amount: tieData.amount,
+      count: tieData.count
+    }
   }
 })
 </script>
 
 <style scoped>
+/* 样式保持不变，与原组件相同 */
+
 /* ========================= 层容器 ========================= */
 .user-bet-msg-layer {
   position: absolute;
