@@ -205,7 +205,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #d20606;
+  background: #9c261a;
   overflow: hidden;
 }
 
@@ -234,7 +234,7 @@ defineExpose({
   position: absolute;
   bottom: -100px;
   backdrop-filter: blur(10px);
-  background: linear-gradient(rgba(243, 40, 40, 0) 0%, rgb(243, 40, 40) 30%, rgb(210, 6, 6) 100%);
+  background: linear-gradient(rgba(243, 40, 40, 0) 0%, rgb(243, 40, 40) 30%, rgb(156, 38, 26) 100%);
 }
 
 /* 露珠区域 */
@@ -263,10 +263,10 @@ defineExpose({
   top: 15px;
   right: 15px;
   z-index: 20;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.3);
+  background: #353231;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
@@ -277,15 +277,7 @@ defineExpose({
   transition: all 0.3s ease;
 }
 
-.switch-button:hover {
-  background: rgba(0, 0, 0, 0.4);
-  color: rgba(255, 255, 255, 0.8);
-}
 
-.switch-button:active {
-  background: rgba(0, 0, 0, 0.5);
-  color: rgba(255, 255, 255, 0.9);
-}
 
 /* SVG 图标样式 */
 .swap-icon {
@@ -293,61 +285,9 @@ defineExpose({
   height: 18px;
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .countdown-overlay {
-    top: 15px;
-    right: 15px;
-  }
 
-  .switch-button {
-    width: 40px;
-    height: 40px;
-    top: 12px;
-    right: 12px;
-  }
 
-  .swap-icon {
-    width: 18px;
-    height: 16px;
-  }
-}
 
-@media (max-width: 768px) {
-  .countdown-overlay {
-    top: 10px;
-    right: 10px;
-  }
 
-  .switch-button {
-    width: 38px;
-    height: 38px;
-    top: 10px;
-    right: 10px;
-  }
 
-  .swap-icon {
-    width: 17px;
-    height: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .countdown-overlay {
-    top: 8px;
-    right: 8px;
-  }
-
-  .switch-button {
-    width: 36px;
-    height: 36px;
-    top: 8px;
-    right: 8px;
-  }
-
-  .swap-icon {
-    width: 16px;
-    height: 14px;
-  }
-}
 </style>

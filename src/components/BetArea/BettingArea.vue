@@ -558,7 +558,7 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  background-image: url('https://t.wd9898.top/rainbowpat.webp');
+  background-image: url('/src/assets/images/common/rainbowpat.webp');
   background-size: auto;
   background-repeat: repeat;
   background-position: center;
