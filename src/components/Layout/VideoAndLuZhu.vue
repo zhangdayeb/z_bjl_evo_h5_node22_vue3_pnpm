@@ -14,6 +14,8 @@
           @videoLoad="handleVideoLoad"
           @videoError="handleVideoError"
         />
+        <!----  添加一个背景元素 视频元素与背景渐变的过渡带 -->
+        <div class="video-to-backgroud" ></div>
 
         <!-- 倒计时 - 悬浮在视频右上角 -->
         <div class="countdown-overlay">
@@ -203,7 +205,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #8d744c;
+  background: #d5aa65;
   overflow: hidden;
 }
 
@@ -220,10 +222,19 @@ defineExpose({
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #000;
   position: relative; /* 为子组件提供定位上下文 */
+}
+
+.video-to-backgroud{
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  bottom: -100px;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(rgba(141, 116, 76, 0) 0%, rgb(141, 116, 76) 20px, rgb(213, 170, 101) 98%);
 }
 
 /* 露珠区域 */
