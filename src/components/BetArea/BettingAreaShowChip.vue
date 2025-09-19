@@ -119,7 +119,7 @@
  * @fileoverview 百家乐筹码显示层 - 核心交互层
  * @description 处理投注交互，显示各区域总金额（使用SVG筹码）
  */
-
+import { useoverLayerStore } from '@/stores/overLayerStore'
 import { ref, reactive } from 'vue'
 import { useChipFlyStore } from '@/stores/chipFlyStore'
 // import { useGameStore } from '@/stores/gameStore'
@@ -132,6 +132,8 @@ type BetZone = 'player' | 'banker' | 'tie' | 'player-pair' | 'banker-pair'
 const chipFlyStore = useChipFlyStore()
 // const gameStore = useGameStore()
 // const bettingStore = useBettingStore()
+const overLayerStore = useoverLayerStore()
+
 
 // ========================= DOM引用 =========================
 const playerClickArea = ref<HTMLElement>()
@@ -185,6 +187,7 @@ const handleBet = (zone: BetZone): void => {
   console.log(`[BettingArea] 点击投注区域: ${zone}, 筹码值: ${defaultChipValue.value}`)
 
   const targetPosition = getZoneCenterPosition(zone)
+  overLayerStore.open('chipFly')
 
   chipFlyStore.startFly({
     value: defaultChipValue.value,
@@ -315,6 +318,8 @@ defineExpose({
   justify-content: center;
   align-items: center;
   pointer-events: none;
+  background-color: #ffffff;
+  border-radius: 50%;
 }
 
 .player-chip-area {
