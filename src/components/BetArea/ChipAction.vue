@@ -13,8 +13,8 @@
         </button>
       </div>
 
-      <!-- 中间筹码堆叠 -->
-      <div class="chips-display">
+      <!-- 中间筹码堆叠 - 添加点击事件 -->
+      <div class="chips-display" @click="handleChipClick">
         <!-- 左侧筹码 - 2元粉色（只露出右边一小部分） -->
         <div class="stacked-chip left-chip">
           <svg viewBox="0 0 78 78" class="chip chip-2">
@@ -41,16 +41,16 @@
           </svg>
         </div>
 
-        <!-- 中间主筹码 - 100元黑色 -->
+        <!-- 中间主筹码 - 动态显示选中的筹码 -->
         <div class="stacked-chip main-chip">
-          <svg viewBox="0 0 78 78" class="chip chip-100">
+          <svg viewBox="0 0 78 78" class="chip" :class="`chip-${selectedChip}`">
             <g>
               <circle class="chip-outer" cx="39" cy="39" r="38.5"></circle>
               <path class="chip-border" d="M38.94 12.5A26.5 26.5 0 1 0 65.44 39a26.529 26.529 0 0 0-26.5-26.5zm0 52A25.5 25.5 0 1 1 64.439 39 25.53 25.53 0 0 1 38.94 64.5z"></path>
               <circle class="chip-center" cx="39" cy="39" r="25.5"></circle>
               <path class="chip-border" d="M38.941 0a39 39 0 1 0 39 39 39.046 39.046 0 0 0-39-39zm-2.088 76.439l.483-8.471a28.99 28.99 0 0 1-4.668-.639l-1.783 8.291a37.277 37.277 0 0 1-12.144-5.051l4.6-7.124a29.143 29.143 0 0 1-8.85-8.851l-7.124 4.6a37.28 37.28 0 0 1-5.045-12.13l8.3-1.784a28.99 28.99 0 0 1-.639-4.668l-8.483.482C1.463 40.4 1.44 39.7 1.44 39s.023-1.391.061-2.08l8.478.483a28.99 28.99 0 0 1 .639-4.668l-8.3-1.785a37.275 37.275 0 0 1 5.047-12.142l7.126 4.6a29.143 29.143 0 0 1 8.85-8.851l-4.6-7.125a37.28 37.28 0 0 1 12.142-5.05l1.786 8.3a28.99 28.99 0 0 1 4.668-.639l-.483-8.484c.692-.038 1.388-.061 2.089-.061s1.4.023 2.087.061l-.483 8.484a28.99 28.99 0 0 1 4.668.639L47 2.381a37.276 37.276 0 0 1 12.14 5.05l-4.6 7.126a29.14 29.14 0 0 1 8.849 8.85l7.127-4.6a37.276 37.276 0 0 1 5.044 12.142l-8.3 1.785a28.99 28.99 0 0 1 .64 4.666l8.478-.483c.038.689.061 1.382.061 2.08s-.023 1.4-.062 2.1l-8.477-.486a28.99 28.99 0 0 1-.639 4.668l8.3 1.784a37.282 37.282 0 0 1-5.046 12.132l-7.125-4.6a29.14 29.14 0 0 1-8.849 8.85l4.6 7.125A37.275 37.275 0 0 1 47 75.619l-1.783-8.291a28.99 28.99 0 0 1-4.668.639l.483 8.471c-.691.038-1.386.061-2.087.061s-1.401-.022-2.092-.06z"></path>
             </g>
-            <text class="chip-value chip-value-small" x="50%" y="50%" dy="7" font-weight="bold">100</text>
+            <text class="chip-value" :class="getChipValueClass(selectedChip)" x="50%" y="50%" dy="7" font-weight="bold">{{ getChipText(selectedChip) }}</text>
           </svg>
         </div>
       </div>
@@ -72,12 +72,32 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
+import { useBettingStore } from '@/stores/bettingStore'
+import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // 获取游戏状态管理器
 const gameStore = useGameStore()
+const bettingStore = useBettingStore()
+const overLayerStore = useoverLayerStore()
 
 // 计算属性：获取当前游戏状态
 const gameStatus = computed(() => gameStore.gameStatus)
+
+// 计算属性：获取选中的筹码
+const selectedChip = computed(() => bettingStore.selectedChip)
+
+// 辅助函数：获取筹码显示文本
+const getChipText = (value: number) => {
+  if (value === 1000) return '1K'
+  return value.toString()
+}
+
+// 辅助函数：获取筹码文字样式类
+const getChipValueClass = (value: number) => {
+  if (value >= 100 && value < 1000) return 'chip-value-small'
+  if (value >= 1000) return 'chip-value-small-more'
+  return 'chip-value-normal'
+}
 
 // 事件处理函数
 const handleUndo = () => {
@@ -93,6 +113,14 @@ const handleDouble = () => {
   if (gameStatus.value === 'betting') {
     console.log('执行双倍操作')
     // TODO: 调用双倍投注的逻辑
+  }
+}
+
+// 点击筹码打开选择面板
+const handleChipClick = () => {
+  if (gameStatus.value === 'betting') {
+    console.log('打开筹码选择面板')
+    overLayerStore.open('chipSelector')
   }
 }
 </script>
@@ -148,11 +176,6 @@ const handleDouble = () => {
   transition: all 0.2s ease;
 }
 
-.circle-button:hover {
-  background: rgba(128, 128, 128, 0.2);
-  transform: scale(1.05);
-}
-
 .circle-button:active {
   transform: scale(0.95);
 }
@@ -172,7 +195,7 @@ const handleDouble = () => {
   letter-spacing: 0.3px;
 }
 
-/* 中间筹码容器 */
+/* 中间筹码容器 - 添加点击交互 */
 .chips-display {
   width: 50px;
   height: 40px;
@@ -180,6 +203,7 @@ const handleDouble = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 /* 堆叠筹码 */
@@ -210,15 +234,6 @@ const handleDouble = () => {
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
-/* 鼠标悬停效果 */
-.chips-display:hover .left-chip {
-  transform: translateX(-10px);
-}
-
-.chips-display:hover .right-chip {
-  transform: translateX(10px);
-}
-
 /* SVG 筹码样式 */
 .chip {
   width: 100%;
@@ -236,6 +251,7 @@ const handleDouble = () => {
   dominant-baseline: central;
 }
 
+/* 字体大小 - 与ChipSelector保持一致 */
 .chip-value-normal {
   font-size: 22px;
 }
@@ -244,7 +260,16 @@ const handleDouble = () => {
   font-size: 18px;
 }
 
-/* 筹码颜色 */
+.chip-value-small-more {
+  font-size: 16px;
+}
+
+/* 筹码颜色 - 与ChipSelector保持一致 */
+/* 1元 - 灰色 */
+.chip-1 .chip-outer { fill: #808080; }
+.chip-1 .chip-border { fill: rgba(128, 128, 128, 0.3); }
+.chip-1 .chip-center { fill: #808080; }
+
 /* 2元 - 粉色 */
 .chip-2 .chip-outer { fill: #ff82d6; }
 .chip-2 .chip-border { fill: rgba(255, 130, 214, 0.3); }
@@ -255,8 +280,23 @@ const handleDouble = () => {
 .chip-5 .chip-border { fill: rgba(206, 29, 0, 0.3); }
 .chip-5 .chip-center { fill: #ce1d00; }
 
+/* 25元 - 绿色 */
+.chip-25 .chip-outer { fill: #228B22; }
+.chip-25 .chip-border { fill: rgba(34, 139, 34, 0.3); }
+.chip-25 .chip-center { fill: #228B22; }
+
 /* 100元 - 黑色 */
 .chip-100 .chip-outer { fill: #1a1a1a; }
 .chip-100 .chip-border { fill: rgba(26, 26, 26, 0.3); }
 .chip-100 .chip-center { fill: #1a1a1a; }
+
+/* 500元 - 紫色 */
+.chip-500 .chip-outer { fill: #8B008B; }
+.chip-500 .chip-border { fill: rgba(139, 0, 139, 0.3); }
+.chip-500 .chip-center { fill: #8B008B; }
+
+/* 1000元 - 金色 */
+.chip-1000 .chip-outer { fill: #FFA500; }
+.chip-1000 .chip-border { fill: rgba(255, 165, 0, 0.3); }
+.chip-1000 .chip-center { fill: #FFA500; }
 </style>

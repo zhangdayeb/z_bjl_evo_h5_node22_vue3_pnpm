@@ -149,32 +149,55 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useBettingStore } from '@/stores/bettingStore'
+import { useoverLayerStore } from '@/stores/overLayerStore'
 
-const emit = defineEmits<{
-  'change': [value: number]
-  'cashier': []
-}>()
+// 获取 Store 实例
+const bettingStore = useBettingStore()
+const overLayerStore = useoverLayerStore()
 
-const selectedChip = ref(100) // 默认选中100
-const isCollapsed = ref(true) // 初始状态为收起
+// 本地状态
+const selectedChip = ref(100) // 用于显示
+const isCollapsed = ref(true) // 保留动画状态
 
-// 选择筹码
+// 选择筹码 - 修改后的方法
 const selectChip = (value: number) => {
+  // 1. 更新本地选中状态（用于显示）
   selectedChip.value = value
-  emit('change', value)
-  // 选中后收起所有筹码
+
+  // 2. 更新 bettingStore 的默认筹码
+  bettingStore.selectChip(value)
+
+  // 3. 先执行收起动画
   isCollapsed.value = true
+
+  // 4. 动画完成后关闭层（CSS transition 约 0.6s）
+  setTimeout(() => {
+    overLayerStore.close()
+  }, 600) // 等待动画完成
 }
 
-// 切换展开/收起状态
+// 切换展开/收起状态 - 保持不变
 const toggleExpand = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
+// 处理收银台按钮 - 修改后的方法
 const handleCashier = () => {
-  emit('cashier')
+  // 1. 先执行收起动画
+  isCollapsed.value = true
+
+  // 2. 动画完成后切换层
+  setTimeout(() => {
+    overLayerStore.close()
+    // 短暂延迟后打开收银台
+    setTimeout(() => {
+      overLayerStore.open('cashier')
+    }, 50)
+  }, 600) // 等待动画完成
 }
 
+// 辅助函数 - 保持不变
 const getChipText = (value: number) => {
   if (value === 1000) return '1K'
   return value.toString()
@@ -186,8 +209,12 @@ const getChipValueClass = (value: number) => {
   return 'chip-value-normal'
 }
 
-// 组件挂载后自动展开
+// 组件挂载时的初始化 - 修改后
 onMounted(() => {
+  // 从 bettingStore 读取当前选中的筹码
+  selectedChip.value = bettingStore.selectedChip
+
+  // 延迟展开动画
   setTimeout(() => {
     isCollapsed.value = false
   }, 300)
@@ -195,6 +222,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 样式部分保持不变 */
 .chips-container {
   display: flex;
   flex-wrap: wrap;
@@ -343,10 +371,6 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.chip-wrapper-select:hover {
-  transform: translateX(-30px) translateY(10px) scale(1.05) !important;
-}
-
 .chip {
   width: 36px;
   height: 36px;
@@ -408,37 +432,5 @@ onMounted(() => {
 
 .chip-center {
   stroke-width: 0.5;
-}
-
-/* 筹码展开状态的悬停效果 */
-.chip-wrapper:not(.chip-wrapper-select).chip-expanded:hover {
-  filter: brightness(1.2);
-  transform: scale(1.1);
-  z-index: 10;
-}
-
-.chip-wrapper-1.chip-expanded:hover {
-  transform: translateX(-95px) translateY(50px) scale(1.1);
-}
-.chip-wrapper-2.chip-expanded:hover {
-  transform: translateX(-90px) translateY(10px) scale(1.1);
-}
-.chip-wrapper-5.chip-expanded:hover {
-  transform: translateX(-70px) translateY(-25px) scale(1.1);
-}
-.chip-wrapper-25.chip-expanded:hover {
-  transform: translateX(-38px) translateY(-50px) scale(1.1);
-}
-.chip-wrapper-100.chip-expanded:hover {
-  transform: translateX(3px) translateY(-50px) scale(1.1);
-}
-.chip-wrapper-500.chip-expanded:hover {
-  transform: translateX(35px) translateY(-25px) scale(1.1);
-}
-.chip-wrapper-1000.chip-expanded:hover {
-  transform: translateX(55px) translateY(10px) scale(1.1);
-}
-.chip-wrapper-cashier.chip-expanded:hover {
-  transform: translateX(60px) translateY(50px) scale(1.1);
 }
 </style>
