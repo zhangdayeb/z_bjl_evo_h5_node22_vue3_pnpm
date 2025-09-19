@@ -1,4 +1,4 @@
-<!-- src/components/FloatingUI/Countdown.vue - 霓虹灯效果倒计时（圆环加宽版） -->
+<!-- src/components/FloatingUI/Countdown.vue - 霓虹灯效果倒计时（从gameStore获取数据版） -->
 <template>
   <div class="countdown-wrapper" v-show="showCountdown">
     <div class="countdown-container">
@@ -35,14 +35,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 
 // Store
 const gameStore = useGameStore()
 
+// 🔥 修改1：使用组件内常量配置最大倒计时（不用props）
+const MAX_COUNTDOWN = 30  // 最大倒计时秒数，可根据需要调整
+
 // 固定配置
-const MAX_TIME = 30  // 固定30秒倒计时
 const CANVAS_SIZE = 80  // 固定80px画布大小
 
 // Refs
@@ -50,33 +52,38 @@ const backgroundCanvas = ref<HTMLCanvasElement>()
 const glowCanvas = ref<HTMLCanvasElement>()
 const mainCanvas = ref<HTMLCanvasElement>()
 
-// 响应式数据
-const timeLeft = ref(MAX_TIME)
-const isRunning = ref(false)
-const showCountdown = ref(true)
-let timer: number | null = null
+// 🔥 修改2：移除了内部的 timeLeft 和 isRunning，改为从 gameStore 获取
 let animationFrame: number | null = null
 
 // Canvas相关
 const canvasSize = CANVAS_SIZE
 const centerX = CANVAS_SIZE / 2
 const centerY = CANVAS_SIZE / 2
-const radius = 32  // 80 * 0.4 = 32 (原版是80)
+const radius = 32  // 80 * 0.4 = 32
 
-// 计算属性
+// 🔥 修改3：计算属性改为从 gameStore 获取数据
+// 显示倒计时 - 从gameStore获取
 const displayTime = computed(() => {
-  return timeLeft.value.toString()
+  return gameStore.countdown.toString()
 })
 
+// 🔥 修改4：根据gameStatus控制显示/隐藏
+const showCountdown = computed(() => {
+  return gameStore.gameStatus === 'betting'
+})
+
+// 🔥 修改5：紧急状态判断 - 使用gameStore的countdown
 const isUrgent = computed(() => {
-  return timeLeft.value <= 3 && timeLeft.value > 0  // 最后3秒紧急状态
+  return gameStore.countdown <= 3 && gameStore.countdown > 0  // 最后3秒紧急状态
 })
 
+// 🔥 修改6：进度计算 - 基于MAX_COUNTDOWN常量
 const progress = computed(() => {
-  return timeLeft.value / MAX_TIME
+  // 使用 Math.min 确保进度不超过 100%
+  return Math.min(gameStore.countdown / MAX_COUNTDOWN, 1)
 })
 
-// 获取颜色配置
+// 获取颜色配置（保持不变）
 const getColors = () => {
   if (isUrgent.value) {
     return {
@@ -96,7 +103,7 @@ const getColors = () => {
   }
 }
 
-// 绘制倒计时圆环
+// 绘制倒计时圆环（保持不变）
 const drawCountdown = () => {
   if (!backgroundCanvas.value || !glowCanvas.value || !mainCanvas.value) return
 
@@ -285,102 +292,81 @@ const drawCountdown = () => {
   }
 }
 
-// 动画循环
+// 🔥 修改7：简化动画循环
 const animate = () => {
   drawCountdown()
-  if (isRunning.value) {
+  // 只要组件显示就继续动画
+  if (showCountdown.value) {
     animationFrame = requestAnimationFrame(animate)
   }
 }
 
-// 开始倒计时
-const startCountdown = () => {
-  if (timer) clearInterval(timer)
-
-  isRunning.value = true
-  timeLeft.value = MAX_TIME
-  showCountdown.value = true
-
-  // 开始动画
+// 🔥 修改8：启动动画（简化版，不需要管理倒计时）
+const startAnimation = () => {
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame)
+  }
   animate()
-
-  timer = setInterval(() => {
-    if (timeLeft.value > 0) {
-      timeLeft.value--
-    } else {
-      stopCountdown()
-    }
-  }, 1000) as unknown as number
 }
 
-// 停止倒计时
-const stopCountdown = () => {
-  if (timer) {
-    clearInterval(timer)
-    timer = null
-  }
+// 🔥 修改9：停止动画
+const stopAnimation = () => {
   if (animationFrame) {
     cancelAnimationFrame(animationFrame)
     animationFrame = null
   }
-  isRunning.value = false
-  drawCountdown() // 最后绘制一次
 }
 
-// 重置倒计时
-const resetCountdown = () => {
-  stopCountdown()
-  timeLeft.value = MAX_TIME
-  showCountdown.value = false
-}
-
-// 监听游戏状态变化
-watch(() => gameStore.gameStatus, (newStatus) => {
-  console.log('⏱️ 游戏状态变化:', newStatus)
-
-  if (newStatus === 'betting') {
-    startCountdown()
-  } else if (newStatus === 'dealing' || newStatus === 'waiting') {
-    resetCountdown()
-  }
-})
-
-// 监听时间变化，重绘
-watch(timeLeft, () => {
-  if (!isRunning.value) {
+// 🔥 修改10：监听countdown变化，触发重绘
+watch(() => gameStore.countdown, () => {
+  // 当倒计时变化时重绘
+  if (!animationFrame && showCountdown.value) {
     drawCountdown()
   }
 })
 
+// 🔥 修改11：监听游戏状态变化，控制动画
+watch(showCountdown, (isShowing) => {
+  console.log('⏱️ 倒计时显示状态:', isShowing)
+
+  if (isShowing) {
+    startAnimation()
+  } else {
+    stopAnimation()
+  }
+})
+
+// 🔥 修改12：监听紧急状态变化（保持脉动效果流畅）
+watch(isUrgent, () => {
+  // 紧急状态变化时确保动画运行
+  if (showCountdown.value && !animationFrame) {
+    startAnimation()
+  }
+})
+
 // 生命周期
-onMounted(async () => {
-  await nextTick()
+onMounted(() => {
   console.log('⏱️ 霓虹倒计时组件已挂载')
 
   // 初始绘制
   drawCountdown()
 
-  // 如果是投注状态就开始
-  if (gameStore.gameStatus === 'betting') {
-    startCountdown()
+  // 如果当前是投注状态，启动动画
+  if (showCountdown.value) {
+    startAnimation()
   }
 })
 
 onUnmounted(() => {
-  stopCountdown()
+  stopAnimation()
 })
 
-// 暴露方法
-defineExpose({
-  startCountdown,
-  stopCountdown,
-  resetCountdown,
-  timeLeft,
-  isRunning
-})
+// 🔥 修改13：移除 defineExpose，不暴露任何方法
+// defineExpose 已删除
 </script>
 
 <style scoped>
+/* 样式部分完全保持不变 */
 .countdown-wrapper {
   position: relative;
   display: inline-block;
