@@ -1,5 +1,4 @@
 <template>
-  123123
   <div v-if="isVisible" class="chip-fly-layer">
     <div
       v-if="flyingChip"

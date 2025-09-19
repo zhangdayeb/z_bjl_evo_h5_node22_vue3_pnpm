@@ -27,11 +27,8 @@
     </transition>
 
     <!-- 筹码飞行动画 -->
-    <!-- <transition name="effect-fade">
-      <ChipFly v-if="overLayerStore.chipFly" />
-    </transition> -->
     <transition name="effect-fade">
-      <ChipFly />
+      <ChipFly v-if="overLayerStore.chipFly" />
     </transition>
 
     <!-- 结果飞行动画 -->
