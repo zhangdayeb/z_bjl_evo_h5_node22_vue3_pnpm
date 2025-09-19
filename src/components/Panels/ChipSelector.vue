@@ -1,4 +1,5 @@
 <template>
+  <div class="chips-bg"></div>
   <div class="chips-container">
     <!-- 1元筹码 -->
     <div
@@ -222,19 +223,36 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.chips-bg {
+  height: 30%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  /* 添加从上到下的渐变：顶部透明，底部不透明 */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,              /* 顶部完全透明 */
+    rgba(0, 0, 0, 0.2) 20%,     /* 20%位置轻微可见 */
+    rgba(0, 0, 0, 0.5) 50%,     /* 中间半透明 */
+    rgba(0, 0, 0, 0.8) 80%,     /* 80%位置接近不透明 */
+    rgba(0, 0, 0, 1) 100%       /* 底部完全不透明 */
+  );
+}
 /* 样式部分保持不变 */
 .chips-container {
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
-  background: #ffffff;
   height: 170px;
   width: 170px;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 49px;
+  bottom: 19px;
 }
 
 .chip-wrapper {
@@ -243,6 +261,13 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   cursor: pointer;
+  background-color: #ffffff;
+  border-radius: 50%;
+  height: 36px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 初始状态：所有筹码在中心位置（包括收银台） */
@@ -264,8 +289,9 @@ onMounted(() => {
   transform: translateX(-30px) translateY(10px);
   opacity: 0;
   transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  background:none;
 }
 
 /* 展开状态：筹码飞到各自位置 */
@@ -298,7 +324,7 @@ onMounted(() => {
   opacity: 1;
 }
 .chip-wrapper-cashier.chip-expanded {
-  transform: translateX(60px) translateY(50px);
+  transform: translateX(60px) translateY(65px);
   opacity: 1;
 }
 
@@ -312,8 +338,8 @@ onMounted(() => {
 
 /* 收银台按钮特殊样式 */
 .chip-wrapper-cashier {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
 }
 
 .cashier-button-up {
@@ -324,8 +350,8 @@ onMounted(() => {
 }
 
 .button-inner {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: #000;
   border-radius: 50%;
   display: flex;
