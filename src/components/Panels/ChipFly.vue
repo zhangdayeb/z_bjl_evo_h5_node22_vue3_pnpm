@@ -66,7 +66,6 @@ const flyingChipStyle = computed(() => {
 })
 
 // ========================= 监听 Store 变化 =========================
-
 watch(() => chipFlyStore.currentChip, (newChip) => {
   if (newChip) {
     startAnimation(newChip)
@@ -103,7 +102,6 @@ const startAnimation = (chip: any) => {
  */
 const cancelAnimation = () => {
   if (flyingChip.value) {
-    // 立即隐藏
     flyingChip.value = null
     isAnimating.value = false
   }
@@ -178,6 +176,8 @@ const getChipValueClass = (value: number): string => {
   position: fixed;
   width: 40px;
   height: 40px;
+  background-color: #ffffff;
+  border-radius: 50%;
   will-change: transform;
 }
 
@@ -211,7 +211,7 @@ const getChipValueClass = (value: number): string => {
   font-size: 24px;
 }
 
-/* ========================= 筹码颜色（严格按照选择器样式） ========================= */
+/* ========================= 筹码颜色 ========================= */
 
 /* $1 - 灰色 */
 .chip-1 .chip-outer { fill: #808080; }

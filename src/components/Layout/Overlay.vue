@@ -51,6 +51,7 @@ import ChipFly from '@/components/Panels/ChipFly.vue'
 import ResultFly from '@/components/Panels/ResultFly.vue'
 
 const overLayerStore = useoverLayerStore()
+// overLayerStore.open('chipFly')
 </script>
 
 <style scoped>
