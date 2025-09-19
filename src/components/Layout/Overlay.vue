@@ -3,48 +3,42 @@
   <div class="overlay-system">
     <!-- 筹码选择器 -->
     <transition name="panel-fade">
-      <ChipSelector
-        v-if="overLayerStore.chipSelector"
-        @close="overLayerStore.close"
-      />
+      <ChipSelector v-if="overLayerStore.chipSelector" />
     </transition>
 
     <!-- 中奖效果 -->
     <transition name="effect-fade">
-      <WinningEffect
-        v-if="overLayerStore.winningEffect"
-        @close="overLayerStore.close"
-      />
+      <WinningEffect v-if="overLayerStore.winningEffect" />
     </transition>
 
     <!-- 露珠列表 -->
     <transition name="panel-fade">
-      <LuZhuList
-        v-if="overLayerStore.luZhuList"
-        @close="overLayerStore.close"
-      />
+      <LuZhuList v-if="overLayerStore.luZhuList" />
     </transition>
 
     <!-- 设置面板 -->
     <transition name="panel-fade">
-      <SettingsPanel
-        v-if="overLayerStore.settingsPanel"
-        @close="overLayerStore.close"
-      />
+      <SettingsPanel v-if="overLayerStore.settingsPanel" />
     </transition>
 
     <!-- 收银台 -->
     <transition name="panel-fade">
-      <Cashier
-        v-if="overLayerStore.cashier"
-        @close="overLayerStore.close"
-      />
+      <Cashier v-if="overLayerStore.cashier" />
+    </transition>
+
+    <!-- 筹码飞行动画 -->
+    <transition name="effect-fade">
+      <ChipFly v-if="overLayerStore.chipFly" />
+    </transition>
+
+    <!-- 结果飞行动画 -->
+    <transition name="effect-fade">
+      <ResultFly v-if="overLayerStore.resultFly" />
     </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
 import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // 组件导入
@@ -53,23 +47,10 @@ import WinningEffect from '@/components/Panels/WinningEffect.vue'
 import LuZhuList from '@/components/Panels/LuZhuList.vue'
 import SettingsPanel from '@/components/Panels/SettingsPanel.vue'
 import Cashier from '@/components/Panels/Cashier.vue'
+import ChipFly from '@/components/Panels/ChipFly.vue'
+import ResultFly from '@/components/Panels/ResultFly.vue'
 
 const overLayerStore = useoverLayerStore()
-
-// ESC 关闭当前面板
-const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    overLayerStore.close()
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
 </script>
 
 <style scoped>

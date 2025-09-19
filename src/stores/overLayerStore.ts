@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-type PanelType = 'chipSelector' | 'winningEffect' | 'luZhuList' | 'settingsPanel' | 'cashier'
+type PanelType = 'chipSelector' | 'winningEffect' | 'luZhuList' | 'settingsPanel' | 'cashier' | 'chipFly' | 'resultFly'
 
 export const useoverLayerStore = defineStore('ui', () => {
   // 当前打开的面板
@@ -24,6 +24,8 @@ export const useoverLayerStore = defineStore('ui', () => {
   const luZhuList = computed(() => activePanel.value === 'luZhuList')
   const settingsPanel = computed(() => activePanel.value === 'settingsPanel')
   const cashier = computed(() => activePanel.value === 'cashier')
+  const chipFly = computed(() => activePanel.value === 'chipFly')
+  const resultFly = computed(() => activePanel.value === 'resultFly')
 
   return {
     activePanel,
@@ -35,6 +37,8 @@ export const useoverLayerStore = defineStore('ui', () => {
     winningEffect,
     luZhuList,
     settingsPanel,
-    cashier
+    cashier,
+    chipFly,
+    resultFly
   }
 })
