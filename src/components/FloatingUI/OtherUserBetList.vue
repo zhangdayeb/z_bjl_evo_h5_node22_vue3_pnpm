@@ -1,5 +1,6 @@
 <!-- src/components/FloatingUI/OtherUserBetList.vue - 其他用户投注列表 -->
 <template>
+  <!-- 🔴 修改点1: v-show 改为使用 computed 属性 -->
   <div class="bet-container" v-show="showBetList">
     <!-- 顶部渐变遮罩 -->
     <div class="gradient-mask gradient-top"></div>
@@ -25,16 +26,32 @@
 
 <script>
 import { useGameStore } from '@/stores/gameStore'
+import { computed } from 'vue' // 🔴 修改点2: 引入 computed
 
 export default {
   name: 'OtherUserBetList',
   setup() {
     const gameStore = useGameStore()
-    return { gameStore }
+
+    // 🔴 修改点3: 添加 computed 属性来控制显示隐藏
+    const showBetList = computed(() => {
+      // 倒计时大于0 并且是投注状态才显示
+      if (gameStore.countdown === 0) {
+        return false
+      } else {
+        return gameStore.gameStatus === 'betting'
+      }
+    })
+
+    return {
+      gameStore,
+      showBetList  // 🔴 修改点4: 返回 computed 属性
+    }
   },
   data() {
     return {
-      showBetList: false,
+      // 🔴 修改点5: 移除了 showBetList: false
+
       // 金额池 - 30个不同的金额
       amountPool: [
         '3,219', '2,408', '1,848', '1,236', '985',
@@ -59,7 +76,7 @@ export default {
       translateY: 0,
       itemHeight: 24,
       scrollSpeed: 20,
-      animationKey: 0, // 用于强制重新渲染
+      animationKey: 0,
       animationTimer: null
     };
   },
@@ -72,19 +89,17 @@ export default {
     }
   },
   watch: {
-    // 监听游戏状态变化
-    'gameStore.gameStatus'(newStatus) {
-      console.log('📊 投注列表 - 游戏状态变化:', newStatus)
+    // 🔴 修改点6: 改为监听 showBetList 的变化，而不是 gameStatus
+    showBetList(newValue) {
+      console.log('📊 投注列表 - 显示状态变化:', newValue)
 
-      if (newStatus === 'betting') {
-        // 投注阶段 - 显示并开始动画
-        this.showBetList = true
+      if (newValue) {
+        // 显示时开始动画
         this.$nextTick(() => {
           this.startNewAnimation()
         })
-      } else if (newStatus === 'dealing' || newStatus === 'waiting') {
-        // 发牌或等待阶段 - 隐藏
-        this.showBetList = false
+      } else {
+        // 隐藏时停止动画
         this.stopAnimation()
       }
     }
@@ -92,9 +107,8 @@ export default {
   mounted() {
     console.log('📊 投注列表组件已挂载')
 
-    // 如果当前是投注状态就开始
-    if (this.gameStore.gameStatus === 'betting') {
-      this.showBetList = true
+    // 🔴 修改点7: 改为检查 computed 属性
+    if (this.showBetList) {
       this.$nextTick(() => {
         this.startNewAnimation()
       })
@@ -213,10 +227,10 @@ export default {
 
 .bet-item {
   color: rgba(255, 255, 255, 0.9);
-  padding: 1px 15px;  /* 减少上下padding，从2px改为1px */
-  height: 20px;  /* 减小高度，从24px改为20px */
-  line-height: 18px;  /* 调整行高 */
-  font-size: 13px;  /* 稍微减小字体，从14px改为13px */
+  padding: 1px 15px;
+  height: 20px;
+  line-height: 18px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -263,10 +277,10 @@ export default {
   height: 80px;
   background: linear-gradient(
     to bottom,
-    transparent 0%,              /* 顶部完全透明 */
-    transparent 20%,             /* 保持透明 */
-    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
-    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+    transparent 0%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.02) 50%,
+    rgba(0, 0, 0, 0.03) 100%
   );
 }
 
@@ -277,10 +291,10 @@ export default {
   height: 80px;
   background: linear-gradient(
     to top,
-    transparent 0%,              /* 底部完全透明 */
-    transparent 20%,             /* 保持透明 */
-    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
-    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+    transparent 0%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.02) 50%,
+    rgba(0, 0, 0, 0.03) 100%
   );
 }
 
@@ -292,10 +306,10 @@ export default {
   width: 50px;
   background: linear-gradient(
     to right,
-    transparent 0%,              /* 左边完全透明 */
-    transparent 20%,             /* 保持透明 */
-    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
-    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+    transparent 0%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.02) 50%,
+    rgba(0, 0, 0, 0.03) 100%
   );
 }
 
@@ -306,12 +320,10 @@ export default {
   width: 50px;
   background: linear-gradient(
     to left,
-    transparent 0%,              /* 右边完全透明 */
-    transparent 20%,             /* 保持透明 */
-    rgba(0, 0, 0, 0.02) 50%,    /* 非常轻微的黑色 */
-    rgba(0, 0, 0, 0.03) 100%    /* 中间部分极淡的遮罩 */
+    transparent 0%,
+    transparent 20%,
+    rgba(0, 0, 0, 0.02) 50%,
+    rgba(0, 0, 0, 0.03) 100%
   );
 }
-
-/* 响应式调整 - 已移除 */
 </style>
