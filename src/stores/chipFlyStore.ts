@@ -23,11 +23,6 @@ interface FlyingChip {
 }
 
 // ========================= 常量 =========================
-const DEFAULT_START_POINT = {
-  x: window.innerWidth - 100,  // 默认起点：右下角
-  y: window.innerHeight - 200
-}
-
 const DEBOUNCE_TIME = 100 // 防抖时间（毫秒）
 const ANIMATION_DURATION = 400 // 标准动画时长
 const FAST_ANIMATION_DURATION = 250 // 快速动画时长（连续点击时）
@@ -50,20 +45,12 @@ export const useChipFlyStore = defineStore('chipFly', () => {
    * @returns 起点坐标
    */
   const getStartPoint = (): Point => {
-    // 尝试获取筹码选择器的实际位置
-    const chipSelector = document.querySelector('.chip-selector-active')
-    if (chipSelector) {
-      const rect = chipSelector.getBoundingClientRect()
-      return {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
-      }
-    }
+    const CHIP_SIZE = 40
+    const BOTTOM_MARGIN = 49
 
-    // 使用默认位置
     return {
-      x: window.innerWidth - 100,
-      y: window.innerHeight - 200
+      x: window.innerWidth / 2,  // 直接居中，不需要调整
+      y: window.innerHeight - BOTTOM_MARGIN - (CHIP_SIZE / 2)  // 需要考虑筹码半高
     }
   }
 
