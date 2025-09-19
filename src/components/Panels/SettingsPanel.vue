@@ -9,7 +9,7 @@
     <!-- Header -->
     <div class="menu-header">
       <div class="menu-title">Menu</div>
-      <button class="close-button">
+      <button class="close-button"  @click="handleClose">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="m13.615 11.864 6.116 6.116-1.748 1.747-6.115-6.116-6.12 6.12L4 17.984l6.12-6.12-6.116-6.117L5.75 4l6.117 6.116 6.112-6.112 1.747 1.748-6.112 6.112Z"/>
         </svg>
@@ -104,9 +104,16 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'SettingsPanel'
+<script setup lang="ts">
+// 需要添加的导入
+import { useoverLayerStore } from '@/stores/overLayerStore'
+
+// 获取 store 实例
+const overLayerStore = useoverLayerStore()
+
+// 关闭方法
+const handleClose = () => {
+  overLayerStore.close()
 }
 </script>
 

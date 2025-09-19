@@ -22,14 +22,15 @@
 </template>
 
 <script setup lang="ts">
-// Emits
-const emit = defineEmits<{
-  click: []
-}>()
+// 需要添加的导入
+import { useoverLayerStore } from '@/stores/overLayerStore'
 
-// Methods
+// 获取 store 实例
+const overLayerStore = useoverLayerStore()
+
+// 关闭方法
 const handleClick = () => {
-  emit('click')
+  overLayerStore.open('luZhuList')
 }
 </script>
 
