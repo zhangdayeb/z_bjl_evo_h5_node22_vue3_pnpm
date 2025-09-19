@@ -2,8 +2,9 @@
 <template>
   <div class="overlay">
     <div class="modal">
-      <!-- 关闭按钮 -->
-      <button class="close-btn"></button>
+
+      <!-- 关闭按钮添加点击事件 -->
+      <button class="close-btn" @click="handleClose"></button>
 
       <!-- 顶部装饰图片区 -->
       <div class="header-image"></div>
@@ -103,7 +104,16 @@
 </template>
 
 <script setup lang="ts">
-// 纯静态展示，暂无逻辑
+// 需要添加的导入
+import { useoverLayerStore } from '@/stores/overLayerStore'
+
+// 获取 store 实例
+const overLayerStore = useoverLayerStore()
+
+// 关闭方法
+const handleClose = () => {
+  overLayerStore.close()
+}
 </script>
 
 <style scoped>
@@ -132,7 +142,6 @@
   right: 0;
   width: 100%;
   height: 90vh;
-  background: #f5f5f5;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -183,7 +192,7 @@
 /* 顶部图片区域 */
 .header-image {
   height: 70px;
-  background: linear-gradient(135deg, #8B9DC3 0%, #5B7FA6 100%);
+  /* background: linear-gradient(135deg, #8B9DC3 0%, #5B7FA6 100%); */
   position: relative;
 }
 
