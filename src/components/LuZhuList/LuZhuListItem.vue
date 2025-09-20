@@ -26,12 +26,8 @@ import { ref, onMounted } from 'vue'
 import LuZhuListItemBet from './LuZhuListItemBet.vue'
 import LuZhuListItemRoadMap from './LuZhuListItemRoadMap.vue'
 import LuZhuListItemCount from './LuZhuListItemCount.vue'
-
-// 游戏结果类型
-interface GameResult {
-  result: number
-  ext: number
-}
+// 从 roadmapCalculator 导入统一的类型定义
+import type { GameResult } from '@/utils/roadmapCalculator'
 
 // Props 定义
 interface Props {
@@ -40,11 +36,12 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// 游戏数据
+// 游戏数据 - 使用导入的 GameResult 类型
 const gameData = ref<Record<string, GameResult>>({})
 
 // 获取数据（模拟）
 const fetchGameData = () => {
+
   // 实际应该根据 tableId 从接口获取数据
   // const response = await api.getGameData(props.tableId)
 
