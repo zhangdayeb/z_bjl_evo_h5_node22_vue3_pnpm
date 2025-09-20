@@ -140,21 +140,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import roadmapCalculator, {
   type GameResult,
   type RoadmapData
 } from '@/utils/roadmapCalculator'
 
-// 数据状态
-const gameData = ref<Record<string, GameResult>>({})
-const roadmapData = ref<RoadmapData>({
-  beadPlate: [],
-  bigRoad: [],
-  bigEyeRoad: [],
-  smallRoad: [],
-  cockroachRoad: [],
-  sanxing: []
+// Props 定义
+interface Props {
+  gameData: Record<string, GameResult>
+}
+
+const props = defineProps<Props>()
+
+// 计算路单数据
+const roadmapData = computed<RoadmapData>(() => {
+  // 开启调试模式（可选）
+  roadmapCalculator.setDebug(false)
+
+  // 计算所有路单
+  return roadmapCalculator.calculateAll(props.gameData)
 })
 
 // 路单偏移量
@@ -222,63 +227,23 @@ const calculateOffsets = () => {
   })
 }
 
-// 监听数据变化，自动计算偏移
+// 监听路单数据变化，自动计算偏移
 watch(roadmapData, () => {
   calculateOffsets()
+}, { deep: true, immediate: true })
+
+// 监听 gameData 变化
+watch(() => props.gameData, (newVal) => {
+  console.log('LuZhuListItemRoadMap - Game data updated:', Object.keys(newVal).length, 'items')
 }, { deep: true })
 
-// 初始化数据（使用模拟数据）
-const initData = () => {
-  // 使用模拟数据
-  const mockData: Record<string, GameResult> = {
-    "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
-    "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
-    "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
-    "k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
-    "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},
-    "k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
-    "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},
-    "k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
-    "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},
-    "k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
-    "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},
-    "k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
-    "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},
-    "k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
-    "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},
-    "k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
-    "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
-  }
-
-  gameData.value = mockData
-
-  // 开启调试模式（可选）
-  roadmapCalculator.setDebug(false)
-
-  // 计算路单
-  roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
-
-  // 计算偏移量
-  calculateOffsets()
-}
-
-// 添加新结果
+// 添加新结果的方法（供外部调用）
 const addResult = (result: GameResult) => {
-  const newKey = `k${Object.keys(gameData.value).length}`
-  gameData.value = {
-    ...gameData.value,
-    [newKey]: result
-  }
-  roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
-  calculateOffsets()
+  // 这个方法现在不需要了，因为数据由父组件管理
+  console.log('addResult called but data is managed by parent component', result)
 }
 
-// 生命周期
-onMounted(() => {
-  initData()
-})
-
-// 暴露方法
+// 暴露方法（如果需要）
 defineExpose({
   addResult
 })

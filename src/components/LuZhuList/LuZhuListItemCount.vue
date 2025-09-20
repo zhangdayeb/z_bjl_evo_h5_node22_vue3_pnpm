@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import roadmapCalculator, {
   type GameResult,
   type Statistics,
@@ -227,6 +227,16 @@ const statistics = computed<Statistics>(() =>
 const predictions = computed<Prediction>(() =>
   roadmapCalculator.calculatePredictions(props.gameData)
 )
+
+// 监听数据变化（用于调试）
+watch(() => props.gameData, (newVal) => {
+  console.log('LuZhuListItemCount - Statistics updated:', {
+    total: Object.keys(newVal).length,
+    player: statistics.value.player,
+    banker: statistics.value.banker,
+    tie: statistics.value.tie
+  })
+}, { deep: true })
 </script>
 
 <style scoped>

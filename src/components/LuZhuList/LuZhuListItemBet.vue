@@ -37,7 +37,27 @@
 </template>
 
 <script setup lang="ts">
-// 静态展示组件，无需逻辑
+import { onMounted, watch } from 'vue'
+
+// Props 定义
+interface Props {
+  tableId: string | number
+}
+
+const props = defineProps<Props>()
+
+// 组件挂载时打印 tableId
+onMounted(() => {
+  console.log('LuZhuListItemBet - Table ID:', props.tableId)
+})
+
+// 监听 tableId 变化
+watch(() => props.tableId, (newVal, oldVal) => {
+  console.log('LuZhuListItemBet - Table ID changed:', {
+    old: oldVal,
+    new: newVal
+  })
+})
 </script>
 
 <style scoped>
