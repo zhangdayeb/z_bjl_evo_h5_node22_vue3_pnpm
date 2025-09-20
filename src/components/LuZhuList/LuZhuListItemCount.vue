@@ -1,83 +1,7 @@
 <!-- LuZhuListItemCount.vue - 统计栏组件 -->
 <template>
   <div class="statistics-bar">
-    <!-- 左侧：统计数据组 -->
-    <div class="statistics-group">
-      <!-- 局数 -->
-      <div class="stat-item-wrapper">
-        <div class="stat-item">
-          <div>#</div>
-        </div>
-        <div class="stat-count">
-          <div class="value">{{ statistics.total }}</div>
-        </div>
-      </div>
-
-      <!-- 闲家统计 -->
-      <div class="stat-item-wrapper">
-        <div class="stat-item">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
-            <g>
-              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#2E83FF" stroke="none">
-                  <path d="
-                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
-                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
-                </g>
-                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">P</text>
-              </svg>
-            </g>
-          </svg>
-        </div>
-        <div class="stat-count">
-          <div class="value">{{ statistics.player }}</div>
-        </div>
-      </div>
-
-      <!-- 庄家统计 -->
-      <div class="stat-item-wrapper">
-        <div class="stat-item">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
-            <g>
-              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#EC2024" stroke="none">
-                  <path d="
-                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
-                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
-                </g>
-                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">B</text>
-              </svg>
-            </g>
-          </svg>
-        </div>
-        <div class="stat-count">
-          <div class="value">{{ statistics.banker }}</div>
-        </div>
-      </div>
-
-      <!-- 和局统计 -->
-      <div class="stat-item-wrapper">
-        <div class="stat-item">
-          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
-            <g>
-              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
-                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#159252" stroke="none">
-                  <path d="
-                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
-                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
-                </g>
-                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">T</text>
-              </svg>
-            </g>
-          </svg>
-        </div>
-        <div class="stat-count">
-          <div class="value">{{ statistics.tie }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 右侧：问路预测 -->
+    <!-- 左侧：问路预测 -->
     <div class="predictions-group">
       <!-- 闲家预测 -->
       <div class="prediction">
@@ -211,6 +135,72 @@
         </div>
       </div>
     </div>
+
+    <!-- 右侧：统计数据组（不含总局数） -->
+    <div class="statistics-group">
+      <!-- 闲家统计 -->
+      <div class="stat-item-wrapper">
+        <div class="stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
+            <g>
+              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
+                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#2E83FF" stroke="none">
+                  <path d="
+                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
+                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
+                </g>
+                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">P</text>
+              </svg>
+            </g>
+          </svg>
+        </div>
+        <div class="stat-count">
+          <div class="value">{{ statistics.player }}</div>
+        </div>
+      </div>
+
+      <!-- 庄家统计 -->
+      <div class="stat-item-wrapper">
+        <div class="stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
+            <g>
+              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
+                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#EC2024" stroke="none">
+                  <path d="
+                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
+                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
+                </g>
+                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">B</text>
+              </svg>
+            </g>
+          </svg>
+        </div>
+        <div class="stat-count">
+          <div class="value">{{ statistics.banker }}</div>
+        </div>
+      </div>
+
+      <!-- 和局统计 -->
+      <div class="stat-item-wrapper">
+        <div class="stat-item">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stat-svg" viewBox="0 0 80 80">
+            <g>
+              <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
+                <g transform="translate(0,78) scale(0.1,-0.1)" fill="#159252" stroke="none">
+                  <path d="
+                    M265 759 c-201 -65 -310 -283 -245 -490 64 -205 283 -315 491 -249
+                    205 64 315 283 249 491 -65 205 -286 316 -495 248z" />
+                </g>
+                <text x="50%" y="75%" text-anchor="middle" font-size="55" fill="white">T</text>
+              </svg>
+            </g>
+          </svg>
+        </div>
+        <div class="stat-count">
+          <div class="value">{{ statistics.tie }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -240,7 +230,6 @@ const predictions = computed<Prediction>(() =>
 </script>
 
 <style scoped>
-/* 样式保持不变 */
 .statistics-bar {
   background: rgb(37, 37, 37);
   height: 33px;
@@ -251,41 +240,7 @@ const predictions = computed<Prediction>(() =>
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.statistics-group {
-  display: flex;
-  align-items: center;
-  height: 33px;
-  font-size: 14px;
-  gap: 12px;
-}
-
-.stat-item-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.stat-svg {
-  width: 28px;
-  height: 28px;
-}
-
-.stat-count {
-  display: flex;
-  align-items: center;
-}
-
-.value {
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 600;
-}
-
+/* 问路预测组 - 现在在左侧 */
 .predictions-group {
   display: flex;
   gap: 6px;
@@ -344,5 +299,41 @@ const predictions = computed<Prediction>(() =>
 
 .last-item {
   margin-right: 0;
+}
+
+/* 统计数据组 - 现在在右侧 */
+.statistics-group {
+  display: flex;
+  align-items: center;
+  height: 33px;
+  font-size: 14px;
+  gap: 12px;
+}
+
+.stat-item-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-svg {
+  width: 28px;
+  height: 28px;
+}
+
+.stat-count {
+  display: flex;
+  align-items: center;
+}
+
+.value {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
 }
 </style>
