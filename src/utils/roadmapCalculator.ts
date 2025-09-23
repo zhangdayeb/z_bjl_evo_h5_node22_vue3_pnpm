@@ -1,8 +1,9 @@
 // src/utils/roadmapCalculator.ts
 
 /**
- * 百家乐路单计算器
- * 严格按照JS逻辑实现，包含珠盘路、大路、大眼路、小路、蟑螂路、三星路的计算
+ * @fileoverview 百家乐路单计算器
+ * @description 包含珠盘路、大路、大眼路、小路、蟑螂路、三星路的计算
+ * @version 2.0.0 - 优化空数据处理
  */
 
 // ==================== 类型定义 ====================
@@ -15,43 +16,43 @@ export interface GameResult {
 
 /** 珠盘路位置 */
 export interface BeadPlatePosition {
-  col: number;                              // 列位置
-  row: number;                              // 行位置
-  result_original: 1|2|3|4|6|7|8|9;        // 原始结果（未转换）
-  result: 1|2|3;                            // 转换后结果：1=庄 2=闲 3=和
-  ext: 0|1|2|3;                             // 对子信息
-  left: number;                             // 像素左边距
-  top: number;                              // 像素上边距
+  col: number;
+  row: number;
+  result_original: 1|2|3|4|6|7|8|9;
+  result: 1|2|3;
+  ext: 0|1|2|3;
+  left: number;
+  top: number;
 }
 
 /** 大路位置 */
 export interface BigRoadPosition {
-  col: number;                              // 列位置
-  row: number;                              // 行位置
-  result: 1|2;                              // 结果：1=庄 2=闲（和局不占格）
-  ext: 0|1|2|3;                             // 对子信息
-  tieCount?: number;                        // 和局累计数量
-  left: number;                             // 像素左边距
-  top: number;                              // 像素上边距
+  col: number;
+  row: number;
+  result: 1|2;
+  ext: 0|1|2|3;
+  tieCount?: number;
+  left: number;
+  top: number;
 }
 
-/** 下三路/三星路位置（统一格式） */
+/** 下三路/三星路位置 */
 export interface DerivedRoadPosition {
-  col: number;                              // 列位置
-  row: number;                              // 行位置
-  result: 1|2;                              // 1=红 2=蓝
-  left: number;                             // 像素左边距
-  top: number;                              // 像素上边距
+  col: number;
+  row: number;
+  result: 1|2;
+  left: number;
+  top: number;
 }
 
 /** 统计数据 */
 export interface Statistics {
-  total: number;                            // 总局数
-  banker: number;                           // 庄赢次数
-  player: number;                           // 闲赢次数
-  tie: number;                              // 和局次数
-  bankerPair: number;                       // 庄对次数
-  playerPair: number;                       // 闲对次数
+  total: number;
+  banker: number;
+  player: number;
+  tie: number;
+  bankerPair: number;
+  playerPair: number;
 }
 
 /** 问路预测结果 */
@@ -77,83 +78,119 @@ export interface WenluPosition {
 
 /** 所有路单数据 */
 export interface RoadmapData {
-  beadPlate: BeadPlatePosition[];           // 珠盘路
-  bigRoad: BigRoadPosition[];               // 大路
-  bigEyeRoad: DerivedRoadPosition[];        // 大眼路
-  smallRoad: DerivedRoadPosition[];         // 小路
-  cockroachRoad: DerivedRoadPosition[];     // 蟑螂路
-  sanxing: DerivedRoadPosition[];           // 三星路
+  beadPlate: BeadPlatePosition[];
+  bigRoad: BigRoadPosition[];
+  bigEyeRoad: DerivedRoadPosition[];
+  smallRoad: DerivedRoadPosition[];
+  cockroachRoad: DerivedRoadPosition[];
+  sanxing: DerivedRoadPosition[];
 }
 
 /** 问路数据 */
 export interface WenluData {
-  zhuzi_red: WenluPosition;                 // 珠盘庄问路
-  zhuzi_blue: WenluPosition;                // 珠盘闲问路
-  dalu_red: WenluPosition;                  // 大路庄问路
-  dalu_blue: WenluPosition;                 // 大路闲问路
-  dayan_red: WenluPosition;                 // 大眼庄问路
-  dayan_blue: WenluPosition;                // 大眼闲问路
-  xiaolu_red: WenluPosition;                // 小路庄问路
-  xiaolu_blue: WenluPosition;               // 小路闲问路
-  xiaoqiang_red: WenluPosition;             // 蟑螂路庄问路
-  xiaoqiang_blue: WenluPosition;            // 蟑螂路闲问路
+  zhuzi_red: WenluPosition;
+  zhuzi_blue: WenluPosition;
+  dalu_red: WenluPosition;
+  dalu_blue: WenluPosition;
+  dayan_red: WenluPosition;
+  dayan_blue: WenluPosition;
+  xiaolu_red: WenluPosition;
+  xiaolu_blue: WenluPosition;
+  xiaoqiang_red: WenluPosition;
+  xiaoqiang_blue: WenluPosition;
 }
 
+// ==================== 常量定义 ====================
+
+/** 空路单数据 */
+const EMPTY_ROADMAP_DATA: RoadmapData = {
+  beadPlate: [],
+  bigRoad: [],
+  bigEyeRoad: [],
+  smallRoad: [],
+  cockroachRoad: [],
+  sanxing: []
+};
+
+/** 空统计数据 */
+const EMPTY_STATISTICS: Statistics = {
+  total: 0,
+  banker: 0,
+  player: 0,
+  tie: 0,
+  bankerPair: 0,
+  playerPair: 0
+};
+
+/** 默认预测数据 */
+const DEFAULT_PREDICTION: Prediction = {
+  banker: {
+    bigEye: 'red',
+    small: 'red',
+    cockroach: 'red'
+  },
+  player: {
+    bigEye: 'red',
+    small: 'red',
+    cockroach: 'red'
+  }
+};
+
+/** 默认问路数据 */
+const DEFAULT_WENLU_DATA: WenluData = {
+  zhuzi_red: { x: 0, y: 0, color: 'red' },
+  zhuzi_blue: { x: 0, y: 0, color: 'blue' },
+  dalu_red: { x: 0, y: 0, color: 'red' },
+  dalu_blue: { x: 0, y: 0, color: 'blue' },
+  dayan_red: { x: 0, y: 0, color: 'red' },
+  dayan_blue: { x: 0, y: 0, color: 'blue' },
+  xiaolu_red: { x: 0, y: 0, color: 'red' },
+  xiaolu_blue: { x: 0, y: 0, color: 'blue' },
+  xiaoqiang_red: { x: 0, y: 0, color: 'red' },
+  xiaoqiang_blue: { x: 0, y: 0, color: 'blue' }
+};
+
 // ==================== 主类 ====================
+
 export class RoadmapCalculator {
   // 调试开关
   private isDebug: boolean = false;
 
   // 网格大小设置
   private gridSizes = {
-    beadPlate: 30,      // 珠盘路格子大小
-    bigRoad: 20,        // 大路格子大小
-    bigEyeRoad: 10,     // 大眼路格子大小
-    smallRoad: 10,      // 小路格子大小
-    cockroachRoad: 10,  // 蟑螂路格子大小
-    sanxing: 20         // 三星路格子大小
+    beadPlate: 30,
+    bigRoad: 20,
+    bigEyeRoad: 10,
+    smallRoad: 10,
+    cockroachRoad: 10,
+    sanxing: 20
   };
 
   // 最大行数限制
   private maxRows = {
-    beadPlate: 6,       // 珠盘路6行
-    bigRoad: 6,         // 大路6行
-    bigEyeRoad: 6,      // 大眼路6行
-    smallRoad: 6,       // 小路6行
-    cockroachRoad: 6,   // 蟑螂路6行
-    sanxing: 3          // 三星路3行
+    beadPlate: 6,
+    bigRoad: 6,
+    bigEyeRoad: 6,
+    smallRoad: 6,
+    cockroachRoad: 6,
+    sanxing: 3
   };
 
   // ==================== 中间数据存储 ====================
 
-  // 原始数据
   private res_org_obj: Record<string, GameResult> = {};
-
-  // 珠盘对象（图片编号）
   private res_zhuzi_obj: Record<string, number> = {};
-
-  // 大路对象（压缩前）
   private res_dalu_obj_img_before: Record<string, number> = {};
   private res_dalu_obj_num_before: Record<string, number> = {};
-
-  // 大路对象（压缩后）
   private res_dalu_obj_img: Record<string, number> = {};
   private res_dalu_obj_num: Record<string, number> = {};
-
-  // 大路中间二维数组（99x99）- 下三路数据源
   private tmp_dalu_array: (number | 'no_color')[][] = [];
   private tmp_dalu_array_num: (number | 'no_color')[][] = [];
-
-  // 下三路对象
   private res_dayan_obj: Record<string, 'red' | 'blue'> = {};
   private res_xiaolu_obj: Record<string, 'red' | 'blue'> = {};
   private res_xiaoqiang_obj: Record<string, 'red' | 'blue'> = {};
-
-  // 三星路对象
   private res_sanxing_obj_img: Record<string, 'red' | 'blue'> = {};
   private res_sanxing_obj_num: Record<string, number> = {};
-
-  // 显示用二维数组
   private show_zhuzi: (number | 'no_color')[][] = [];
   private show_dalu_img: (number | 'no_color')[][] = [];
   private show_dalu_num: (number | 'no_color')[][] = [];
@@ -162,8 +199,6 @@ export class RoadmapCalculator {
   private show_xiaoqiang: ('red' | 'blue' | 'no_color')[][] = [];
   private show_sanxing_img: ('red' | 'blue' | 'no_color')[][] = [];
   private show_sanxing_num: (number | 'no_color')[][] = [];
-
-  // 转弯节点记录
   private change_point_dalu: number[] = [];
   private change_point_dayan: number[] = [];
   private change_point_xiaolu: number[] = [];
@@ -188,31 +223,88 @@ export class RoadmapCalculator {
   }
 
   /**
-   * 主入口：计算所有路单
+   * 验证输入数据是否有效
    */
-  calculateAll(data: Record<string, GameResult>): RoadmapData {
-    this.showMsg("======== 开始计算路单 ========");
+  private isValidData(data: any): boolean {
+    // 检查是否为空
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
 
-    // 初始化所有数据
-    this.initAllData(data);
+    // 检查是否为空对象
+    const keys = Object.keys(data);
+    if (keys.length === 0) {
+      return false;
+    }
 
-    // 执行计算
-    this.setAllDataTypeIsObj();
+    // 验证每个数据项
+    for (const key of keys) {
+      const item = data[key];
+      if (!item || typeof item !== 'object') {
+        return false;
+      }
 
-    // 设置显示数据
-    this.setAllDataTypeJustForShow();
+      // 验证result字段
+      const validResults = [1, 2, 3, 4, 6, 7, 8, 9];
+      if (!validResults.includes(item.result)) {
+        return false;
+      }
 
-    // 打印调试信息
-    this.printAllDebugInfo();
+      // 验证ext字段
+      const validExt = [0, 1, 2, 3];
+      if (!validExt.includes(item.ext)) {
+        return false;
+      }
+    }
 
-    // 生成返回结果
-    return this.generateRoadmapData();
+    return true;
+  }
+
+  /**
+   * 主入口：计算所有路单
+   * 统一在入口处理空数据，内部函数不再重复检查
+   */
+  calculateAll(data: Record<string, GameResult> | null | undefined): RoadmapData {
+    // 统一的空数据处理
+    if (!this.isValidData(data)) {
+      this.showMsg("⚠️ 输入数据无效，返回空路单");
+      return { ...EMPTY_ROADMAP_DATA };
+    }
+
+    try {
+      this.showMsg("======== 开始计算路单 ========");
+
+      // 初始化所有数据
+      this.initAllData(data!);
+
+      // 执行计算
+      this.setAllDataTypeIsObj();
+
+      // 设置显示数据
+      this.setAllDataTypeJustForShow();
+
+      // 打印调试信息
+      this.printAllDebugInfo();
+
+      // 生成返回结果
+      return this.generateRoadmapData();
+
+    } catch (error) {
+      console.error("❌ 路单计算出错:", error);
+      return { ...EMPTY_ROADMAP_DATA };
+    }
   }
 
   /**
    * 计算统计数据
+   * 统一在入口处理空数据
    */
-  calculateStatistics(data: Record<string, GameResult>): Statistics {
+  calculateStatistics(data: Record<string, GameResult> | null | undefined): Statistics {
+    // 统一的空数据处理
+    if (!this.isValidData(data)) {
+      return { ...EMPTY_STATISTICS };
+    }
+
     const stats: Statistics = {
       total: 0,
       banker: 0,
@@ -222,10 +314,10 @@ export class RoadmapCalculator {
       playerPair: 0
     };
 
-    Object.values(data).forEach(item => {
+    Object.values(data!).forEach(item => {
       stats.total++;
 
-      // 统计输赢（需要转换特殊结果）
+      // 统计输赢（转换特殊结果）
       let result = item.result;
       if (result === 4 || result === 6 || result === 7 || result === 9) {
         result = 1; // 转为庄
@@ -248,41 +340,65 @@ export class RoadmapCalculator {
 
   /**
    * 计算问路预测
+   * 统一在入口处理空数据
    */
-  calculatePredictions(data: Record<string, GameResult>): Prediction {
-    // 先计算当前所有路单
-    this.calculateAll(data);
+  calculatePredictions(data: Record<string, GameResult> | null | undefined): Prediction {
+    // 统一的空数据处理
+    if (!this.isValidData(data)) {
+      return { ...DEFAULT_PREDICTION };
+    }
 
-    // 获取下三路的问路预测
-    const bankerPrediction = this.getPredictionForNext(1);
-    const playerPrediction = this.getPredictionForNext(2);
+    try {
+      // 先计算当前所有路单
+      this.calculateAll(data);
 
-    return {
-      banker: bankerPrediction,
-      player: playerPrediction
-    };
+      // 获取下三路的问路预测
+      const bankerPrediction = this.getPredictionForNext(1);
+      const playerPrediction = this.getPredictionForNext(2);
+
+      return {
+        banker: bankerPrediction,
+        player: playerPrediction
+      };
+
+    } catch (error) {
+      console.error("❌ 问路预测计算出错:", error);
+      return { ...DEFAULT_PREDICTION };
+    }
   }
 
   /**
    * 获取问路数据
+   * 统一在入口处理空数据
    */
-  getWenluData(data: Record<string, GameResult>): WenluData {
-    // 先计算当前所有路单
-    this.calculateAll(data);
+  getWenluData(data: Record<string, GameResult> | null | undefined): WenluData {
+    // 统一的空数据处理
+    if (!this.isValidData(data)) {
+      return { ...DEFAULT_WENLU_DATA };
+    }
 
-    // 计算各路的问路位置
-    return {
-      zhuzi_red: this.getWenluPosition('zhuzi', 'red'),
-      zhuzi_blue: this.getWenluPosition('zhuzi', 'blue'),
-      dalu_red: this.getWenluPosition('dalu', 'red'),
-      dalu_blue: this.getWenluPosition('dalu', 'blue'),
-      dayan_red: this.getWenluPosition('dayan', 'red'),
-      dayan_blue: this.getWenluPosition('dayan', 'blue'),
-      xiaolu_red: this.getWenluPosition('xiaolu', 'red'),
-      xiaolu_blue: this.getWenluPosition('xiaolu', 'blue'),
-      xiaoqiang_red: this.getWenluPosition('xiaoqiang', 'red'),
-      xiaoqiang_blue: this.getWenluPosition('xiaoqiang', 'blue')
-    };
+    try {
+      // 先计算当前所有路单
+      this.calculateAll(data);
+
+      // 计算各路的问路位置
+      return {
+        zhuzi_red: this.getWenluPosition('zhuzi', 'red'),
+        zhuzi_blue: this.getWenluPosition('zhuzi', 'blue'),
+        dalu_red: this.getWenluPosition('dalu', 'red'),
+        dalu_blue: this.getWenluPosition('dalu', 'blue'),
+        dayan_red: this.getWenluPosition('dayan', 'red'),
+        dayan_blue: this.getWenluPosition('dayan', 'blue'),
+        xiaolu_red: this.getWenluPosition('xiaolu', 'red'),
+        xiaolu_blue: this.getWenluPosition('xiaolu', 'blue'),
+        xiaoqiang_red: this.getWenluPosition('xiaoqiang', 'red'),
+        xiaoqiang_blue: this.getWenluPosition('xiaoqiang', 'blue')
+      };
+
+    } catch (error) {
+      console.error("❌ 问路数据计算出错:", error);
+      return { ...DEFAULT_WENLU_DATA };
+    }
   }
 
   // ==================== 私有方法 - 初始化 ====================
@@ -302,7 +418,6 @@ export class RoadmapCalculator {
     // 创建二维数组
     this.tmp_dalu_array = this.createArray2D(99, 99);
     this.tmp_dalu_array_num = this.createArray2D(99, 99);
-
     this.show_zhuzi = this.createArray2D(16, 6);
     this.show_dalu_img = this.createArray2D(99, 6);
     this.show_dalu_num = this.createArray2D(99, 6);
@@ -643,17 +758,9 @@ export class RoadmapCalculator {
    */
   private setAllDataTypeJustForShow(): void {
     this.showMsg("======== 设置显示数据 ========");
-
-    // 设置珠盘显示
     this.setZhuziShow();
-
-    // 设置三星显示
     this.setSanxingShow();
-
-    // 设置大路显示（处理转弯）
     this.setDaluShow();
-
-    // 设置下三路显示（处理转弯）
     this.setDerivedRoadShow();
   }
 
@@ -701,12 +808,10 @@ export class RoadmapCalculator {
    * 设置下三路显示
    */
   private setDerivedRoadShow(): void {
-    // 转换对象到数组
     const tmpShowDayan = this.changeFromObjToArray(this.res_dayan_obj);
     const tmpShowXiaolu = this.changeFromObjToArray(this.res_xiaolu_obj);
     const tmpShowXiaoqiang = this.changeFromObjToArray(this.res_xiaoqiang_obj);
 
-    // 处理转弯
     this.show_dayan = this.setShowByArray(tmpShowDayan, 'dayan', null);
     this.show_xiaolu = this.setShowByArray(tmpShowXiaolu, 'xiaolu', null);
     this.show_xiaoqiang = this.setShowByArray(tmpShowXiaoqiang, 'xiaoqiang', null);
@@ -815,20 +920,19 @@ export class RoadmapCalculator {
    * 获取图片编号
    */
   private getImgNumber(result: number, ext: number): number {
-    // 1-4: 庄, 5-8: 闲, 9-12: 和, 13-16: 幸运6, 17-32: 其他特殊
     const baseMap: Record<number, number> = {
-      1: 1,  // 庄
-      2: 5,  // 闲
-      3: 9,  // 和
-      4: 13, // 幸运6
-      6: 25, // 小老虎
-      7: 17, // 龙7
-      8: 21, // 熊8
-      9: 29  // 大老虎
+      1: 1,   // 庄
+      2: 5,   // 闲
+      3: 9,   // 和
+      4: 13,  // 幸运6
+      6: 25,  // 小老虎
+      7: 17,  // 龙7
+      8: 21,  // 熊8
+      9: 29   // 大老虎
     };
 
     const base = baseMap[result] || 1;
-    return base + ext; // ext: 0=无对, 1=庄对, 2=闲对, 3=双对
+    return base + ext;
   }
 
   /**
@@ -966,8 +1070,6 @@ export class RoadmapCalculator {
    * 获取问路位置
    */
   private getWenluPosition(road: string, color: 'red' | 'blue'): WenluPosition {
-    // 根据不同路单类型计算下一个位置
-    // 这里简化处理，实际需要根据具体逻辑计算
     return {
       x: 0,
       y: 0,

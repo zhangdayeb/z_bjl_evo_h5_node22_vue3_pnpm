@@ -1,8 +1,8 @@
-<!-- LuZhu.vue - 主露珠组件 -->
+<!-- LuZhu.vue - 主露珠组件（修复版：从 gameStore 获取数据） -->
 <template>
   <div class="luzhu-component">
     <div class="luzhu-wrapper">
-      <!-- 路珠显示区域 -->
+      <!-- 路单显示区域 -->
       <div class="luzhu-display-area">
         <div class="viewport-container">
           <!-- 正常显示容器 -->
@@ -292,30 +292,43 @@
       </div>
 
       <!-- 统计栏组件 -->
-      <LuZhuCount :game-data="gameData" />
+      <LuZhuCount :game-data="gameStore.luZhuData" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore' // 🔧 修复1: 引入 gameStore
 import LuZhuCount from './LuZhuCount.vue'
-import roadmapCalculator, {
-  type GameResult,
-  type RoadmapData,
-  type BeadPlatePosition
-} from '@/utils/roadmapCalculator'
+import type { RoadmapData, BeadPlatePosition } from '@/utils/roadmapCalculator'
 
-// 数据状态
-const gameData = ref<Record<string, GameResult>>({})
-const roadmapData = ref<RoadmapData>({
-  beadPlate: [],
-  bigRoad: [],
-  bigEyeRoad: [],
-  smallRoad: [],
-  cockroachRoad: [],
-  sanxing: []
+// 🔧 修复2: 使用 gameStore
+const gameStore = useGameStore()
+
+// 🔧 修复3: 从 gameStore 获取数据（使用计算属性保持响应性）
+const roadmapData = computed<RoadmapData>(() => {
+  // 如果 gameStore 中有计算好的路单数据，直接使用
+  if (gameStore.roadmapData) {
+    return gameStore.roadmapData
+  }
+
+  // 否则返回空的路单数据结构
+  return {
+    beadPlate: [],
+    bigRoad: [],
+    bigEyeRoad: [],
+    smallRoad: [],
+    cockroachRoad: [],
+    sanxing: []
+  }
 })
+
+// 🔧 修复4: 从 gameStore 获取统计数据
+const statistics = computed(() => gameStore.statistics)
+
+// 🔧 修复5: 从 gameStore 获取露珠统计数据
+const luZhuCount = computed(() => gameStore.luZhuCount)
 
 // 全屏模式
 type FullscreenMode = 'none' | 'bigRoad' | 'bigEyeRoad' | 'smallRoad' | 'cockroachRoad'
@@ -421,56 +434,10 @@ const calculateOffsets = () => {
   })
 }
 
-// 监听数据变化，自动计算偏移
+// 🔧 修复6: 监听 roadmapData 变化，自动计算偏移
 watch(roadmapData, () => {
   calculateOffsets()
-}, { deep: true })
-
-// 初始化数据（使用模拟数据）
-const initData = () => {
-  // 使用模拟数据
-  const mockData: Record<string, GameResult> = {
-    "k0":{"result":1,"ext":0},"k1":{"result":1,"ext":1},"k2":{"result":1,"ext":2},
-    "k3":{"result":1,"ext":3},"k4":{"result":2,"ext":0},"k5":{"result":1,"ext":0},
-    "k6":{"result":1,"ext":0},"k7":{"result":1,"ext":0},"k8":{"result":1,"ext":0},
-    "k9":{"result":2,"ext":0},"k10":{"result":2,"ext":0},"k11":{"result":2,"ext":1},
-    "k12":{"result":1,"ext":1},"k13":{"result":2,"ext":0},"k14":{"result":2,"ext":0},
-    "k15":{"result":2,"ext":0},"k16":{"result":1,"ext":0},"k17":{"result":2,"ext":0},
-    "k18":{"result":2,"ext":0},"k19":{"result":2,"ext":0},"k20":{"result":1,"ext":2},
-    "k21":{"result":3,"ext":0},"k22":{"result":3,"ext":1},"k23":{"result":3,"ext":0},
-    "k24":{"result":2,"ext":0},"k25":{"result":1,"ext":1},"k26":{"result":1,"ext":0},
-    "k27":{"result":1,"ext":0},"k28":{"result":1,"ext":0},"k29":{"result":1,"ext":0},
-    "k30":{"result":1,"ext":3},"k31":{"result":2,"ext":0},"k32":{"result":1,"ext":2},
-    "k33":{"result":1,"ext":0},"k34":{"result":3,"ext":0},"k35":{"result":2,"ext":2},
-    "k36":{"result":2,"ext":0},"k37":{"result":1,"ext":0},"k38":{"result":1,"ext":0},
-    "k39":{"result":1,"ext":0},"k40":{"result":1,"ext":0},"k41":{"result":1,"ext":0},
-    "k42":{"result":3,"ext":0},"k43":{"result":1,"ext":0},"k44":{"result":2,"ext":0},
-    "k45":{"result":2,"ext":3},"k46":{"result":2,"ext":0},"k47":{"result":1,"ext":0},
-    "k48":{"result":1,"ext":0},"k49":{"result":1,"ext":0}
-  }
-
-  gameData.value = mockData
-
-  // 开启调试模式（可选）
-  roadmapCalculator.setDebug(false)
-
-  // 计算路单
-  roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
-
-  // 计算偏移量
-  calculateOffsets()
-}
-
-// 添加新结果
-const addResult = (result: GameResult) => {
-  const newKey = `k${Object.keys(gameData.value).length}`
-  gameData.value = {
-    ...gameData.value,
-    [newKey]: result
-  }
-  roadmapData.value = roadmapCalculator.calculateAll(gameData.value)
-  calculateOffsets()
-}
+}, { deep: true, immediate: true }) // immediate: true 确保初始化时也计算
 
 // 触摸事件处理
 const handleTouchStart = (e: TouchEvent) => {
@@ -500,15 +467,26 @@ const handleTouchEnd = () => {
   }
 }
 
-// 生命周期
+// 🔧 修复7: 生命周期钩子 - 组件挂载时如果 store 已有数据则计算偏移
 onMounted(() => {
-  initData()
+  console.log('📊 LuZhu 组件已挂载')
+
+  // 如果 gameStore 已经有数据，立即计算偏移
+  if (roadmapData.value && Object.keys(roadmapData.value).length > 0) {
+    calculateOffsets()
+  }
+
+  // 监听窗口大小变化
+  window.addEventListener('resize', calculateOffsets)
 })
 
-// 暴露方法
-defineExpose({
-  addResult
+// 🔧 修复8: 清理事件监听器
+onUnmounted(() => {
+  window.removeEventListener('resize', calculateOffsets)
 })
+
+// 🔧 修复9: 移除了 addResult 等方法，因为数据更新应该通过 gameStore 处理
+// 组件现在是纯展示组件，数据管理由 store 负责
 </script>
 
 <style scoped>
