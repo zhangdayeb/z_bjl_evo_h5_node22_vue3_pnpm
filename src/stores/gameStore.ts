@@ -1,13 +1,17 @@
-// src/stores/gameStore.ts - 删除格式化功能版 + 增加清场功能
+// src/stores/gameStore.ts - 删除格式化功能版 + 增加清场功能 + 露珠数据集成
 /**
  * @fileoverview 游戏状态管理 Store
- * @description 使用 Pinia 管理百家乐游戏的全局状态，包括用户信息、游戏状态、投注结果等
- * @version 2.0.0 - 删除了格式化功能，增加了清场功能
+ * @description 使用 Pinia 管理百家乐游戏的全局状态，包括用户信息、游戏状态、投注结果、露珠数据等
+ * @version 3.0.0 - 新增露珠数据管理功能
  */
 
 import { defineStore } from 'pinia'
 import type { TableInfo, UserInfo } from '@/services/gameApi'
 import { getGlobalApiService } from '@/services/gameApi'
+import roadmapCalculator, {
+  type GameResult,
+  type RoadmapData
+} from '@/utils/roadmapCalculator'
 
 // ========================= 类型定义 =========================
 
@@ -139,6 +143,21 @@ export const useGameStore = defineStore('game', {
       zhuangXianDui: 0
     },
 
+    // --------------- 露珠数据（新增） ---------------
+    /**
+     * 露珠原始数据
+     * @type {Record<string, GameResult>}
+     * @description 从API获取的原始游戏历史记录
+     */
+    luZhuData: {} as Record<string, GameResult>,
+
+    /**
+     * 计算后的路单数据
+     * @type {RoadmapData | null}
+     * @description 经过 roadmapCalculator 计算后的显示数据
+     */
+    roadmapData: null as RoadmapData | null,
+
     // --------------- 加载状态标记 ---------------
     /**
      * 余额刷新状态
@@ -238,6 +257,15 @@ export const useGameStore = defineStore('game', {
      */
     hasError: (state): boolean => {
       return state.lastError !== null
+    },
+
+    /**
+     * 露珠数据条数（新增）
+     * @param {Object} state - Store 状态
+     * @returns {number} 露珠数据总条数
+     */
+    luZhuCount: (state): number => {
+      return Object.keys(state.luZhuData).length
     }
   },
 
@@ -352,6 +380,121 @@ export const useGameStore = defineStore('game', {
         this.tableName = tableInfo.table_title
         console.log(`🏠 API更新台桌信息`)
       }
+    },
+
+    // =================== 露珠数据处理（新增） ===================
+
+    /**
+     * 更新露珠数据
+     * @async
+     * @param {Record<string, GameResult> | null} data - 露珠原始数据
+     * @description 更新露珠数据并自动计算路单
+     */
+    async updateLuZhuData(data: Record<string, GameResult> | null) {
+      try {
+        // 如果传入数据，直接使用；否则从API获取
+        if (data !== null) {
+          // 验证数据格式
+          if (!this.validateLuZhuData(data)) {
+            console.error('❌ 露珠数据格式错误')
+            return
+          }
+
+          this.luZhuData = data
+        } else {
+          // 从API获取数据
+          const apiService = getGlobalApiService()
+          if (!apiService) {
+            console.error('❌ API服务未初始化')
+            return
+          }
+
+          const apiData = await apiService.getLuZhuData(this.gameParams.table_id)
+
+          // 验证API返回的数据
+          if (!this.validateLuZhuData(apiData)) {
+            console.error('❌ API返回的露珠数据格式错误')
+            return
+          }
+
+          this.luZhuData = apiData
+        }
+
+        // 立即计算路单数据
+        if (Object.keys(this.luZhuData).length > 0) {
+          this.roadmapData = roadmapCalculator.calculateAll(this.luZhuData)
+          console.log(`📊 露珠数据已更新，共 ${Object.keys(this.luZhuData).length} 条记录`)
+          console.log(`📈 路单计算完成:`, {
+            beadPlate: this.roadmapData?.beadPlate?.length || 0,
+            bigRoad: this.roadmapData?.bigRoad?.length || 0,
+            bigEyeRoad: this.roadmapData?.bigEyeRoad?.length || 0,
+            smallRoad: this.roadmapData?.smallRoad?.length || 0,
+            cockroachRoad: this.roadmapData?.cockroachRoad?.length || 0
+          })
+        } else {
+          // 无数据时设置为空
+          this.roadmapData = {
+            beadPlate: [],
+            bigRoad: [],
+            bigEyeRoad: [],
+            smallRoad: [],
+            cockroachRoad: [],
+            sanxing: []
+          }
+          console.log('📊 露珠数据为空')
+        }
+
+      } catch (error) {
+        console.error('❌ 露珠数据更新失败:', error)
+        // 保持旧数据不变，避免显示异常
+      }
+    },
+
+    /**
+     * 验证露珠数据格式
+     * @private
+     * @param {any} data - 待验证的数据
+     * @returns {boolean} 是否为有效的露珠数据
+     */
+    validateLuZhuData(data: any): boolean {
+      if (!data || typeof data !== 'object') {
+        return false
+      }
+
+      // 检查是否符合 Record<string, GameResult> 格式
+      for (const [key, value] of Object.entries(data)) {
+        // 键应该是 k0, k1, k2... 格式
+        if (!key.startsWith('k')) {
+          console.warn(`⚠️ 露珠数据键格式错误: ${key}`)
+          return false
+        }
+
+        // 值应该包含 result 和 ext 字段
+        if (!value || typeof value !== 'object') {
+          console.warn(`⚠️ 露珠数据值格式错误: ${key}`)
+          return false
+        }
+
+        const record = value as any
+        if (record.result === undefined || record.ext === undefined) {
+          console.warn(`⚠️ 露珠数据缺少必要字段: ${key}`)
+          return false
+        }
+
+        // result 应该是 1-9 的数字
+        if (![1, 2, 3, 4, 6, 7, 8, 9].includes(record.result)) {
+          console.warn(`⚠️ 露珠数据 result 值无效: ${key} = ${record.result}`)
+          return false
+        }
+
+        // ext 应该是 0-3 的数字
+        if (![0, 1, 2, 3].includes(record.ext)) {
+          console.warn(`⚠️ 露珠数据 ext 值无效: ${key} = ${record.ext}`)
+          return false
+        }
+      }
+
+      return true
     },
 
     // =================== 游戏结果处理 ===================
@@ -617,6 +760,10 @@ export const useGameStore = defineStore('game', {
         xianDui: 0,
         zhuangXianDui: 0
       }
+
+      // --------------- 重置露珠数据（新增） ---------------
+      this.luZhuData = {}
+      this.roadmapData = null
 
       // --------------- 重置加载状态 ---------------
       this.isRefreshingBalance = false

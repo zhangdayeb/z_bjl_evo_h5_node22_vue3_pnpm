@@ -8,7 +8,8 @@ import { useAudio } from '@/services/Audio'
 import { buildVideoUrl, formatGameNumberFromApi } from '@/utils/formatters'
 
 /**
- * 🔥 新增：解析开牌数据获取牌型、点数、闪烁区域
+ * 游戏处理状态
+ * @description 跟踪游戏各阶段的处理状态，防止重复处理
  */
 const gameProcessingState = reactive({
   lastProcessedGameNumber: '', // 最后处理的局号
@@ -18,7 +19,10 @@ const gameProcessingState = reactive({
   betResultProcessed: false, // 当前铺是否已处理中奖
 })
 
-// 🔥 新增：重置铺处理状态
+/**
+ * 重置铺处理状态
+ * @description 在新一铺开始时重置所有处理标记
+ */
 function resetDealProcessingState() {
   gameProcessingState.countdownStarted = false
   gameProcessingState.cardResultProcessed = false
@@ -26,7 +30,11 @@ function resetDealProcessingState() {
   console.log('🔄 铺处理状态已重置')
 }
 
-// 🔥 新增：更新所有数据的通用方法
+/**
+ * 更新所有游戏数据
+ * @param {string} triggerSource - 触发源描述
+ * @description 统一更新用户信息、台桌信息、统计数据和露珠数据
+ */
 async function updateAllGameData(triggerSource: string): Promise<void> {
   try {
     console.log(`📡 ${triggerSource} - 开始更新所有游戏数据...`)
@@ -34,8 +42,8 @@ async function updateAllGameData(triggerSource: string): Promise<void> {
     const apiService = getGlobalApiService()
     const gameStore = useGameStore()
 
-    // 并发请求所有数据
-    const [userInfo, tableInfo, statistics] = await Promise.all([
+    // 并发请求所有数据（包括露珠数据）
+    const [userInfo, tableInfo, statistics, luZhuData] = await Promise.all([
       apiService.getUserInfo().catch(err => {
         console.error('❌ 更新用户信息失败:', err)
         return null
@@ -47,6 +55,11 @@ async function updateAllGameData(triggerSource: string): Promise<void> {
       apiService.getCurrentShoeStatistics().catch(err => {
         console.error('❌ 更新统计数据失败:', err)
         return null
+      }),
+      // 获取露珠数据 - 返回类型已经是正确的格式
+      apiService.getLuZhuData(gameStore.gameParams.table_id).catch(err => {
+        console.error('❌ 更新露珠数据失败:', err)
+        return {}  // 返回空对象而不是 null
       })
     ])
 
@@ -68,6 +81,13 @@ async function updateAllGameData(triggerSource: string): Promise<void> {
       console.log(`✅ ${triggerSource} - 统计数据已更新`)
     }
 
+    // 更新露珠数据 - 类型已经匹配
+    if (luZhuData && Object.keys(luZhuData).length > 0) {
+      // 直接传递数据，因为类型已经匹配
+      await gameStore.updateLuZhuData(luZhuData as Record<string, any>)
+      console.log(`✅ ${triggerSource} - 露珠数据已更新`)
+    }
+
     console.log(`✅ ${triggerSource} - 所有游戏数据更新完成`)
 
   } catch (error) {
@@ -75,7 +95,11 @@ async function updateAllGameData(triggerSource: string): Promise<void> {
   }
 }
 
-// 🔥 修复：解析开牌数据获取牌型、点数、闪烁区域
+/**
+ * 解析开牌数据
+ * @param {any} data - WebSocket 推送的开牌数据
+ * @returns {Object} 解析后的牌型信息
+ */
 function parseCardResultData(data: any) {
   const result = {
     cardType: '未知牌型',
@@ -88,10 +112,9 @@ function parseCardResultData(data: any) {
     const gameResult = data?.data || data
     const resultInfo = gameResult?.result_info || gameResult
 
-    // 解析牌型 - 从 result_info.result 中获取
+    // 解析牌型
     const resultData = resultInfo?.result
     if (resultData) {
-      // 根据庄闲点数判断牌型
       const zhuangPoint = resultData.zhuang_point || 0
       const xianPoint = resultData.xian_point || 0
 
@@ -107,7 +130,7 @@ function parseCardResultData(data: any) {
       }
     }
 
-    // 🔥 修复：解析闪烁区域 - 正确的层级 data.result_info.pai_flash
+    // 解析闪烁区域
     if (resultInfo?.pai_flash && Array.isArray(resultInfo.pai_flash)) {
       result.blinkAreas = resultInfo.pai_flash
         .map((id: any) => {
@@ -116,7 +139,6 @@ function parseCardResultData(data: any) {
         })
         .filter((id: number | null) => id !== null && id > 0) as number[]
     } else if (resultData?.win_array && Array.isArray(resultData.win_array)) {
-      // 备用：使用 win_array
       result.blinkAreas = resultData.win_array
         .map((id: any) => {
           const num = typeof id === 'number' ? id : parseInt(String(id), 10)
@@ -125,10 +147,8 @@ function parseCardResultData(data: any) {
         .filter((id: number | null) => id !== null && id > 0) as number[]
     }
 
-    // 🔥 修复：构建音频播放序列：kai.mp3 + 闪烁区域对应的数字.mp3
+    // 构建音频播放序列
     result.audioFiles = ['open/kai.mp3']
-
-    // 为每个闪烁区域添加对应的音频文件
     result.blinkAreas.forEach(area => {
       const audioFile = mapAreaToAudioFile(area)
       if (audioFile) {
@@ -144,7 +164,11 @@ function parseCardResultData(data: any) {
   return result
 }
 
-// 🔥 修复：映射闪烁区域到音频文件 - 只支持数字映射
+/**
+ * 映射闪烁区域到音频文件
+ * @param {string | number} area - 闪烁区域ID
+ * @returns {string | null} 音频文件路径
+ */
 function mapAreaToAudioFile(area: string | number): string | null {
   if (typeof area === 'number') {
     return `open/${area}.mp3`
@@ -160,7 +184,11 @@ function mapAreaToAudioFile(area: string | number): string | null {
   return null
 }
 
-// 🔥 新增：解析中奖数据获取金额
+/**
+ * 解析中奖数据
+ * @param {any} data - WebSocket 推送的中奖数据
+ * @returns {Object} 解析后的中奖信息
+ */
 function parseWinResultData(data: any) {
   const result = {
     winAmount: 0,
@@ -187,13 +215,16 @@ function parseWinResultData(data: any) {
   return result
 }
 
-// 🔥 新增：音频服务实例
+// 音频服务实例
 const audioService = useAudio()
 
-// 服务实例
+// WebSocket 服务实例
 let wsService: any = null
 
-// 🔥 主要的网络服务初始化函数
+/**
+ * 初始化网络服务
+ * @description 初始化 API 和 WebSocket 服务，建立连接
+ */
 export async function initializeNetworkService(): Promise<void> {
   try {
     console.log('🚀 开始初始化网络服务...')
@@ -222,10 +253,10 @@ export async function initializeNetworkService(): Promise<void> {
     // 4. 设置 WebSocket 事件处理
     setupWebSocketHandlers()
 
-    // 5. 🔥 加载一次初始数据
+    // 5. 加载初始数据
     await loadInitialData()
 
-    console.log('✅ 网络服务初始化完成 (已取消定时更新)')
+    console.log('✅ 网络服务初始化完成')
 
   } catch (error) {
     console.error('❌ 网络服务初始化失败:', error)
@@ -235,7 +266,10 @@ export async function initializeNetworkService(): Promise<void> {
   }
 }
 
-// 设置 WebSocket 事件处理
+/**
+ * 设置 WebSocket 事件处理器
+ * @description 注册 WebSocket 连接、消息、错误等事件处理器
+ */
 function setupWebSocketHandlers() {
   if (!wsService) return
 
@@ -244,12 +278,14 @@ function setupWebSocketHandlers() {
   // 连接成功
   wsService.on('connected', () => {
     console.log('✅ WebSocket 连接成功')
+    gameStore.updateWebSocketStatus(true)
     gameStore.clearError()
   })
 
   // 连接断开
   wsService.on('disconnected', (data: any) => {
     console.log('❌ WebSocket 连接断开:', data)
+    gameStore.updateWebSocketStatus(false)
   })
 
   // 接收消息
@@ -270,7 +306,11 @@ function setupWebSocketHandlers() {
   })
 }
 
-// 🔥 处理 WebSocket 消息 - 直接更新 GameStore
+/**
+ * 处理 WebSocket 消息
+ * @param {any} data - WebSocket 消息数据
+ * @description 根据消息类型分发到对应的处理函数
+ */
 function handleWebSocketMessage(data: any) {
   try {
     if (!data || typeof data !== 'object') return
@@ -293,16 +333,21 @@ function handleWebSocketMessage(data: any) {
   }
 }
 
-// 🔥 修改：处理倒计时消息 - 增加数据更新和音效
+/**
+ * 处理倒计时消息
+ * @param {any} data - 倒计时消息数据
+ * @description 更新倒计时，触发游戏状态变化和数据更新
+ */
 async function handleCountdownMessage(data: any) {
   const gameStore = useGameStore()
 
+  // 重置处理状态
   gameProcessingState.cardResultProcessed = false
   gameProcessingState.betResultProcessed = false
 
   let countdown = 0
 
-  // 🔥 修复：根据实际API数据结构解析倒计时
+  // 解析倒计时
   if (data?.data?.table_run_info?.end_time !== undefined) {
     countdown = data.data.table_run_info.end_time
   } else if (data?.table_run_info?.end_time !== undefined) {
@@ -311,21 +356,21 @@ async function handleCountdownMessage(data: any) {
     countdown = data.end_time
   }
 
-  // 🔥 更新倒计时到store
+  // 更新倒计时
   gameStore.updateCountdown(countdown)
 
-  // 🔥 根据倒计时自动设置游戏状态
+  // 根据倒计时设置游戏状态
   if (countdown > 0) {
     gameStore.updateGameStatus('betting')
 
-    // 🔥 检查是否是新一铺的开始（倒计时开始）
+    // 检查是否是新一铺的开始
     if (!gameProcessingState.countdownStarted) {
       gameProcessingState.countdownStarted = true
 
-      // 🔥 倒计时开始时：更新所有数据
+      // 倒计时开始时更新所有数据（包括露珠）
       await updateAllGameData('倒计时开始')
 
-      // 🔥 播放投注开始音效
+      // 播放投注开始音效
       try {
         await audioService.playAudioFile('bet.wav')
         console.log('🔊 倒计时开始音效播放完成')
@@ -337,7 +382,7 @@ async function handleCountdownMessage(data: any) {
   } else {
     gameStore.updateGameStatus('dealing')
 
-    // 🔥 倒计时结束时播放停止音效
+    // 倒计时结束时播放停止音效
     if (gameProcessingState.countdownStarted) {
       try {
         await audioService.playAudioFile('stop.wav')
@@ -351,12 +396,16 @@ async function handleCountdownMessage(data: any) {
   console.log(`⏰ 倒计时 ${countdown} 秒`)
 }
 
-// 🔥 修改：处理开牌结果 - 增加防重复、数据更新、增强日志和音效
+/**
+ * 处理开牌结果
+ * @param {any} data - 开牌结果数据
+ * @description 处理开牌，更新数据，播放音效，显示开牌效果
+ */
 async function handleGameResult(data: any) {
   const gameStore = useGameStore()
   const overLayerStore = useoverLayerStore()
 
-  // 🔥 防重复处理：检查当前铺是否已处理过开牌
+  // 防重复处理
   if (gameProcessingState.cardResultProcessed) {
     console.log('⚠️ 当前铺已处理过开牌结果，跳过重复处理')
     return
@@ -364,29 +413,29 @@ async function handleGameResult(data: any) {
 
   console.log('🎰 收到开牌结果:', data)
 
-  // 🔥 只在dealing状态下才处理
+  // 只在dealing状态下处理
   if (gameStore.gameStatus === 'dealing') {
 
-    // 🔥 标记当前铺已处理开牌
+    // 标记已处理
     gameProcessingState.cardResultProcessed = true
 
-    // 🔥 解析开牌数据
+    // 解析开牌数据
     const cardResult = parseCardResultData(data)
 
     console.log(`🎯 开牌结果 - 牌型: ${cardResult.cardType}, 点数: ${cardResult.points}`)
     console.log(`🎯 闪烁区域: [${cardResult.blinkAreas.join(', ')}]`)
     console.log(`🎯 音频序列: [${cardResult.audioFiles.join(', ')}]`)
 
-    // 1. 🔥 保存开牌结果数据 + 自动执行清场
+    // 1. 保存开牌结果并触发清场
     gameStore.updateGameResult(data)
 
-    // 2. 🔥 开牌时：更新所有数据
+    // 2. 开牌时更新所有数据（包括露珠）
     await updateAllGameData('开牌')
 
-    // 3. 🔥 显示开牌效果弹窗
-    // overLayerStore.showCardResult()
+    // 3. 显示开牌效果弹窗 - 使用正确的方法
+    overLayerStore.open('resultFly')
 
-    // 4. 🔥 播放开牌音效序列：kai.mp3 + 闪烁区域音效
+    // 4. 播放开牌音效序列
     if (cardResult.audioFiles.length > 0) {
       try {
         await audioService.playAudioSequence(cardResult.audioFiles, { interval: 500 })
@@ -396,12 +445,12 @@ async function handleGameResult(data: any) {
       }
     }
 
-    // 5. 🔥 投注区域闪烁会通过 bettingStore 的 watch(gameResult) 自动触发
+    // 5. 投注区域闪烁通过 bettingStore 自动处理
     console.log('✨ 投注区域闪烁将由 bettingStore 自动处理')
 
-    // 6. 🔥 5秒后自动关闭开牌效果
+    // 6. 5秒后自动关闭开牌效果
     setTimeout(() => {
-      // overLayerStore.hideCardResult()
+      overLayerStore.close()
     }, 5000)
 
     console.log('🎯 开牌结果处理完成')
@@ -410,36 +459,40 @@ async function handleGameResult(data: any) {
   }
 }
 
-// 🔥 修改：处理中奖信息 - 增加防重复、数据更新、增强日志
+/**
+ * 处理中奖信息
+ * @param {any} data - 中奖信息数据
+ * @description 处理中奖结果，更新数据，显示中奖效果
+ */
 async function handleBetResult(data: any) {
   const gameStore = useGameStore()
   const overLayerStore = useoverLayerStore()
 
-  // 🔥 防重复处理：检查当前铺是否已处理过中奖
+  // 防重复处理
   if (gameProcessingState.betResultProcessed) {
     console.log('⚠️ 当前铺已处理过中奖信息，跳过重复处理')
     return
   }
 
-  // 🔥 标记当前铺已处理中奖
+  // 标记已处理
   gameProcessingState.betResultProcessed = true
 
-  // 🔥 解析中奖数据
+  // 解析中奖数据
   const winResult = parseWinResultData(data)
 
   console.log('🏆 收到中奖信息:', data)
   console.log(`💰 中奖金额: ${winResult.winAmount}`)
 
-  // 1. 🔥 保存中奖信息数据
+  // 1. 保存中奖信息
   gameStore.updateBetResult(data)
 
-  // 2. 🔥 中奖时：更新所有数据
+  // 2. 中奖时更新所有数据（包括露珠）
   await updateAllGameData('中奖信息')
 
-  // 3. 🔥 显示中奖效果
+  // 3. 显示中奖效果
   overLayerStore.open('winningEffect')
 
-  // 4. 🔥 5秒后自动关闭
+  // 4. 5秒后自动关闭
   setTimeout(() => {
     overLayerStore.close()
   }, 5000)
@@ -447,7 +500,10 @@ async function handleBetResult(data: any) {
   console.log('🏆 中奖信息处理完成')
 }
 
-// 🔥 修改：初始化时加载数据 - 增加局号格式化逻辑
+/**
+ * 加载初始数据
+ * @description 应用启动时加载所有必要的初始数据
+ */
 async function loadInitialData(): Promise<void> {
   console.log('📡 开始加载初始数据...')
 
@@ -455,11 +511,13 @@ async function loadInitialData(): Promise<void> {
     const apiService = getGlobalApiService()
     const gameStore = useGameStore()
 
-    // 🔥 加载用户信息、台桌信息、统计数据
-    const [userInfo, tableInfo, statistics] = await Promise.all([
+    // 加载所有初始数据
+    const [userInfo, tableInfo, statistics, luZhuData] = await Promise.all([
       apiService.getUserInfo(),
       apiService.getTableInfo(),
-      apiService.getCurrentShoeStatistics().catch(() => null) // 统计数据失败不影响初始化
+      apiService.getCurrentShoeStatistics().catch(() => null),
+      // 获取露珠数据
+      apiService.getLuZhuData(gameStore.gameParams.table_id).catch(() => ({}))
     ])
 
     // 更新用户信息
@@ -467,35 +525,44 @@ async function loadInitialData(): Promise<void> {
       gameStore.updateUserInfo(userInfo)
     }
 
-    // 🔥 修改：更新台桌信息并格式化局号
+    // 更新台桌信息并格式化局号
     if (tableInfo) {
-      // 1. 先格式化局号
+      // 格式化局号
       const formattedGameNumber = formatGameNumberFromApi(tableInfo)
       gameStore.updateGameNumber(formattedGameNumber)
 
-      // 🔥 初始化时设置当前局号为处理基准
+      // 设置当前局号为处理基准
       gameProcessingState.lastProcessedGameNumber = formattedGameNumber
       resetDealProcessingState()
 
-      // 2. 然后更新其他台桌信息
+      // 更新台桌信息
       gameStore.updateTableInfo(tableInfo)
 
-      // 3. 🔥 初始化时设置视频地址
+      // 设置视频地址
       const tableId = tableInfo.id || gameStore.gameParams.table_id
       gameStore.updateVideoUrl(buildVideoUrl(tableInfo.video_far, tableId))
     }
 
-    // 🔥 更新统计数据
+    // 更新统计数据
     if (statistics) {
       gameStore.updateStatistics(statistics)
     }
+
+    // 更新露珠数据
+    if (luZhuData && Object.keys(luZhuData).length > 0) {
+      await gameStore.updateLuZhuData(luZhuData as Record<string, any>)
+    }
+
+    // 设置 API 就绪状态
+    gameStore.updateApiStatus(true)
 
     console.log('📊 初始数据加载完成:', {
       balance: gameStore.balance,
       tableName: gameStore.tableName,
       videoUrl: gameStore.videoUrl,
       gameNumber: gameStore.gameNumber,
-      statistics: gameStore.statistics
+      statistics: gameStore.statistics,
+      luZhuCount: gameStore.luZhuCount
     })
 
   } catch (error) {
@@ -504,7 +571,10 @@ async function loadInitialData(): Promise<void> {
   }
 }
 
-// 🔥 修改：清理网络服务 - 移除定时器清理
+/**
+ * 清理网络服务
+ * @description 断开连接，清理资源
+ */
 export function cleanupNetworkService(): void {
   console.log('🧹 清理网络服务...')
 
@@ -513,7 +583,7 @@ export function cleanupNetworkService(): void {
     wsService.removeAllListeners()
   }
 
-  // 🔥 重置防重复状态
+  // 重置处理状态
   resetDealProcessingState()
   gameProcessingState.lastProcessedGameNumber = ''
   gameProcessingState.lastProcessedDealNumber = ''
@@ -521,23 +591,31 @@ export function cleanupNetworkService(): void {
   console.log('✅ 网络服务已清理')
 }
 
-// 🔥 导出响应式数据供组件使用
+/**
+ * 导出响应式数据和方法供组件使用
+ * @returns {Object} 包含状态、数据和方法的对象
+ */
 export function useNetworkService() {
   const gameStore = useGameStore()
 
   return {
-    // 状态（从 GameStore 读取）
+    // 状态
     isReady: computed(() => gameStore.isReady),
     isConnected: computed(() => gameStore.isConnected),
     hasError: computed(() => gameStore.hasError),
 
-    // 游戏数据（从 GameStore 读取）
+    // 游戏数据
     countdown: computed(() => gameStore.countdown),
     gameStatus: computed(() => gameStore.gameStatus),
-    gameNumber: computed(() => gameStore.gameNumber), // 🔥 现在返回格式化后的局号
+    gameNumber: computed(() => gameStore.gameNumber),
     balance: computed(() => gameStore.balance),
     videoUrl: computed(() => gameStore.videoUrl),
     statistics: computed(() => gameStore.statistics),
+
+    // 露珠数据
+    luZhuData: computed(() => gameStore.luZhuData),
+    roadmapData: computed(() => gameStore.roadmapData),
+    luZhuCount: computed(() => gameStore.luZhuCount),
 
     // 方法
     initializeNetworkService,
@@ -550,14 +628,15 @@ export function useNetworkService() {
       }
     },
 
-    // 🔥 新增：手动更新方法
+    // 手动更新方法
     refreshBalance: () => gameStore.refreshBalance(),
     refreshStatistics: () => gameStore.refreshStatistics(),
+    refreshLuZhuData: () => gameStore.updateLuZhuData(null),
 
-    // 🔥 新增：手动触发数据更新
+    // 手动触发数据更新
     updateAllData: (source: string) => updateAllGameData(source),
 
-    // 🔥 新增：重置处理状态（用于调试）
+    // 重置处理状态（用于调试）
     resetProcessingState: () => {
       resetDealProcessingState()
       gameProcessingState.lastProcessedGameNumber = ''
