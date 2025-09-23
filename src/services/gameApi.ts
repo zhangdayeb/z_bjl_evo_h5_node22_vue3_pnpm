@@ -387,6 +387,7 @@ export class GameApiService {
         zhuangXianDui: response.zhuangXianDui || 0
       }
     } catch (error) {
+      console.error('获取当前靴统计信息失败:', error)
       throw error
     }
   }
@@ -408,6 +409,7 @@ export class GameApiService {
       // 确保返回的数据格式正确
       return response || {}
     } catch (error) {
+      console.error('获取露珠数据失败:', error)
       throw error
     }
   }
