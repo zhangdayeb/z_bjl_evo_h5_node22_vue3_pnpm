@@ -41,7 +41,6 @@ import { getGlobalApiService } from '@/services/gameApi'
 import LuZhuListItemBet from './LuZhuListItemBet.vue'
 import LuZhuListItemRoadMap from './LuZhuListItemRoadMap.vue'
 import LuZhuListItemCount from './LuZhuListItemCount.vue'
-import type { GameResult } from '@/utils/roadmapCalculator'
 
 // ==================== Props 定义 ====================
 interface Props {
@@ -51,7 +50,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // ==================== 状态管理 ====================
-const gameData = ref<Record<string, GameResult>>({})
+const gameData = ref<Record<string, any>>({})
 const loading = ref(true)
 const error = ref<string>('')
 
@@ -79,18 +78,16 @@ const fetchGameData = async () => {
     console.log(`📊 获取桌台 ${props.tableId} 的路单数据...`)
     const response = await apiService.getLuZhuData(String(props.tableId))
 
-    // 验证返回数据
-    if (!response || typeof response !== 'object') {
-      throw new Error('返回数据格式错误')
-    }
+    // 简化数据处理 - 直接使用返回的数据
+    const luZhuData = response?.data || response || {}
 
-    // 处理返回的数据
-    const luZhuData = response.data || response
+    // 格式化数据 - 确保每个项都有 result 和 ext 字段
     const formattedData = formatGameData(luZhuData)
 
     // 更新游戏数据
     gameData.value = formattedData
-    console.log(`✅ 成功获取桌台 ${props.tableId} 的路单数据，共 ${Object.keys(formattedData).length} 条记录`)
+    console.log(`✅ 成功获取桌台 ${props.tableId} 的路单数据:`, formattedData)
+    console.log(`📊 共 ${Object.keys(formattedData).length} 条记录`)
 
   } catch (err) {
     console.error(`❌ 获取桌台 ${props.tableId} 数据失败:`, err)
@@ -113,71 +110,47 @@ const fetchGameData = async () => {
 }
 
 /**
- * 格式化游戏数据
+ * 格式化游戏数据 - 简化版，不做验证
  */
-const formatGameData = (rawData: any): Record<string, GameResult> => {
-  // 如果数据已经是正确格式，直接返回
-  if (isValidGameData(rawData)) {
-    return rawData
+const formatGameData = (rawData: any): Record<string, any> => {
+  // 如果没有数据，返回空对象
+  if (!rawData || typeof rawData !== 'object') {
+    return {}
   }
 
   // 如果是数组格式，转换为对象格式
   if (Array.isArray(rawData)) {
-    const formatted: Record<string, GameResult> = {}
+    const formatted: Record<string, any> = {}
     rawData.forEach((item, index) => {
-      if (isValidGameResult(item)) {
-        formatted[`k${index}`] = {
-          result: item.result,
-          ext: item.ext || 0
-        }
+      formatted[`k${index}`] = {
+        result: item.result || 1,
+        ext: item.ext || 0
       }
     })
     return formatted
   }
 
-  // 处理对象格式
-  const formatted: Record<string, GameResult> = {}
-  if (rawData && typeof rawData === 'object') {
-    Object.keys(rawData).forEach((key, index) => {
-      const item = rawData[key]
-      if (isValidGameResult(item)) {
-        const formattedKey = key.startsWith('k') ? key : `k${index}`
-        formatted[formattedKey] = {
-          result: item.result,
-          ext: item.ext || 0
-        }
+  // 处理对象格式 - 确保每个项都有 result 和 ext
+  const formatted: Record<string, any> = {}
+  Object.keys(rawData).forEach((key) => {
+    const item = rawData[key]
+
+    // 如果 item 是对象，直接使用；否则尝试创建默认结构
+    if (item && typeof item === 'object') {
+      formatted[key] = {
+        result: item.result || 1,
+        ext: item.ext || 0
       }
-    })
-  }
+    } else if (item) {
+      // 如果 item 不是对象但存在，尝试将其作为 result 值
+      formatted[key] = {
+        result: item,
+        ext: 0
+      }
+    }
+  })
 
   return formatted
-}
-
-/**
- * 验证游戏数据格式
- */
-const isValidGameData = (data: any): boolean => {
-  if (!data || typeof data !== 'object') return false
-  return Object.values(data).every(item => isValidGameResult(item))
-}
-
-/**
- * 验证单个游戏结果
- */
-const isValidGameResult = (item: any): boolean => {
-  if (!item || typeof item !== 'object') return false
-
-  // 验证result字段
-  const validResults = [1, 2, 3, 4, 6, 7, 8, 9]
-  if (!validResults.includes(item.result)) return false
-
-  // 验证ext字段（可选）
-  if (item.ext !== undefined) {
-    const validExt = [0, 1, 2, 3]
-    if (!validExt.includes(item.ext)) return false
-  }
-
-  return true
 }
 
 // ==================== 生命周期 ====================

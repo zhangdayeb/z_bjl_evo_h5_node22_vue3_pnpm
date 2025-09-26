@@ -384,58 +384,99 @@ export const useGameStore = defineStore('game', {
 
     // =================== 露珠数据处理（新增） ===================
 
-    /**
-     * 更新露珠数据
-     * @async
-     * @param {Record<string, GameResult> | null} data - 露珠原始数据
-     * @description 更新露珠数据并自动计算路单
-     */
-    async updateLuZhuData(data: Record<string, GameResult> | null) {
-      try {
-        // 如果传入数据，直接使用；否则从API获取
-        if (data !== null) {
-          this.luZhuData = data
-        } else {
-          // 从API获取数据
-          const apiService = getGlobalApiService()
-          if (!apiService) {
-            console.error('❌ API服务未初始化')
-            return
-          }
-
-          const apiData = await apiService.getLuZhuData(this.gameParams.table_id)
-          this.luZhuData = apiData
-        }
-
-        // 立即计算路单数据
-        if (Object.keys(this.luZhuData).length > 0) {
-          this.roadmapData = roadmapCalculator.calculateAll(this.luZhuData)
-          console.log(`📊 露珠数据已更新，共 ${Object.keys(this.luZhuData).length} 条记录`)
-          console.log(`📈 路单计算完成:`, {
-            beadPlate: this.roadmapData?.beadPlate?.length || 0,
-            bigRoad: this.roadmapData?.bigRoad?.length || 0,
-            bigEyeRoad: this.roadmapData?.bigEyeRoad?.length || 0,
-            smallRoad: this.roadmapData?.smallRoad?.length || 0,
-            cockroachRoad: this.roadmapData?.cockroachRoad?.length || 0
-          })
-        } else {
-          // 无数据时设置为空
-          this.roadmapData = {
-            beadPlate: [],
-            bigRoad: [],
-            bigEyeRoad: [],
-            smallRoad: [],
-            cockroachRoad: [],
-            sanxing: []
-          }
-          console.log('📊 露珠数据为空')
-        }
-
-      } catch (error) {
-        console.error('❌ 露珠数据更新失败:', error)
-        // 保持旧数据不变，避免显示异常
+/**
+ * 更新露珠数据
+ * @async
+ * @param {Record<string, any> | null} data - 露珠原始数据
+ * @description 更新露珠数据并自动计算路单
+ */
+async updateLuZhuData(data: Record<string, any> | null) {
+  try {
+    // 如果传入数据，直接使用；否则从API获取
+    if (data !== null) {
+      this.luZhuData = data
+    } else {
+      // 从API获取数据
+      const apiService = getGlobalApiService()
+      if (!apiService) {
+        console.error('❌ API服务未初始化')
+        return
       }
-    },
+
+      const apiData = await apiService.getLuZhuData(this.gameParams.table_id)
+      this.luZhuData = apiData
+    }
+
+    // 数据格式化处理 - 确保 result 和 ext 是数字类型
+    const formattedData: Record<string, any> = {}
+    Object.keys(this.luZhuData).forEach(key => {
+      const item = this.luZhuData[key]
+      if (item && typeof item === 'object') {
+        // 转换为数字类型，兼容字符串格式
+        formattedData[key] = {
+          result: parseInt(String(item.result), 10) || 1,
+          ext: parseInt(String(item.ext || 0), 10) || 0
+        }
+      }
+    })
+
+    // 使用格式化后的数据计算路单
+    if (Object.keys(formattedData).length > 0) {
+      try {
+        // 尝试计算路单
+        this.roadmapData = roadmapCalculator.calculateAll(formattedData)
+
+        console.log(`📊 露珠数据已更新，共 ${Object.keys(formattedData).length} 条记录`)
+        console.log(`📈 路单计算完成:`, {
+          beadPlate: this.roadmapData?.beadPlate?.length || 0,
+          bigRoad: this.roadmapData?.bigRoad?.length || 0,
+          bigEyeRoad: this.roadmapData?.bigEyeRoad?.length || 0,
+          smallRoad: this.roadmapData?.smallRoad?.length || 0,
+          cockroachRoad: this.roadmapData?.cockroachRoad?.length || 0
+        })
+      } catch (calcError) {
+        console.error('⚠️ 路单计算失败，使用空数据:', calcError)
+
+        // 如果计算失败，设置空路单
+        this.roadmapData = {
+          beadPlate: [],
+          bigRoad: [],
+          bigEyeRoad: [],
+          smallRoad: [],
+          cockroachRoad: [],
+          sanxing: []
+        }
+      }
+    } else {
+      // 无数据时设置为空
+      this.roadmapData = {
+        beadPlate: [],
+        bigRoad: [],
+        bigEyeRoad: [],
+        smallRoad: [],
+        cockroachRoad: [],
+        sanxing: []
+      }
+      console.log('📊 露珠数据为空')
+    }
+
+    // 保存原始数据（保持兼容性）
+    this.luZhuData = formattedData
+
+  } catch (error) {
+    console.error('❌ 露珠数据更新失败:', error)
+
+    // 错误时设置空路单，避免显示异常
+    this.roadmapData = {
+      beadPlate: [],
+      bigRoad: [],
+      bigEyeRoad: [],
+      smallRoad: [],
+      cockroachRoad: [],
+      sanxing: []
+    }
+  }
+},
 
     // =================== 游戏结果处理 ===================
 

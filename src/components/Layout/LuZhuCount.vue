@@ -9,7 +9,7 @@
           <div>#</div>
         </div>
         <div class="stat-count">
-          <div class="value">{{ statistics.total }}</div>
+          <div class="value">{{ total }}</div>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
           </svg>
         </div>
         <div class="stat-count">
-          <div class="value">{{ statistics.player }}</div>
+          <div class="value">{{ gameStore.statistics.xian }}</div>
         </div>
       </div>
 
@@ -51,7 +51,7 @@
           </svg>
         </div>
         <div class="stat-count">
-          <div class="value">{{ statistics.banker }}</div>
+          <div class="value">{{ gameStore.statistics.zhuang }}</div>
         </div>
       </div>
 
@@ -72,7 +72,7 @@
           </svg>
         </div>
         <div class="stat-count">
-          <div class="value">{{ statistics.tie }}</div>
+          <div class="value">{{ gameStore.statistics.he }}</div>
         </div>
       </div>
     </div>
@@ -216,27 +216,39 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
 import roadmapCalculator, {
-  type GameResult,
-  type Statistics,
   type Prediction
 } from '@/utils/roadmapCalculator'
 
-// Props
+// 使用 gameStore
+const gameStore = useGameStore()
+
+// Props（仍然接收 gameData 用于计算预测）
 interface Props {
-  gameData: Record<string, GameResult>
+  gameData: Record<string, any>
 }
 
 const props = defineProps<Props>()
 
-// 计算属性
-const statistics = computed<Statistics>(() =>
-  roadmapCalculator.calculateStatistics(props.gameData)
-)
+// 计算总局数 - 直接从 store 的统计数据计算
+const total = computed(() => {
+  const stats = gameStore.statistics
+  return stats.zhuang + stats.xian + stats.he
+})
 
+// 预测数据仍然基于露珠数据计算（因为需要分析历史走势）
 const predictions = computed<Prediction>(() =>
   roadmapCalculator.calculatePredictions(props.gameData)
 )
+
+// 添加调试日志
+console.log('LuZhuCount - Store Statistics:', {
+  zhuang: gameStore.statistics.zhuang,
+  xian: gameStore.statistics.xian,
+  he: gameStore.statistics.he,
+  total: total.value
+})
 </script>
 
 <style scoped>
