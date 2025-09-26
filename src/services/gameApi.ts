@@ -290,7 +290,7 @@ export class GameApiService {
    * @returns {Promise<TableInfo>} 台桌信息
    */
   async getTableInfo(): Promise<TableInfo> {
-    const response = await httpClient.get<TableInfo>('/bjl/table/info', {
+    const response = await httpClient.get<TableInfo>('/bjl/get_table/table_info', {
       tableId: this.gameParams.table_id,
       gameType: this.gameParams.game_type
     })
@@ -363,13 +363,9 @@ export class GameApiService {
    */
   async getCurrentShoeStatistics(): Promise<TableStatisticsResponse> {
     try {
-      // 先获取台桌信息以获得当前靴号
-      const tableInfo = await this.getTableInfo()
 
       const requestParams = {
-        tableId: this.gameParams.table_id,
-        xue: tableInfo.num_xue,
-        gameType: this.gameParams.game_type
+        tableId: this.gameParams.table_id
       }
 
       const response = await httpClient.get<TableStatisticsResponse>(

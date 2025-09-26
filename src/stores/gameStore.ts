@@ -394,12 +394,6 @@ export const useGameStore = defineStore('game', {
       try {
         // 如果传入数据，直接使用；否则从API获取
         if (data !== null) {
-          // 验证数据格式
-          if (!this.validateLuZhuData(data)) {
-            console.error('❌ 露珠数据格式错误')
-            return
-          }
-
           this.luZhuData = data
         } else {
           // 从API获取数据
@@ -410,13 +404,6 @@ export const useGameStore = defineStore('game', {
           }
 
           const apiData = await apiService.getLuZhuData(this.gameParams.table_id)
-
-          // 验证API返回的数据
-          if (!this.validateLuZhuData(apiData)) {
-            console.error('❌ API返回的露珠数据格式错误')
-            return
-          }
-
           this.luZhuData = apiData
         }
 
@@ -448,53 +435,6 @@ export const useGameStore = defineStore('game', {
         console.error('❌ 露珠数据更新失败:', error)
         // 保持旧数据不变，避免显示异常
       }
-    },
-
-    /**
-     * 验证露珠数据格式
-     * @private
-     * @param {any} data - 待验证的数据
-     * @returns {boolean} 是否为有效的露珠数据
-     */
-    validateLuZhuData(data: any): boolean {
-      if (!data || typeof data !== 'object') {
-        return false
-      }
-
-      // 检查是否符合 Record<string, GameResult> 格式
-      for (const [key, value] of Object.entries(data)) {
-        // 键应该是 k0, k1, k2... 格式
-        if (!key.startsWith('k')) {
-          console.warn(`⚠️ 露珠数据键格式错误: ${key}`)
-          return false
-        }
-
-        // 值应该包含 result 和 ext 字段
-        if (!value || typeof value !== 'object') {
-          console.warn(`⚠️ 露珠数据值格式错误: ${key}`)
-          return false
-        }
-
-        const record = value as any
-        if (record.result === undefined || record.ext === undefined) {
-          console.warn(`⚠️ 露珠数据缺少必要字段: ${key}`)
-          return false
-        }
-
-        // result 应该是 1-9 的数字
-        if (![1, 2, 3, 4, 6, 7, 8, 9].includes(record.result)) {
-          console.warn(`⚠️ 露珠数据 result 值无效: ${key} = ${record.result}`)
-          return false
-        }
-
-        // ext 应该是 0-3 的数字
-        if (![0, 1, 2, 3].includes(record.ext)) {
-          console.warn(`⚠️ 露珠数据 ext 值无效: ${key} = ${record.ext}`)
-          return false
-        }
-      }
-
-      return true
     },
 
     // =================== 游戏结果处理 ===================

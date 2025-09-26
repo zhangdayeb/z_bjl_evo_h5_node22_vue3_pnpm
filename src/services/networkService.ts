@@ -290,7 +290,7 @@ function setupWebSocketHandlers() {
 
   // 接收消息
   wsService.on('message', (data: any) => {
-    console.log('📨 收到 WebSocket 消息:', data)
+
     handleWebSocketMessage(data)
   })
 
