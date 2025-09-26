@@ -17,6 +17,8 @@ const gameProcessingState = reactive({
   countdownStarted: false, // 当前铺是否已开始倒计时
   cardResultProcessed: false, // 当前铺是否已处理开牌
   betResultProcessed: false, // 当前铺是否已处理中奖
+  lastPaiInfo: '', // 上次处理的牌型信息，用于防重
+  lastPaiInfoTemp: '', // 上次处理的临时牌信息，用于防重
 })
 
 /**
@@ -27,6 +29,8 @@ function resetDealProcessingState() {
   gameProcessingState.countdownStarted = false
   gameProcessingState.cardResultProcessed = false
   gameProcessingState.betResultProcessed = false
+  gameProcessingState.lastPaiInfo = ''
+  gameProcessingState.lastPaiInfoTemp = ''
   console.log('🔄 铺处理状态已重置')
 }
 
@@ -97,10 +101,10 @@ async function updateAllGameData(triggerSource: string): Promise<void> {
 
 /**
  * 解析开牌数据
- * @param {any} data - WebSocket 推送的开牌数据
+ * @param {string} paiInfo - 牌型信息字符串
  * @returns {Object} 解析后的牌型信息
  */
-function parseCardResultData(data: any) {
+function parseCardResultData(paiInfo: string) {
   const result = {
     cardType: '未知牌型',
     points: 0,
@@ -109,52 +113,23 @@ function parseCardResultData(data: any) {
   }
 
   try {
-    const gameResult = data?.data || data
-    const resultInfo = gameResult?.result_info || gameResult
-
-    // 解析牌型
-    const resultData = resultInfo?.result
-    if (resultData) {
-      const zhuangPoint = resultData.zhuang_point || 0
-      const xianPoint = resultData.xian_point || 0
-
-      if (zhuangPoint > xianPoint) {
-        result.cardType = '庄胜'
-        result.points = zhuangPoint
-      } else if (xianPoint > zhuangPoint) {
-        result.cardType = '闲胜'
-        result.points = xianPoint
-      } else {
-        result.cardType = '和'
-        result.points = zhuangPoint
-      }
-    }
-
-    // 解析闪烁区域
-    if (resultInfo?.pai_flash && Array.isArray(resultInfo.pai_flash)) {
-      result.blinkAreas = resultInfo.pai_flash
-        .map((id: any) => {
-          const num = typeof id === 'number' ? id : parseInt(String(id), 10)
-          return isNaN(num) ? null : num
-        })
-        .filter((id: number | null) => id !== null && id > 0) as number[]
-    } else if (resultData?.win_array && Array.isArray(resultData.win_array)) {
-      result.blinkAreas = resultData.win_array
-        .map((id: any) => {
-          const num = typeof id === 'number' ? id : parseInt(String(id), 10)
-          return isNaN(num) ? null : num
-        })
-        .filter((id: number | null) => id !== null && id > 0) as number[]
-    }
-
-    // 构建音频播放序列
+    // 根据实际 pai_info 的格式解析牌型
+    // TODO: 这里需要根据实际返回的 pai_info 格式进行解析
+    result.cardType = paiInfo
     result.audioFiles = ['open/kai.mp3']
-    result.blinkAreas.forEach(area => {
-      const audioFile = mapAreaToAudioFile(area)
-      if (audioFile) {
-        result.audioFiles.push(audioFile)
-      }
-    })
+
+    // 如果 pai_info 包含具体的赢家信息，解析对应的闪烁区域
+    // 这里需要根据实际格式调整
+    if (paiInfo.includes('庄')) {
+      result.blinkAreas.push(1)
+      result.audioFiles.push('open/1.mp3')
+    } else if (paiInfo.includes('闲')) {
+      result.blinkAreas.push(2)
+      result.audioFiles.push('open/2.mp3')
+    } else if (paiInfo.includes('和')) {
+      result.blinkAreas.push(3)
+      result.audioFiles.push('open/3.mp3')
+    }
 
   } catch (error) {
     console.error('❌ 解析开牌数据失败:', error)
@@ -182,37 +157,6 @@ function mapAreaToAudioFile(area: string | number): string | null {
   }
 
   return null
-}
-
-/**
- * 解析中奖数据
- * @param {any} data - WebSocket 推送的中奖数据
- * @returns {Object} 解析后的中奖信息
- */
-function parseWinResultData(data: any) {
-  const result = {
-    winAmount: 0,
-    totalWin: 0
-  }
-
-  try {
-    const winResult = data?.data || data
-
-    if (winResult?.win_amount !== undefined) {
-      result.winAmount = winResult.win_amount
-    } else if (winResult?.amount !== undefined) {
-      result.winAmount = winResult.amount
-    }
-
-    if (winResult?.total_win !== undefined) {
-      result.totalWin = winResult.total_win
-    }
-
-  } catch (error) {
-    console.error('❌ 解析中奖数据失败:', error)
-  }
-
-  return result
 }
 
 // 音频服务实例
@@ -290,7 +234,6 @@ function setupWebSocketHandlers() {
 
   // 接收消息
   wsService.on('message', (data: any) => {
-
     handleWebSocketMessage(data)
   })
 
@@ -309,52 +252,84 @@ function setupWebSocketHandlers() {
 /**
  * 处理 WebSocket 消息
  * @param {any} data - WebSocket 消息数据
- * @description 根据消息类型分发到对应的处理函数
+ * @description 根据消息内容处理不同的游戏状态
  */
 function handleWebSocketMessage(data: any) {
   try {
     if (!data || typeof data !== 'object') return
 
-    switch (data.msg) {
-      case '倒计时信息':
-        handleCountdownMessage(data)
-        break
-
-      case '开牌信息':
-        handleGameResult(data)
-        break
-
-      case '中奖信息':
-        handleBetResult(data)
-        break
+    // 只处理成功的消息
+    if (data.code !== 200) {
+      console.warn('⚠️ 收到非成功状态的消息:', data)
+      return
     }
+
+    console.log('📨 收到 WebSocket 消息:', {
+      msg: data.msg,
+      pai_info: data.pai_info,
+      pai_info_temp: data.pai_info_temp,
+      win_or_loss_info: data.win_or_loss_info,
+      table_opening_count_down: data.table_opening_count_down
+    })
+
+    // 1. 处理倒计时信息（优先级最高，每秒都会更新）
+    if (data.table_opening_count_down !== undefined && data.table_opening_count_down !== null) {
+      handleCountdownMessage(data.table_opening_count_down)
+    }
+
+    // 2. 处理临时牌信息（动态增加牌）
+    if (data.pai_info_temp && data.pai_info_temp !== '' && data.pai_info_temp !== gameProcessingState.lastPaiInfoTemp) {
+      handleTempCardInfo(data.pai_info_temp)
+      gameProcessingState.lastPaiInfoTemp = data.pai_info_temp
+    }
+
+    // 3. 处理完整牌型信息
+    if (data.pai_info && data.pai_info !== '' && data.pai_info !== gameProcessingState.lastPaiInfo) {
+      handleGameResult(data.pai_info)
+      gameProcessingState.lastPaiInfo = data.pai_info
+    }
+
+    // 4. 处理中奖信息
+    if (data.win_or_loss_info > 0 && !gameProcessingState.betResultProcessed) {
+      handleBetResult(data.win_or_loss_info)
+    }
+
   } catch (error) {
     console.error('❌ 处理 WebSocket 消息失败:', error)
   }
 }
 
 /**
- * 处理倒计时消息
- * @param {any} data - 倒计时消息数据
- * @description 更新倒计时，触发游戏状态变化和数据更新
+ * 处理临时牌信息
+ * @param {string} paiInfoTemp - 临时牌信息
+ * @description 处理动态增加的牌，逐张显示
  */
-async function handleCountdownMessage(data: any) {
-  const gameStore = useGameStore()
+function handleTempCardInfo(paiInfoTemp: string) {
+  try {
+    console.log('🃏 收到临时牌信息:', paiInfoTemp)
 
-  // 重置处理状态
-  gameProcessingState.cardResultProcessed = false
-  gameProcessingState.betResultProcessed = false
+    // TODO: 实现动态显示牌的逻辑
+    // 1. 解析临时牌信息格式
+    // 2. 更新 store 中的临时牌状态
+    // 3. 触发 UI 动画显示新牌
+    // 4. 播放相应音效
 
-  let countdown = 0
+    // 占位实现
+    const gameStore = useGameStore()
+    // gameStore.updateTempCard(paiInfoTemp) // 需要在 store 中实现此方法
 
-  // 解析倒计时
-  if (data?.data?.table_run_info?.end_time !== undefined) {
-    countdown = data.data.table_run_info.end_time
-  } else if (data?.table_run_info?.end_time !== undefined) {
-    countdown = data.table_run_info.end_time
-  } else if (data?.end_time !== undefined) {
-    countdown = data.end_time
+    console.log('🃏 临时牌信息处理完成（占位函数）')
+  } catch (error) {
+    console.error('❌ 处理临时牌信息失败:', error)
   }
+}
+
+/**
+ * 处理倒计时消息
+ * @param {number} countdown - 倒计时秒数
+ */
+async function handleCountdownMessage(countdown: number) {
+  const gameStore = useGameStore()
 
   // 更新倒计时
   gameStore.updateCountdown(countdown)
@@ -367,7 +342,13 @@ async function handleCountdownMessage(data: any) {
     if (!gameProcessingState.countdownStarted) {
       gameProcessingState.countdownStarted = true
 
-      // 倒计时开始时更新所有数据（包括露珠）
+      // 重置其他状态
+      gameProcessingState.cardResultProcessed = false
+      gameProcessingState.betResultProcessed = false
+      gameProcessingState.lastPaiInfo = ''
+      gameProcessingState.lastPaiInfoTemp = ''
+
+      // 倒计时开始时更新所有数据
       await updateAllGameData('倒计时开始')
 
       // 播放投注开始音效
@@ -383,7 +364,8 @@ async function handleCountdownMessage(data: any) {
     gameStore.updateGameStatus('dealing')
 
     // 倒计时结束时播放停止音效
-    if (gameProcessingState.countdownStarted) {
+    if (gameProcessingState.countdownStarted && countdown === 0) {
+      gameProcessingState.countdownStarted = false
       try {
         await audioService.playAudioFile('stop.wav')
         console.log('🔊 倒计时结束音效播放完成')
@@ -398,10 +380,9 @@ async function handleCountdownMessage(data: any) {
 
 /**
  * 处理开牌结果
- * @param {any} data - 开牌结果数据
- * @description 处理开牌，更新数据，播放音效，显示开牌效果
+ * @param {string} paiInfo - 牌型信息
  */
-async function handleGameResult(data: any) {
+async function handleGameResult(paiInfo: string) {
   const gameStore = useGameStore()
   const overLayerStore = useoverLayerStore()
 
@@ -411,60 +392,53 @@ async function handleGameResult(data: any) {
     return
   }
 
-  console.log('🎰 收到开牌结果:', data)
+  console.log('🎰 收到开牌结果:', paiInfo)
 
-  // 只在dealing状态下处理
-  if (gameStore.gameStatus === 'dealing') {
+  // 标记已处理
+  gameProcessingState.cardResultProcessed = true
 
-    // 标记已处理
-    gameProcessingState.cardResultProcessed = true
+  // 解析开牌数据
+  const cardResult = parseCardResultData(paiInfo)
 
-    // 解析开牌数据
-    const cardResult = parseCardResultData(data)
+  console.log(`🎯 开牌结果 - 牌型: ${cardResult.cardType}`)
+  console.log(`🎯 闪烁区域: [${cardResult.blinkAreas.join(', ')}]`)
+  console.log(`🎯 音频序列: [${cardResult.audioFiles.join(', ')}]`)
 
-    console.log(`🎯 开牌结果 - 牌型: ${cardResult.cardType}, 点数: ${cardResult.points}`)
-    console.log(`🎯 闪烁区域: [${cardResult.blinkAreas.join(', ')}]`)
-    console.log(`🎯 音频序列: [${cardResult.audioFiles.join(', ')}]`)
+  // 1. 保存开牌结果 - 传递解析后的数据
+  gameStore.updateGameResult({
+    pai_info: paiInfo,
+    result: cardResult
+  })
 
-    // 1. 保存开牌结果并触发清场
-    gameStore.updateGameResult(data)
+  // 2. 开牌时更新所有数据
+  await updateAllGameData('开牌')
 
-    // 2. 开牌时更新所有数据（包括露珠）
-    await updateAllGameData('开牌')
+  // 3. 显示开牌效果弹窗
+  overLayerStore.open('resultFly')
 
-    // 3. 显示开牌效果弹窗 - 使用正确的方法
-    overLayerStore.open('resultFly')
-
-    // 4. 播放开牌音效序列
-    if (cardResult.audioFiles.length > 0) {
-      try {
-        await audioService.playAudioSequence(cardResult.audioFiles, { interval: 500 })
-        console.log('🔊 开牌音效序列播放完成:', cardResult.audioFiles)
-      } catch (error) {
-        console.error('❌ 播放开牌音效序列失败:', error)
-      }
+  // 4. 播放开牌音效序列
+  if (cardResult.audioFiles.length > 0) {
+    try {
+      await audioService.playAudioSequence(cardResult.audioFiles, { interval: 500 })
+      console.log('🔊 开牌音效序列播放完成:', cardResult.audioFiles)
+    } catch (error) {
+      console.error('❌ 播放开牌音效序列失败:', error)
     }
-
-    // 5. 投注区域闪烁通过 bettingStore 自动处理
-    console.log('✨ 投注区域闪烁将由 bettingStore 自动处理')
-
-    // 6. 5秒后自动关闭开牌效果
-    setTimeout(() => {
-      overLayerStore.close()
-    }, 5000)
-
-    console.log('🎯 开牌结果处理完成')
-  } else {
-    console.warn('⚠️ 游戏状态不是dealing，跳过开牌结果处理')
   }
+
+  // 5. 5秒后自动关闭开牌效果
+  setTimeout(() => {
+    overLayerStore.close()
+  }, 5000)
+
+  console.log('🎯 开牌结果处理完成')
 }
 
 /**
  * 处理中奖信息
- * @param {any} data - 中奖信息数据
- * @description 处理中奖结果，更新数据，显示中奖效果
+ * @param {number} winAmount - 中奖金额
  */
-async function handleBetResult(data: any) {
+async function handleBetResult(winAmount: number) {
   const gameStore = useGameStore()
   const overLayerStore = useoverLayerStore()
 
@@ -477,16 +451,17 @@ async function handleBetResult(data: any) {
   // 标记已处理
   gameProcessingState.betResultProcessed = true
 
-  // 解析中奖数据
-  const winResult = parseWinResultData(data)
-
-  console.log('🏆 收到中奖信息:', data)
-  console.log(`💰 中奖金额: ${winResult.winAmount}`)
+  console.log('🏆 收到中奖信息:', winAmount)
+  console.log(`💰 中奖金额: ${winAmount}`)
 
   // 1. 保存中奖信息
-  gameStore.updateBetResult(data)
+  gameStore.updateBetResult({
+    win_or_loss_info: winAmount,
+    winAmount: winAmount,
+    totalWin: winAmount
+  })
 
-  // 2. 中奖时更新所有数据（包括露珠）
+  // 2. 中奖时更新所有数据
   await updateAllGameData('中奖信息')
 
   // 3. 显示中奖效果
