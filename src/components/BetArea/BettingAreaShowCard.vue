@@ -2,10 +2,10 @@
   开牌结果展示
 -->
 <template>
-  <div class="show-card-layer">
+  <div class="show-card-layer" v-if="hasCards">
     <!-- Player 扑克牌显示 -->
-    <div class="cards-container player-cards">
-      <div v-for="(card, index) in resultData.player" :key="`p-${index}`"
+    <div class="cards-container player-cards" v-if="displayCards.player.length > 0">
+      <div v-for="(card, index) in displayCards.player" :key="`p-${index}`"
            class="card" :class="{ horizontal: index === 2 }">
         <div class="card-face">
           <div class="card-value">{{ card.value }}</div>
@@ -15,8 +15,8 @@
     </div>
 
     <!-- Banker 扑克牌显示 -->
-    <div class="cards-container banker-cards">
-      <div v-for="(card, index) in resultData.banker" :key="`b-${index}`"
+    <div class="cards-container banker-cards" v-if="displayCards.banker.length > 0">
+      <div v-for="(card, index) in displayCards.banker" :key="`b-${index}`"
            class="card" :class="{ horizontal: index === 2 }">
         <div class="card-face">
           <div class="card-value">{{ card.value }}</div>
@@ -30,11 +30,11 @@
 <script setup lang="ts">
 /**
  * @fileoverview 百家乐开牌显示层
- * @description 显示开牌阶段的扑克牌
+ * @description 显示开牌阶段的扑克牌，从 gameStore 获取实时数据
  */
 
-import { ref, onMounted } from 'vue'
-// import { useGameStore } from '@/stores/gameStore'
+import { computed, onMounted, watch } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
 
 // ========================= 类型定义 =========================
 
@@ -44,29 +44,212 @@ interface Card {
   color: 'red' | 'black'
 }
 
-// ========================= Store =========================
-// const gameStore = useGameStore()
-// TODO: 实际项目中从 gameStore 获取数据
-// const resultData = computed(() => gameStore.gameResult)
+interface DisplayCards {
+  player: Card[]
+  banker: Card[]
+}
 
-// ========================= 模拟数据 =========================
-const resultData = ref({
-  player: [
-    { value: '7', suit: '♣', color: 'black' },
-    { value: '5', suit: '♦', color: 'red' },
-    { value: 'K', suit: '♠', color: 'black' }
-  ] as Card[],
-  banker: [
-    { value: '8', suit: '♥', color: 'red' },
-    { value: '6', suit: '♠', color: 'black' },
-    { value: 'A', suit: '♦', color: 'red' }
-  ] as Card[]
+// ========================= Store =========================
+const gameStore = useGameStore()
+
+// ========================= 常量定义 =========================
+
+/**
+ * 花色映射表
+ * r: 红桃, f: 方块, m: 梅花, h: 黑桃
+ */
+const SUIT_MAP: Record<string, string> = {
+  'r': '♥',  // 红桃 (red)
+  'f': '♦',  // 方块 (fangkuai)
+  'm': '♣',  // 梅花 (meihua)
+  'h': '♠'   // 黑桃 (heitao)
+}
+
+/**
+ * 数值映射表
+ * 1 -> A, 11 -> J, 12 -> Q, 13 -> K
+ */
+const VALUE_MAP: Record<string, string> = {
+  '1': 'A',
+  '11': 'J',
+  '12': 'Q',
+  '13': 'K'
+}
+
+// ========================= 工具函数 =========================
+
+/**
+ * 判断花色颜色
+ * @param suitCode - 花色代码
+ * @returns 颜色 red 或 black
+ */
+function getCardColor(suitCode: string): 'red' | 'black' {
+  return (suitCode === 'r' || suitCode === 'f') ? 'red' : 'black'
+}
+
+/**
+ * 解析单张牌数据
+ * @param cardStr - 牌字符串，格式如 "11|r"
+ * @returns 解析后的牌对象
+ */
+function parseCard(cardStr: string): Card | null {
+  try {
+    // 检查是否为空牌
+    if (!cardStr || cardStr === '0|0' || cardStr === '0') {
+      return null
+    }
+
+    const [valueStr, suitCode] = cardStr.split('|')
+
+    // 验证数据完整性
+    if (!valueStr || !suitCode) {
+      console.warn('无效的牌数据格式:', cardStr)
+      return null
+    }
+
+    // 获取花色
+    const suit = SUIT_MAP[suitCode]
+    if (!suit) {
+      console.warn('未知的花色代码:', suitCode)
+      return null
+    }
+
+    // 获取数值（2-10保持原样，其他使用映射）
+    const value = VALUE_MAP[valueStr] || valueStr
+
+    return {
+      value,
+      suit,
+      color: getCardColor(suitCode)
+    }
+  } catch (error) {
+    console.error('解析牌数据失败:', cardStr, error)
+    return null
+  }
+}
+
+/**
+ * 解析 pai_info 数据
+ * @param paiInfo - 原始 pai_info JSON 字符串
+ * @returns 解析后的牌对象字典
+ */
+function parsePaiInfo(paiInfo: string): Record<string, string> | null {
+  try {
+    if (!paiInfo || paiInfo === '') {
+      return null
+    }
+
+    const parsed = JSON.parse(paiInfo)
+
+    // 验证数据格式
+    if (typeof parsed !== 'object' || parsed === null) {
+      console.warn('pai_info 格式错误:', paiInfo)
+      return null
+    }
+
+    return parsed
+  } catch (error) {
+    console.error('JSON 解析失败:', error)
+    return null
+  }
+}
+
+// ========================= 计算属性 =========================
+
+/**
+ * 显示的牌数据
+ * 从 gameStore 获取并解析 pai_info
+ */
+const displayCards = computed<DisplayCards>(() => {
+  // 默认返回值
+  const defaultResult: DisplayCards = {
+    player: [],
+    banker: []
+  }
+
+  try {
+    // 1. 获取原始数据
+    const paiInfo = gameStore.gameResult?.pai_info
+    if (!paiInfo) {
+      return defaultResult
+    }
+
+    // 2. 解析 JSON
+    const cards = parsePaiInfo(paiInfo)
+    if (!cards) {
+      return defaultResult
+    }
+
+    // 3. 分配牌到 Player 和 Banker
+    const player: Card[] = []
+    const banker: Card[] = []
+
+    // Player 牌：位置 1, 3, 5
+    const playerPositions = ['1', '3', '5']
+    for (const pos of playerPositions) {
+      if (cards[pos] && cards[pos] !== '0|0') {
+        const card = parseCard(cards[pos])
+        if (card) {
+          player.push(card)
+        }
+      }
+    }
+
+    // Banker 牌：位置 2, 4, 6
+    const bankerPositions = ['2', '4', '6']
+    for (const pos of bankerPositions) {
+      if (cards[pos] && cards[pos] !== '0|0') {
+        const card = parseCard(cards[pos])
+        if (card) {
+          banker.push(card)
+        }
+      }
+    }
+
+    return { player, banker }
+
+  } catch (error) {
+    console.error('处理牌数据时出错:', error)
+    return defaultResult
+  }
 })
+
+/**
+ * 是否有牌需要显示
+ */
+const hasCards = computed<boolean>(() => {
+  return displayCards.value.player.length > 0 ||
+         displayCards.value.banker.length > 0
+})
+
+// ========================= 调试和监听 =========================
+
+// 监听数据变化（用于调试）
+watch(
+  () => gameStore.gameResult?.pai_info,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      console.log('[ShowCard] pai_info 更新:', {
+        old: oldVal,
+        new: newVal,
+        parsed: displayCards.value
+      })
+    }
+  }
+)
 
 // ========================= 生命周期 =========================
 
 onMounted(() => {
   console.log('[ShowCard] 开牌层已加载')
+
+  // 输出当前状态（用于调试）
+  if (gameStore.gameResult?.pai_info) {
+    console.log('[ShowCard] 初始数据:', {
+      pai_info: gameStore.gameResult.pai_info,
+      displayCards: displayCards.value
+    })
+  }
 })
 </script>
 
@@ -89,7 +272,6 @@ onMounted(() => {
   display: flex;
   gap: 2px;
   align-items: center;
-  animation: fadeInCards 0.5s ease-out;
 }
 
 /* Player 牌位置 */
@@ -113,8 +295,6 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
-  animation: flipCard 0.6s ease-out;
 }
 
 /* 横向牌（第三张） */
@@ -151,44 +331,5 @@ onMounted(() => {
 
 .card-suit.black {
   color: #000000;
-}
-
-/* ========================= 动画定义 ========================= */
-
-/* 扑克牌淡入 */
-@keyframes fadeInCards {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 翻牌动画 */
-@keyframes flipCard {
-  0% {
-    transform: rotateY(180deg);
-  }
-  100% {
-    transform: rotateY(0deg);
-  }
-}
-
-/* ========================= 延迟动画 ========================= */
-
-/* 为每张牌添加渐进延迟 */
-.card:nth-child(1) {
-  animation-delay: 0ms;
-}
-
-.card:nth-child(2) {
-  animation-delay: 200ms;
-}
-
-.card:nth-child(3) {
-  animation-delay: 400ms;
 }
 </style>
