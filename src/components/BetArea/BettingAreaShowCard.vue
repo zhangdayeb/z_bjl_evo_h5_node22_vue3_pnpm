@@ -185,8 +185,8 @@ const displayCards = computed<DisplayCards>(() => {
     const player: Card[] = []
     const banker: Card[] = []
 
-    // Player 牌：位置 1, 3, 5
-    const playerPositions = ['1', '3', '5']
+    // Player 牌：位置 1,2, 3
+    const playerPositions = ['1', '2', '3']
     for (const pos of playerPositions) {
       if (cards[pos] && cards[pos] !== '0|0') {
         const card = parseCard(cards[pos])
@@ -196,8 +196,8 @@ const displayCards = computed<DisplayCards>(() => {
       }
     }
 
-    // Banker 牌：位置 2, 4, 6
-    const bankerPositions = ['2', '4', '6']
+    // Banker 牌：位置 4, 5, 6
+    const bankerPositions = ['4', '5', '6']
     for (const pos of bankerPositions) {
       if (cards[pos] && cards[pos] !== '0|0') {
         const card = parseCard(cards[pos])
