@@ -10,7 +10,7 @@
     <BettingAreaShowChip v-if="gamePhase === 'betting'" />
 
     <!-- 开牌显示层 - 开牌阶段显示 -->
-    <BettingAreaShowCard v-if="gamePhase === 'dealing'" />
+    <BettingAreaShowCardProcess v-if="gamePhase === 'dealing'" />
   </div>
 </template>
 
@@ -25,7 +25,7 @@ import { useGameStore } from '@/stores/gameStore'
 import BettingAreaMain from './BettingAreaMain.vue'
 import BettingAreaShowChip from './BettingAreaShowChip.vue'
 import BettingAreaShowUserBetMsg from './BettingAreaShowUserBetMsg.vue'
-import BettingAreaShowCard from './BettingAreaShowCard.vue'
+import BettingAreaShowCardProcess from './BettingAreaShowCardProcess.vue'
 
 // ========================= Store 集成 =========================
 

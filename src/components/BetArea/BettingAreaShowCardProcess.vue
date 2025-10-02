@@ -1,3 +1,6 @@
+<!--
+  开牌过程展示动画
+-->
 <template>
   <div class="show-card-layer">
     <!-- Player 扑克牌显示 -->
