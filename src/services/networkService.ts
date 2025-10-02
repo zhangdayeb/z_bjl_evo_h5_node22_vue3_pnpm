@@ -267,7 +267,6 @@ function handleWebSocketMessage(data: any) {
     console.log('📨 收到 WebSocket 消息:', {
       msg: data.msg,
       pai_info: data.pai_info,
-      pai_info_temp: data.pai_info_temp,
       win_or_loss_info: data.win_or_loss_info,
       table_opening_count_down: data.table_opening_count_down
     })
@@ -275,12 +274,6 @@ function handleWebSocketMessage(data: any) {
     // 1. 处理倒计时信息（优先级最高，每秒都会更新）
     if (data.table_opening_count_down !== undefined && data.table_opening_count_down !== null) {
       handleCountdownMessage(data.table_opening_count_down)
-    }
-
-    // 2. 处理临时牌信息（动态增加牌）
-    if (data.pai_info_temp && data.pai_info_temp !== '' && data.pai_info_temp !== gameProcessingState.lastPaiInfoTemp) {
-      handleTempCardInfo(data.pai_info_temp)
-      gameProcessingState.lastPaiInfoTemp = data.pai_info_temp
     }
 
     // 3. 处理完整牌型信息

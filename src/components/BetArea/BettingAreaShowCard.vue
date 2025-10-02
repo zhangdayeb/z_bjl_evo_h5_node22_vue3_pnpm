@@ -169,6 +169,7 @@ const displayCards = computed<DisplayCards>(() => {
 
   try {
     // 1. 获取原始数据
+    console.log('获取 pai_info:', gameStore.gameResult)
     const paiInfo = gameStore.gameResult?.pai_info
     if (!paiInfo) {
       return defaultResult
