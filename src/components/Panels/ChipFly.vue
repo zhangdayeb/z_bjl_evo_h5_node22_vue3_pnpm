@@ -80,6 +80,8 @@ watch(() => chipFlyStore.currentChip, (newChip) => {
  * 开始飞行动画
  */
 const startAnimation = (chip: any) => {
+  console.log('[ChipFly] 开始动画:', chip)
+
   // 显示图层
   isVisible.value = true
   overLayerStore.open('chipFly')
@@ -93,6 +95,7 @@ const startAnimation = (chip: any) => {
 
   // 下一帧开始动画
   requestAnimationFrame(() => {
+    console.log('[ChipFly] 开始 transform 动画')
     isAnimating.value = true
   })
 }
@@ -110,8 +113,21 @@ const cancelAnimation = () => {
 /**
  * 动画结束处理
  */
-const onTransitionEnd = () => {
-  if (!isAnimating.value) return
+const onTransitionEnd = (event: TransitionEvent) => {
+  console.log('[ChipFly] transitionend 事件触发:', event.propertyName)
+
+  if (!isAnimating.value) {
+    console.log('[ChipFly] ⚠️ isAnimating 为 false，忽略')
+    return
+  }
+
+  // 只响应 transform 属性的动画结束
+  if (event.propertyName !== 'transform') {
+    console.log('[ChipFly] ⚠️ 非 transform 属性，忽略')
+    return
+  }
+
+  console.log('[ChipFly] 动画完成，调用 onFlyComplete')
 
   // 通知 Store 动画完成
   chipFlyStore.onFlyComplete()

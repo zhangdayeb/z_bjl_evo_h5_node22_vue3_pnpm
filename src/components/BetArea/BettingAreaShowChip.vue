@@ -179,40 +179,50 @@ const getZoneCenterPosition = (zone: BetZone): { x: number, y: number } => {
 }
 
 /**
- * 处理投注
+ * 处理投注（三步骤架构）
+ * 1. 更新投注信息统计
+ * 2. 飞行动画 300ms
+ * 3. 延迟 300ms 更新筹码显示
  */
 const handleBet = (zone: BetZone): void => {
   console.log(`[BettingArea] 点击投注区域: ${zone}, 筹码值: ${defaultChipValue.value}`)
 
+  const amount = defaultChipValue.value
+
+  // =================== 步骤1: 更新投注信息统计 ===================
+  console.log(`[BettingArea] 步骤1: 更新投注统计`)
+  const result = bettingStore.placeBet(zone as any, amount)
+
+  if (!result.success) {
+    console.error(`[BettingArea] ❌ 投注失败:`, result.message)
+    return
+  }
+
+  console.log(`[BettingArea] ✅ 投注统计已更新:`, {
+    zone,
+    amount,
+    totalBetAmount: bettingStore.totalBetAmount,
+    totalPendingAmount: bettingStore.totalPendingAmount
+  })
+
+  // =================== 步骤2: 飞行动画 300ms ===================
+  console.log(`[BettingArea] 步骤2: 开始飞行动画 (300ms)`)
   const targetPosition = getZoneCenterPosition(zone)
   overLayerStore.open('chipFly')
 
   chipFlyStore.startFly({
-    value: defaultChipValue.value,
+    value: amount,
     to: targetPosition,
-    zone,
-    onComplete: (completedZone, amount) => {
-      // 更新本地显示状态
-      betAmounts[completedZone] += amount
-      console.log(`[BettingArea] 更新${completedZone}区域金额: +${amount}, 总计: ${betAmounts[completedZone]}`)
-
-      // 同时更新 bettingStore 的投注数据
-      console.log(`[BettingArea] 准备调用 bettingStore.placeBet:`, {
-        zone: completedZone,
-        amount: amount,
-        gamePhase: bettingStore.gamePhase
-      })
-
-      const result = bettingStore.placeBet(completedZone as any, amount)
-
-      console.log(`[BettingArea] placeBet 返回结果:`, result)
-      console.log(`[BettingArea] 同步后 bettingStore 状态:`, {
-        currentBets: JSON.stringify(bettingStore.currentBets),
-        totalBetAmount: bettingStore.totalBetAmount,
-        totalPendingAmount: bettingStore.totalPendingAmount
-      })
-    }
+    zone
   })
+
+  // =================== 步骤3: 延迟 300ms 更新筹码显示 ===================
+  setTimeout(() => {
+    console.log(`[BettingArea] 步骤3: 更新筹码显示`)
+    // 直接从 bettingStore 读取最新的投注金额
+    betAmounts[zone] = bettingStore.currentBets[zone] || 0
+    console.log(`[BettingArea] ${zone} 筹码显示已更新: ${betAmounts[zone]}`)
+  }, 300)
 }
 
 /**

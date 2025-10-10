@@ -242,13 +242,12 @@ export const useBettingStore = defineStore('betting', () => {
           baseAmountRange: [10, 500]
         })
       }
-      else if (oldCountdown === 1 && newCountdown === 0) {
-        // ⚠️ 重要：在倒计时从1变为0时（在清场之前）立即提交
-        console.log('⏰ 倒计时即将结束 (1->0)，立即检查并提交投注')
-        stopSimulation()
+      else if (oldCountdown === 3 && newCountdown === 2) {
+        // ⚠️ 重要：在倒计时剩余2秒时自动提交投注
+        console.log('⏰ 倒计时剩余2秒，自动提交投注')
 
         // 打印当前投注状态用于调试
-        console.log('📊 [投注状态检查 - 清场前]')
+        console.log('📊 [投注状态检查 - 倒计时2秒]')
         console.log('  - totalBetAmount:', totalBetAmount.value)
         console.log('  - totalConfirmedAmount:', totalConfirmedAmount.value)
         console.log('  - totalPendingAmount:', totalPendingAmount.value)
@@ -258,9 +257,10 @@ export const useBettingStore = defineStore('betting', () => {
         // 自动提交投注：检查是否有待确认的投注金额
         if (totalPendingAmount.value > 0) {
           console.log('💰 检测到待提交投注金额:', totalPendingAmount.value)
-          console.log('📤 倒计时结束前，立即自动提交投注到后端')
+          console.log('📤 倒计时2秒时，自动提交投注到后端（跳过阶段检查）')
 
-          const result = await confirmBets()
+          // 倒计时2秒时跳过游戏阶段检查
+          const result = await confirmBets(true)
 
           if (result.success) {
             console.log('✅ 投注自动提交成功:', result.message)
@@ -271,6 +271,11 @@ export const useBettingStore = defineStore('betting', () => {
         } else {
           console.log('ℹ️ 没有待提交的投注，跳过自动提交')
         }
+      }
+      else if (oldCountdown === 1 && newCountdown === 0) {
+        // 倒计时结束，停止模拟投注
+        console.log('⏰ 倒计时结束，停止模拟投注')
+        stopSimulation()
       }
     } catch (error) {
       console.error('❌ 处理倒计时变化失败:', error)
@@ -345,12 +350,23 @@ export const useBettingStore = defineStore('betting', () => {
 
   // ========================= 投注确认方法 =========================
 
-  const confirmBets = async (): Promise<ConfirmBetResult> => {
+  const confirmBets = async (skipPhaseCheck = false): Promise<ConfirmBetResult> => {
     try {
-      console.log('📤 开始确认投注')
+      console.log('📤 开始确认投注', { skipPhaseCheck })
 
-      if (!canConfirm.value) {
+      // 如果不跳过阶段检查，则验证 canConfirm
+      if (!skipPhaseCheck && !canConfirm.value) {
+        console.warn('⚠️ canConfirm 为 false:', {
+          totalPendingAmount: totalPendingAmount.value,
+          gamePhase: gamePhase.value,
+          canPlaceBet: canPlaceBet(gamePhase.value as GameStatus)
+        })
         return { success: false, message: '没有待确认的投注' }
+      }
+
+      // 如果跳过阶段检查，只验证是否有投注金额
+      if (skipPhaseCheck && totalPendingAmount.value <= 0) {
+        return { success: false, message: '没有待确认的投注金额' }
       }
 
       const gameStore = getGameStore()
