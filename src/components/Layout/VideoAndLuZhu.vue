@@ -205,7 +205,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #9c261a;
+  background: #c8102e;
   overflow: hidden;
 }
 
@@ -234,7 +234,7 @@ defineExpose({
   position: absolute;
   bottom: -100px;
   backdrop-filter: blur(10px);
-  background: linear-gradient(rgba(243, 40, 40, 0) 0%, rgb(243, 40, 40) 30%, rgb(156, 38, 26) 100%);
+  background: linear-gradient(rgba(200, 16, 46, 0) 0%, rgba(200, 16, 46, 0.5) 50%, #c8102e 100%);
 }
 
 /* 露珠区域 */
