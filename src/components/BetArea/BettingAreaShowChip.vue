@@ -197,8 +197,20 @@ const handleBet = (zone: BetZone): void => {
       console.log(`[BettingArea] 更新${completedZone}区域金额: +${amount}, 总计: ${betAmounts[completedZone]}`)
 
       // 同时更新 bettingStore 的投注数据
-      bettingStore.placeBet(completedZone as any, amount)
-      console.log(`[BettingArea] 同步到 bettingStore, 待提交金额: ${bettingStore.totalPendingAmount}`)
+      console.log(`[BettingArea] 准备调用 bettingStore.placeBet:`, {
+        zone: completedZone,
+        amount: amount,
+        gamePhase: bettingStore.gamePhase
+      })
+
+      const result = bettingStore.placeBet(completedZone as any, amount)
+
+      console.log(`[BettingArea] placeBet 返回结果:`, result)
+      console.log(`[BettingArea] 同步后 bettingStore 状态:`, {
+        currentBets: JSON.stringify(bettingStore.currentBets),
+        totalBetAmount: bettingStore.totalBetAmount,
+        totalPendingAmount: bettingStore.totalPendingAmount
+      })
     }
   })
 }

@@ -227,6 +227,12 @@ export const useBettingStore = defineStore('betting', () => {
   watch(countdown, async (newCountdown, oldCountdown) => {
     try {
       console.log(`⏰ [倒计时监听] 倒计时变化: ${oldCountdown} -> ${newCountdown}`)
+      console.log(`📊 [实时投注数据]`)
+      console.log(`  - currentBets:`, JSON.stringify(currentBets))
+      console.log(`  - totalBetAmount: ${totalBetAmount.value}`)
+      console.log(`  - confirmedBets:`, JSON.stringify(confirmedBets))
+      console.log(`  - totalConfirmedAmount: ${totalConfirmedAmount.value}`)
+      console.log(`  - totalPendingAmount: ${totalPendingAmount.value}`)
 
       if (newCountdown > 0 && oldCountdown === 0) {
         console.log('🎮 倒计时开始，启动模拟投注')
@@ -508,22 +514,31 @@ export const useBettingStore = defineStore('betting', () => {
 
   const placeBet = (betType: BaccaratBetType, amount?: number): BetResult => {
     try {
+      console.log(`[placeBet] 开始投注 - betType: ${betType}, amount: ${amount}`)
+
       const currentPhase = gamePhase.value as GameStatus
+      console.log(`[placeBet] 当前游戏阶段: ${currentPhase}`)
+
       if (!canPlaceBet(currentPhase)) {
+        console.warn(`[placeBet] ⚠️ 投注被拒绝 - 当前不在投注阶段 (${currentPhase})`)
         return { success: false, message: '当前不在投注阶段' }
       }
 
       const actualAmount = amount || selectedChip.value
+      console.log(`[placeBet] 实际投注金额: ${actualAmount}`)
 
       const result = calculateBetAmountSafe(betType, actualAmount)
+      console.log(`[placeBet] 投注金额计算结果:`, result)
 
       if (!result.success) {
+        console.warn(`[placeBet] ⚠️ 投注金额验证失败:`, result.message)
         return result
       }
 
       const finalAmount = result.amount!
 
       currentBets[betType] += finalAmount
+      console.log(`[placeBet] 更新 currentBets[${betType}]: ${currentBets[betType]}`)
 
       betHistory.value.push({
         betType,
@@ -533,6 +548,10 @@ export const useBettingStore = defineStore('betting', () => {
       })
 
       console.log(`💰 投注成功: ${betType} +${finalAmount} (总计: ${currentBets[betType]})`)
+      console.log(`[placeBet] 投注后状态:`, {
+        totalBetAmount: totalBetAmount.value,
+        totalPendingAmount: totalPendingAmount.value
+      })
 
       return result
     } catch (error) {
