@@ -226,6 +226,8 @@ export const useBettingStore = defineStore('betting', () => {
 
   watch(countdown, async (newCountdown, oldCountdown) => {
     try {
+      console.log(`⏰ [倒计时监听] 倒计时变化: ${oldCountdown} -> ${newCountdown}`)
+
       if (newCountdown > 0 && oldCountdown === 0) {
         console.log('🎮 倒计时开始，启动模拟投注')
         startSimulation(simulatedData, {
@@ -238,6 +240,14 @@ export const useBettingStore = defineStore('betting', () => {
         console.log('⏰ 倒计时结束，停止模拟投注')
         stopSimulation()
 
+        // 打印当前投注状态用于调试
+        console.log('📊 [投注状态检查]')
+        console.log('  - totalBetAmount:', totalBetAmount.value)
+        console.log('  - totalConfirmedAmount:', totalConfirmedAmount.value)
+        console.log('  - totalPendingAmount:', totalPendingAmount.value)
+        console.log('  - currentBets:', JSON.stringify(currentBets))
+        console.log('  - confirmedBets:', JSON.stringify(confirmedBets))
+
         // 自动提交投注：检查是否有待确认的投注金额
         if (totalPendingAmount.value > 0) {
           console.log('💰 检测到待提交投注金额:', totalPendingAmount.value)
@@ -247,6 +257,7 @@ export const useBettingStore = defineStore('betting', () => {
 
           if (result.success) {
             console.log('✅ 投注自动提交成功:', result.message)
+            console.log('💵 新余额:', result.newBalance)
           } else {
             console.error('❌ 投注自动提交失败:', result.message)
           }

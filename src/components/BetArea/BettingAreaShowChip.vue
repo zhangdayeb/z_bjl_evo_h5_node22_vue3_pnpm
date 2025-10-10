@@ -122,16 +122,14 @@
 import { useoverLayerStore } from '@/stores/overLayerStore'
 import { ref, reactive } from 'vue'
 import { useChipFlyStore } from '@/stores/chipFlyStore'
-// import { useGameStore } from '@/stores/gameStore'
-// import { useBettingStore } from '@/stores/bettingStore'
+import { useBettingStore } from '@/stores/bettingStore'
 
 // ========================= 类型定义 =========================
 type BetZone = 'player' | 'banker' | 'tie' | 'player-pair' | 'banker-pair'
 
 // ========================= Store =========================
 const chipFlyStore = useChipFlyStore()
-// const gameStore = useGameStore()
-// const bettingStore = useBettingStore()
+const bettingStore = useBettingStore()
 const overLayerStore = useoverLayerStore()
 
 
@@ -194,8 +192,13 @@ const handleBet = (zone: BetZone): void => {
     to: targetPosition,
     zone,
     onComplete: (completedZone, amount) => {
+      // 更新本地显示状态
       betAmounts[completedZone] += amount
       console.log(`[BettingArea] 更新${completedZone}区域金额: +${amount}, 总计: ${betAmounts[completedZone]}`)
+
+      // 同时更新 bettingStore 的投注数据
+      bettingStore.placeBet(completedZone as any, amount)
+      console.log(`[BettingArea] 同步到 bettingStore, 待提交金额: ${bettingStore.totalPendingAmount}`)
     }
   })
 }
