@@ -368,8 +368,8 @@ const isWinner = (zone: string): boolean => {
   left: 50%;
   transform: translateX(-50%);
   width: 31%;
-  top: 30px;
-  height: calc(100% - 30px);
+  top:17%;
+  height: calc(100% - 17%);
   z-index: 10;
 }
 
