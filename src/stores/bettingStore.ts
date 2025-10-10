@@ -236,12 +236,13 @@ export const useBettingStore = defineStore('betting', () => {
           baseAmountRange: [10, 500]
         })
       }
-      else if (newCountdown === 0 && oldCountdown > 0) {
-        console.log('⏰ 倒计时结束，停止模拟投注')
+      else if (oldCountdown === 1 && newCountdown === 0) {
+        // ⚠️ 重要：在倒计时从1变为0时（在清场之前）立即提交
+        console.log('⏰ 倒计时即将结束 (1->0)，立即检查并提交投注')
         stopSimulation()
 
         // 打印当前投注状态用于调试
-        console.log('📊 [投注状态检查]')
+        console.log('📊 [投注状态检查 - 清场前]')
         console.log('  - totalBetAmount:', totalBetAmount.value)
         console.log('  - totalConfirmedAmount:', totalConfirmedAmount.value)
         console.log('  - totalPendingAmount:', totalPendingAmount.value)
@@ -251,7 +252,7 @@ export const useBettingStore = defineStore('betting', () => {
         // 自动提交投注：检查是否有待确认的投注金额
         if (totalPendingAmount.value > 0) {
           console.log('💰 检测到待提交投注金额:', totalPendingAmount.value)
-          console.log('📤 倒计时结束，自动提交投注到后端')
+          console.log('📤 倒计时结束前，立即自动提交投注到后端')
 
           const result = await confirmBets()
 
