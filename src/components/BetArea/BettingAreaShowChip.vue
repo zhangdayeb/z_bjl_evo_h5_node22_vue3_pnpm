@@ -278,23 +278,23 @@ defineExpose({
 .player-click-area {
   top: 0;
   left: 0;
-  width: calc(50% - 70px);
+  width: calc(50% - 2px);
   height: calc(100% - 48px);
 }
 
 .banker-click-area {
   top: 0;
   right: 0;
-  width: calc(50% - 70px);
+  width: calc(50% - 2px);
   height: calc(100% - 48px);
 }
 
 .tie-click-area {
-  top: 30px;
+  top: 17%;
   left: 50%;
   transform: translateX(-50%);
   width: 31%;
-  height: calc(100% - 78px);
+  height: calc(83% - 48px);
 }
 
 .player-pair-click-area {

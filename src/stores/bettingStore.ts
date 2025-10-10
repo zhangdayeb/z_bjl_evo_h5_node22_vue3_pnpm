@@ -224,7 +224,7 @@ export const useBettingStore = defineStore('betting', () => {
 
   // ========================= 监听器 - 倒计时 =========================
 
-  watch(countdown, (newCountdown, oldCountdown) => {
+  watch(countdown, async (newCountdown, oldCountdown) => {
     try {
       if (newCountdown > 0 && oldCountdown === 0) {
         console.log('🎮 倒计时开始，启动模拟投注')
@@ -237,6 +237,22 @@ export const useBettingStore = defineStore('betting', () => {
       else if (newCountdown === 0 && oldCountdown > 0) {
         console.log('⏰ 倒计时结束，停止模拟投注')
         stopSimulation()
+
+        // 自动提交投注：检查是否有待确认的投注金额
+        if (totalPendingAmount.value > 0) {
+          console.log('💰 检测到待提交投注金额:', totalPendingAmount.value)
+          console.log('📤 倒计时结束，自动提交投注到后端')
+
+          const result = await confirmBets()
+
+          if (result.success) {
+            console.log('✅ 投注自动提交成功:', result.message)
+          } else {
+            console.error('❌ 投注自动提交失败:', result.message)
+          }
+        } else {
+          console.log('ℹ️ 没有待提交的投注，跳过自动提交')
+        }
       }
     } catch (error) {
       console.error('❌ 处理倒计时变化失败:', error)
