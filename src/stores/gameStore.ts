@@ -369,9 +369,11 @@ export const useGameStore = defineStore('game', {
     updateUserInfo(userInfo: UserInfo) {
       if (userInfo) {
         this.userInfo = userInfo
-        // 同时更新余额
-        this.balance = userInfo['money_balance']
-        console.log(`👤 API更新用户信息`, this.balance)
+        // 同时更新余额 - money_balance 是字符串，需要先移除千位分隔符再转换为数字
+        // 例如: "98,390.00" -> "98390.00" -> 98390.00
+        const balanceValue = parseFloat(userInfo.money_balance.replace(/,/g, '')) || 0
+        this.balance = balanceValue
+        console.log(`👤 API更新用户信息，余额:`, balanceValue)
       }
     },
 

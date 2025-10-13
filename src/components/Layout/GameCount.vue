@@ -87,11 +87,15 @@ const realBalance = computed(() => {
  * 这样用户在点击投注时能立即看到余额减少，提供即时反馈
  */
 const balance = computed(() => {
-  // 真实余额 - 所有当前投注（包括已确认和待确认）
-  const virtualBalance = realBalance.value - bettingStore.totalBetAmount
+  // 获取真实余额和投注金额，确保都是数字
+  const real = realBalance.value || 0
+  const betAmount = bettingStore.totalBetAmount || 0
 
-  // 确保余额不为负数
-  return Math.max(0, virtualBalance)
+  // 计算虚拟余额 = 真实余额 - 所有当前投注（包括已确认和待确认）
+  const virtualBalance = real - betAmount
+
+  // 确保余额不为负数且不为 NaN
+  return isNaN(virtualBalance) ? 0 : Math.max(0, virtualBalance)
 })
 
 /**
