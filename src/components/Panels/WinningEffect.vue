@@ -11,7 +11,7 @@
 
         <!-- 金额显示 -->
         <div class="amount">
-          <span class="currency">€</span>13,271.04
+          <span class="currency">€</span>{{ formattedWinAmount }}
         </div>
       </div>
     </div>
@@ -19,9 +19,42 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+/**
+ * @fileoverview 中奖效果展示组件
+ * @description 显示中奖动画和金额，从 gameStore.betResult 获取中奖数据
+ */
 
-const arcCanvas = ref<HTMLCanvasElement | null>(null);
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
+
+// ========================= Store =========================
+const gameStore = useGameStore()
+
+// ========================= Refs =========================
+const arcCanvas = ref<HTMLCanvasElement | null>(null)
+
+// ========================= 计算属性 =========================
+
+/**
+ * 中奖金额 - 从 gameStore.betResult 获取
+ */
+const winAmount = computed(() => {
+  const betResult = gameStore.betResult
+  if (!betResult) return 0
+
+  // 尝试多个可能的字段名
+  return betResult.winAmount || betResult.win_or_loss_info || betResult.totalWin || 0
+})
+
+/**
+ * 格式化的中奖金额
+ */
+const formattedWinAmount = computed(() => {
+  return winAmount.value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+})
 
 function drawArc() {
   if (!arcCanvas.value) return;

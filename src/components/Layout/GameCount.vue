@@ -76,10 +76,22 @@ const totalBet = computed(() => {
 })
 
 /**
- * 用户余额 - 从 gameStore 获取
+ * 真实余额 - 从 gameStore 获取（后端返回的真实余额）
+ */
+const realBalance = computed(() => {
+  return gameStore.balance || 0
+})
+
+/**
+ * 虚拟余额 - 用于即时显示（真实余额 - 当前所有投注金额）
+ * 这样用户在点击投注时能立即看到余额减少，提供即时反馈
  */
 const balance = computed(() => {
-  return gameStore.balance || 0
+  // 真实余额 - 所有当前投注（包括已确认和待确认）
+  const virtualBalance = realBalance.value - bettingStore.totalBetAmount
+
+  // 确保余额不为负数
+  return Math.max(0, virtualBalance)
 })
 
 /**
