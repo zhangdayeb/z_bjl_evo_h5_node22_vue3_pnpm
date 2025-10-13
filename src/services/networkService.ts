@@ -252,7 +252,7 @@ function setupWebSocketHandlers() {
 /**
  * 处理 WebSocket 消息
  * @param data - WebSocket 消息数据
- * @description 根据游戏阶段处理不同的消息
+ * @description 每秒接收WS数据，判定游戏状态，调用相应阶段函数
  */
 async function handleWebSocketMessage(data: any) {
   try {
@@ -264,26 +264,53 @@ async function handleWebSocketMessage(data: any) {
       return
     }
 
+    const countdown = data.table_opening_count_down
+    if (countdown === undefined || countdown === null) {
+      console.warn('⚠️ 收到的消息缺少倒计时数据')
+      return
+    }
+
     console.log('📨 收到 WS 消息:', {
-      countdown: data.table_opening_count_down,
+      countdown: countdown,
       pai_info: data.pai_info ? '有数据' : '无',
       pai_info_temp: data.pai_info_temp ? '有数据' : '无',
       win_or_loss_info: data.win_or_loss_info
     })
 
-    // 1. 处理倒计时（触发状态转换）
-    if (data.table_opening_count_down !== undefined && data.table_opening_count_down !== null) {
-      await handleCountdownMessage(data.table_opening_count_down, data.pai_info_temp)
+    const gameStore = useGameStore()
+    const oldGameStatus = gameStore.gameStatus
+
+    // 1️⃣ 判定并设置游戏状态（每秒都执行）
+    const newGameStatus = countdown > 0 ? 'betting' : 'dealing'
+    gameStore.updateGameStatus(newGameStatus)
+    console.log(`🎮 游戏状态: ${newGameStatus} (countdown: ${countdown})`)
+
+    // 2️⃣ 判定是否需要执行阶段初始化（只在状态变化时）
+    if (newGameStatus !== oldGameStatus) {
+      console.log(`🔄 状态切换: ${oldGameStatus} → ${newGameStatus}`)
+
+      if (newGameStatus === 'betting') {
+        await enterBettingPhase()
+      } else if (newGameStatus === 'dealing') {
+        await enterDealingPhase()
+
+        // 如果进入 dealing 阶段时就有临时牌数据，立即处理
+        if (data.pai_info_temp && data.pai_info_temp !== '') {
+          await handleCardDisplay('', data.pai_info_temp)
+        }
+      }
     }
 
-    // 🔥 以下逻辑只在 DEALING 阶段执行（持续监控）
-    const gameStore = useGameStore()
-    if (gameStore.gameStatus === 'dealing') {
+    // 3️⃣ 更新倒计时显示（所有阶段都更新）
+    gameStore.updateCountdown(countdown)
 
-      // 2. 持续监控牌数据（每秒检查）
+    // 4️⃣ 各函数内部自己判断阶段
+    // 只在 DEALING 阶段持续监控牌数据和中奖信息
+    if (gameStore.gameStatus === 'dealing') {
+      // 持续监控牌数据（每秒检查）
       await handleCardDisplay(data.pai_info || '', data.pai_info_temp || '')
 
-      // 3. 持续监控中奖信息（每秒检查）
+      // 持续监控中奖信息（每秒检查）
       if (data.win_or_loss_info > 0) {
         await handleWinning(data.win_or_loss_info)
       }
@@ -503,39 +530,6 @@ async function handleWinning(winAmount: number): Promise<void> {
   console.log('💰 中奖金额:', winAmount)
   console.log('✅ [中奖] 中奖信息处理完成')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-}
-
-/**
- * 处理倒计时消息（状态机核心）
- * @param countdown - 倒计时秒数
- * @param paiInfoTemp - 临时牌信息（可选）
- * @description 根据倒计时变化触发状态转换
- */
-async function handleCountdownMessage(countdown: number, paiInfoTemp?: string): Promise<void> {
-  const gameStore = useGameStore()
-  const oldCountdown = gameStore.countdown
-
-  // 更新倒计时
-  gameStore.updateCountdown(countdown)
-
-  // 🔥 状态转换1: 进入投注阶段
-  // countdown: 0 → >0
-  if (countdown > 0 && oldCountdown === 0) {
-    await enterBettingPhase()
-  }
-
-  // 🔥 状态转换2: 进入开牌阶段
-  // countdown: >0 → 0
-  else if (countdown === 0 && oldCountdown > 0) {
-    await enterDealingPhase()
-
-    // 如果倒计时结束时就有临时牌数据，立即处理
-    if (paiInfoTemp && paiInfoTemp !== '') {
-      await handleCardDisplay('', paiInfoTemp)
-    }
-  }
-
-  console.log(`⏰ 倒计时: ${countdown} 秒`)
 }
 
 /**
