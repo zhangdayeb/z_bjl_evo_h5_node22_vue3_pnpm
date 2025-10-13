@@ -166,16 +166,6 @@ export class RoadmapCalculator {
     sanxing: 20
   };
 
-  // 最大行数限制
-  private maxRows = {
-    beadPlate: 6,
-    bigRoad: 6,
-    bigEyeRoad: 6,
-    smallRoad: 6,
-    cockroachRoad: 6,
-    sanxing: 3
-  };
-
   // ==================== 中间数据存储 ====================
 
   private res_org_obj: Record<string, GameResult> = {};

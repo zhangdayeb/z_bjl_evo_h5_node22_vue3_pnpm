@@ -139,26 +139,6 @@ function parseCardResultData(paiInfo: string) {
   return result
 }
 
-/**
- * 映射闪烁区域到音频文件
- * @param {string | number} area - 闪烁区域ID
- * @returns {string | null} 音频文件路径
- */
-function mapAreaToAudioFile(area: string | number): string | null {
-  if (typeof area === 'number') {
-    return `open/${area}.mp3`
-  }
-
-  if (typeof area === 'string') {
-    const num = parseInt(area.trim(), 10)
-    if (!isNaN(num)) {
-      return `open/${num}.mp3`
-    }
-  }
-
-  return null
-}
-
 // 音频服务实例
 const audioService = useAudio()
 
