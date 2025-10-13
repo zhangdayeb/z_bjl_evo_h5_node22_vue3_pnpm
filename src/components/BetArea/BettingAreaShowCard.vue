@@ -200,8 +200,9 @@ const displayCards = computed<DisplayCards>(() => {
     const player: Card[] = []
     const banker: Card[] = []
 
-    // Player 牌：位置 1,2, 3
-    const playerPositions = ['1', '2', '3']
+    // Player 牌：显示顺序 [6, 4, 5]，位置6横向
+    // 视觉效果：左侧 [6-横向] [4] [5]
+    const playerPositions = ['6', '4', '5']
     for (const pos of playerPositions) {
       if (cards[pos] && cards[pos] !== '0|0') {
         const card = parseCard(cards[pos])
@@ -211,8 +212,9 @@ const displayCards = computed<DisplayCards>(() => {
       }
     }
 
-    // Banker 牌：位置 4, 5, 6
-    const bankerPositions = ['4', '5', '6']
+    // Banker 牌：显示顺序 [1, 2, 3]，位置3横向
+    // 视觉效果：右侧 [1] [2] [3-横向]
+    const bankerPositions = ['1', '2', '3']
     for (const pos of bankerPositions) {
       if (cards[pos] && cards[pos] !== '0|0') {
         const card = parseCard(cards[pos])

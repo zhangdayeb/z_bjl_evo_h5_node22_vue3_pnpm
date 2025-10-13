@@ -121,7 +121,7 @@
     <!-- =================== 对子投注区域 Pairs =================== -->
     <div class="pairs-row">
       <!-- 闲对 Player Pair -->
-      <div class="pair-zone player-pair">
+      <div class="pair-zone player-pair" :class="{ 'winner-highlight': isWinner('player-pair') }">
         <div class="pair-zone-content">
           <div class="pair-zone-title">P PAIR</div>
           <div class="pair-zone-odds">11:1</div>
@@ -129,7 +129,7 @@
       </div>
 
       <!-- 庄对 Banker Pair -->
-      <div class="pair-zone banker-pair">
+      <div class="pair-zone banker-pair" :class="{ 'winner-highlight': isWinner('banker-pair') }">
         <div class="pair-zone-content">
           <div class="pair-zone-title">B PAIR</div>
           <div class="pair-zone-odds">11:1</div>
@@ -145,30 +145,138 @@
  * @description 纯展示组件，显示基础形状、标题、赔率和赢家高亮效果
  */
 
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 
 // ========================= Store =========================
 
 const gameStore = useGameStore()
 
-// ========================= 模拟数据 =========================
-// TODO: 实际项目中应该从 gameStore 获取
-const resultData = ref({
-  winner: 'banker' as 'player' | 'banker' | 'tie'
-})
+// ========================= 工具函数 =========================
+
+/**
+ * 解析 pai_info 并计算游戏结果
+ * @param paiInfo - JSON 字符串，格式如 {"1":"11|r","2":"5|f","3":"0|0","4":"10|m","5":"3|h","6":"0|0"}
+ * 位置说明：
+ * - 1,2,3=庄家(Banker); 3是第三张补牌
+ * - 4,5,6=闲家(Player); 6是第三张补牌
+ * 显示布局：左侧Player[6-横向][4][5], 右侧Banker[1][2][3-横向]
+ * @returns result: 1=庄赢 2=闲赢 3=和; ext: 0=无对子 1=庄对 2=闲对 3=双对
+ */
+function parseGameResult(paiInfo: string): { result: number; ext: number } | null {
+  try {
+    if (!paiInfo || paiInfo === '') return null
+
+    const cards = JSON.parse(paiInfo)
+
+    // 解析牌面点数
+    const getCardValue = (cardStr: string): number => {
+      if (!cardStr || cardStr === '0|0') return 0
+      const value = parseInt(cardStr.split('|')[0], 10)
+      // 百家乐规则：10、J(11)、Q(12)、K(13) 算 0 点
+      return value >= 10 ? 0 : value
+    }
+
+    // 闲家牌（位置 4, 5, 6）
+    const player1 = getCardValue(cards['4'])
+    const player2 = getCardValue(cards['5'])
+    const player3 = getCardValue(cards['6']) // 第三张补牌
+    const playerTotal = (player1 + player2 + player3) % 10
+
+    // 庄家牌（位置 1, 2, 3）
+    const banker1 = getCardValue(cards['1'])
+    const banker2 = getCardValue(cards['2'])
+    const banker3 = getCardValue(cards['3']) // 第三张补牌
+    const bankerTotal = (banker1 + banker2 + banker3) % 10
+
+    // 计算主结果：1=庄赢 2=闲赢 3=和
+    let result: number
+    if (bankerTotal > playerTotal) {
+      result = 1 // 庄赢
+    } else if (playerTotal > bankerTotal) {
+      result = 2 // 闲赢
+    } else {
+      result = 3 // 和局
+    }
+
+    // 计算对子：检查前两张牌的数值是否相同（不包括第三张补牌）
+    const getCardNumber = (cardStr: string): number => {
+      if (!cardStr || cardStr === '0|0') return -1
+      return parseInt(cardStr.split('|')[0], 10)
+    }
+
+    const playerPair = getCardNumber(cards['4']) === getCardNumber(cards['5'])
+    const bankerPair = getCardNumber(cards['1']) === getCardNumber(cards['2'])
+
+    // ext: 0=无对子 1=庄对 2=闲对 3=双对
+    let ext = 0
+    if (playerPair && bankerPair) {
+      ext = 3 // 双对
+    } else if (bankerPair) {
+      ext = 1 // 庄对
+    } else if (playerPair) {
+      ext = 2 // 闲对
+    }
+
+    return { result, ext }
+  } catch (error) {
+    console.error('解析 pai_info 失败:', error)
+    return null
+  }
+}
 
 // ========================= 计算属性 =========================
 
 const gamePhase = computed(() => gameStore.gameStatus)
 
 /**
+ * 获取当前这一局的游戏结果数据
+ * 直接从 pai_info 解析并计算
+ * result: 1=庄 2=闲 3=和
+ * ext: 0=无对子 1=庄对 2=闲对 3=双对
+ */
+const gameResult = computed(() => {
+  // 只在 dealing 阶段显示赢家高亮
+  if (gamePhase.value !== 'dealing') return null
+
+  // 从 gameStore.gameResult.pai_info 获取牌面数据
+  const gameResultData = gameStore.gameResult
+  if (!gameResultData || !gameResultData.pai_info) return null
+
+  // 解析 pai_info 并计算结果
+  return parseGameResult(gameResultData.pai_info)
+})
+
+/**
  * 判断是否为赢家
+ * @param zone - 区域标识: 'player', 'banker', 'tie', 'player-pair', 'banker-pair'
  */
 const isWinner = (zone: string): boolean => {
   // 只在开牌阶段显示赢家效果
   if (gamePhase.value !== 'dealing') return false
-  return resultData.value.winner === zone
+
+  // 如果没有结果数据，不显示高亮
+  if (!gameResult.value) return false
+
+  const { result, ext } = gameResult.value
+
+  // 判断主要结果：1=庄 2=闲 3=和
+  switch (zone) {
+    case 'banker':
+      return result === 1
+    case 'player':
+      return result === 2
+    case 'tie':
+      return result === 3
+    case 'player-pair':
+      // ext: 2=闲对 3=双对
+      return ext === 2 || ext === 3
+    case 'banker-pair':
+      // ext: 1=庄对 3=双对
+      return ext === 1 || ext === 3
+    default:
+      return false
+  }
 }
 </script>
 
@@ -283,7 +391,7 @@ const isWinner = (zone: string): boolean => {
 
 /* ========================= 赢家高亮效果 ========================= */
 
-/* 赢家发光层 */
+/* 赢家发光层 - 静态高亮，无动画 */
 .winner-glow {
   position: absolute;
   top: 0;
@@ -292,38 +400,43 @@ const isWinner = (zone: string): boolean => {
   height: 100%;
   z-index: 1;
   pointer-events: none;
-  animation: winnerPulse 2s ease-in-out infinite;
+  opacity: 0.5;
 }
 
 /* Player 赢家发光 */
 .player-spot .winner-glow {
   background: radial-gradient(ellipse at center,
-    rgba(0, 150, 255, 0.3) 0%,
+    rgba(0, 150, 255, 0.4) 0%,
     transparent 70%);
-  box-shadow: inset 0 0 50px rgba(0, 150, 255, 0.3);
+  box-shadow: inset 0 0 50px rgba(0, 150, 255, 0.4);
 }
 
 /* Banker 赢家发光 */
 .banker-spot .winner-glow {
   background: radial-gradient(ellipse at center,
-    rgba(255, 100, 100, 0.3) 0%,
+    rgba(255, 100, 100, 0.4) 0%,
     transparent 70%);
-  box-shadow: inset 0 0 50px rgba(255, 100, 100, 0.3);
+  box-shadow: inset 0 0 50px rgba(255, 100, 100, 0.4);
 }
 
 /* Tie 赢家发光 */
 .tie-spot .winner-glow {
   background: radial-gradient(ellipse at center,
-    rgba(13, 216, 12, 0.3) 0%,
+    rgba(13, 216, 12, 0.4) 0%,
     transparent 70%);
-  box-shadow: inset 0 0 50px rgba(13, 216, 12, 0.3);
+  box-shadow: inset 0 0 50px rgba(13, 216, 12, 0.4);
 }
 
-/* 赢家高亮时的边框动画 */
+/* 赢家高亮时的边框 - 静态效果，无动画 */
 .winner-highlight .svg-builder path {
   stroke-width: 3;
   filter: drop-shadow(0 0 10px currentColor);
-  animation: borderGlow 1.5s ease-in-out infinite;
+}
+
+/* 对子区域赢家高亮 */
+.pair-zone.winner-highlight {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3);
+  border-width: 3px;
 }
 
 /* ========================= 标题和赔率 ========================= */
@@ -462,25 +575,4 @@ const isWinner = (zone: string): boolean => {
   color: #ffb8b5;
 }
 
-/* ========================= 动画定义 ========================= */
-
-/* 赢家脉冲动画 */
-@keyframes winnerPulse {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-/* 边框发光动画 */
-@keyframes borderGlow {
-  0%, 100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 </style>
