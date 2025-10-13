@@ -117,6 +117,13 @@ export const useGameStore = defineStore('game', {
     gameResult: null as any,
 
     /**
+     * 临时牌数据（过程数据）
+     * @type {any}
+     * @description 倒计时结束后的发牌过程数据，逐步显示牌面
+     */
+    tempCardInfo: null as any,
+
+    /**
      * 中奖信息
      * @type {any}
      * @description 包含中奖类型、金额等信息
@@ -481,6 +488,28 @@ async updateLuZhuData(data: Record<string, any> | null) {
     // =================== 游戏结果处理 ===================
 
     /**
+     * 更新临时牌数据（过程数据）
+     * @param {any} data - 临时牌数据
+     * @description 更新发牌过程中的临时牌信息，用于逐步显示牌面
+     */
+    updateTempCardInfo(data: any) {
+      if (data && typeof data === 'object') {
+        // 深拷贝数据，避免外部修改
+        this.tempCardInfo = { ...data }
+        console.log(`🃏 更新临时牌数据:`, data)
+      }
+    },
+
+    /**
+     * 清除临时牌数据
+     * @description 当最终结果到来时，清空临时数据
+     */
+    clearTempCardInfo() {
+      this.tempCardInfo = null
+      console.log(`🧹 清除临时牌数据`)
+    },
+
+    /**
      * 更新开牌结果
      * @param {any} data - 开牌结果数据
      * @description 更新开牌结果并自动触发清场操作
@@ -491,8 +520,10 @@ async updateLuZhuData(data: Record<string, any> | null) {
         this.gameResult = { ...data }
         console.log(`🎰 更新开牌结果:`, data)
 
-        // 🔥 重要：同时执行清场操作
-        this.clearBettingData()
+        // 清除临时牌数据（最终结果到来）
+        this.clearTempCardInfo()
+
+        // 注意：投注数据清场已移至 bettingStore，在倒计时 0 → >0 时自动清空
       }
     },
 
@@ -730,6 +761,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
 
       // --------------- 重置游戏结果 ---------------
       this.gameResult = null
+      this.tempCardInfo = null
       this.betResult = null
 
       // --------------- 重置统计数据 ---------------

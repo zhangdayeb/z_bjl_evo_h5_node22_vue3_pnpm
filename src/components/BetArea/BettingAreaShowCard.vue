@@ -158,7 +158,7 @@ function parsePaiInfo(paiInfo: string): Record<string, string> | null {
 
 /**
  * 显示的牌数据
- * 从 gameStore 获取并解析 pai_info
+ * 从 gameStore 获取并解析 pai_info（优先）或 pai_info_temp
  */
 const displayCards = computed<DisplayCards>(() => {
   // 默认返回值
@@ -168,12 +168,27 @@ const displayCards = computed<DisplayCards>(() => {
   }
 
   try {
-    // 1. 获取原始数据
-    console.log('获取 pai_info:', gameStore.gameResult)
-    const paiInfo = gameStore.gameResult?.pai_info
+    // 1. 获取原始数据 - 优先使用最终结果 pai_info，否则使用临时数据 pai_info_temp
+    let paiInfo: string | null = null
+    let dataSource = ''
+
+    // 优先级1: 最终结果数据
+    if (gameStore.gameResult?.pai_info) {
+      paiInfo = gameStore.gameResult.pai_info
+      dataSource = '最终结果'
+    }
+    // 优先级2: 临时过程数据
+    else if (gameStore.tempCardInfo?.pai_info_temp) {
+      paiInfo = gameStore.tempCardInfo.pai_info_temp
+      dataSource = '过程数据'
+    }
+
     if (!paiInfo) {
+      console.log('无可显示的牌数据')
       return defaultResult
     }
+
+    console.log(`获取牌数据 [${dataSource}]:`, paiInfo)
 
     // 2. 解析 JSON
     const cards = parsePaiInfo(paiInfo)
@@ -225,12 +240,26 @@ const hasCards = computed<boolean>(() => {
 
 // ========================= 调试和监听 =========================
 
-// 监听数据变化（用于调试）
+// 监听最终结果数据变化（用于调试）
 watch(
   () => gameStore.gameResult?.pai_info,
   (newVal, oldVal) => {
     if (newVal !== oldVal) {
-      console.log('[ShowCard] pai_info 更新:', {
+      console.log('[ShowCard] pai_info 更新 [最终结果]:', {
+        old: oldVal,
+        new: newVal,
+        parsed: displayCards.value
+      })
+    }
+  }
+)
+
+// 监听临时数据变化（用于调试）
+watch(
+  () => gameStore.tempCardInfo?.pai_info_temp,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      console.log('[ShowCard] pai_info_temp 更新 [过程数据]:', {
         old: oldVal,
         new: newVal,
         parsed: displayCards.value
@@ -246,8 +275,13 @@ onMounted(() => {
 
   // 输出当前状态（用于调试）
   if (gameStore.gameResult?.pai_info) {
-    console.log('[ShowCard] 初始数据:', {
+    console.log('[ShowCard] 初始数据 [最终结果]:', {
       pai_info: gameStore.gameResult.pai_info,
+      displayCards: displayCards.value
+    })
+  } else if (gameStore.tempCardInfo?.pai_info_temp) {
+    console.log('[ShowCard] 初始数据 [过程数据]:', {
+      pai_info_temp: gameStore.tempCardInfo.pai_info_temp,
       displayCards: displayCards.value
     })
   }

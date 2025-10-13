@@ -251,10 +251,10 @@ function setupWebSocketHandlers() {
 
 /**
  * 处理 WebSocket 消息
- * @param {any} data - WebSocket 消息数据
- * @description 根据消息内容处理不同的游戏状态
+ * @param data - WebSocket 消息数据
+ * @description 根据游戏阶段处理不同的消息
  */
-function handleWebSocketMessage(data: any) {
+async function handleWebSocketMessage(data: any) {
   try {
     if (!data || typeof data !== 'object') return
 
@@ -264,27 +264,29 @@ function handleWebSocketMessage(data: any) {
       return
     }
 
-    console.log('📨 收到 WebSocket 消息:', {
-      msg: data.msg,
-      pai_info: data.pai_info,
-      win_or_loss_info: data.win_or_loss_info,
-      table_opening_count_down: data.table_opening_count_down
+    console.log('📨 收到 WS 消息:', {
+      countdown: data.table_opening_count_down,
+      pai_info: data.pai_info ? '有数据' : '无',
+      pai_info_temp: data.pai_info_temp ? '有数据' : '无',
+      win_or_loss_info: data.win_or_loss_info
     })
 
-    // 1. 处理倒计时信息（优先级最高，每秒都会更新）
+    // 1. 处理倒计时（触发状态转换）
     if (data.table_opening_count_down !== undefined && data.table_opening_count_down !== null) {
-      handleCountdownMessage(data.table_opening_count_down)
+      await handleCountdownMessage(data.table_opening_count_down, data.pai_info_temp)
     }
 
-    // 3. 处理完整牌型信息
-    if (data.pai_info && data.pai_info !== '' && data.pai_info !== gameProcessingState.lastPaiInfo) {
-      handleGameResult(data.pai_info)
-      gameProcessingState.lastPaiInfo = data.pai_info
-    }
+    // 🔥 以下逻辑只在 DEALING 阶段执行（持续监控）
+    const gameStore = useGameStore()
+    if (gameStore.gameStatus === 'dealing') {
 
-    // 4. 处理中奖信息
-    if (data.win_or_loss_info > 0 && !gameProcessingState.betResultProcessed) {
-      handleBetResult(data.win_or_loss_info)
+      // 2. 持续监控牌数据（每秒检查）
+      await handleCardDisplay(data.pai_info || '', data.pai_info_temp || '')
+
+      // 3. 持续监控中奖信息（每秒检查）
+      if (data.win_or_loss_info > 0) {
+        await handleWinning(data.win_or_loss_info)
+      }
     }
 
   } catch (error) {
@@ -293,159 +295,189 @@ function handleWebSocketMessage(data: any) {
 }
 
 /**
- * 处理临时牌信息
- * @param {string} paiInfoTemp - 临时牌信息
- * @description 处理动态增加的牌，逐张显示
+ * 进入投注阶段
+ * @description 新一铺开始，倒计时从 0 → >0
  */
-function handleTempCardInfo(paiInfoTemp: string) {
-  try {
-    console.log('🃏 收到临时牌信息:', paiInfoTemp)
+async function enterBettingPhase(): Promise<void> {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🎮 [BETTING] 进入投注阶段')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    // TODO: 实现动态显示牌的逻辑
-    // 1. 解析临时牌信息格式
-    // 2. 更新 store 中的临时牌状态
-    // 3. 触发 UI 动画显示新牌
-    // 4. 播放相应音效
-
-    // 占位实现
-    const gameStore = useGameStore()
-    // gameStore.updateTempCard(paiInfoTemp) // 需要在 store 中实现此方法
-
-    console.log('🃏 临时牌信息处理完成（占位函数）')
-  } catch (error) {
-    console.error('❌ 处理临时牌信息失败:', error)
-  }
-}
-
-/**
- * 处理倒计时消息
- * @param {number} countdown - 倒计时秒数
- */
-async function handleCountdownMessage(countdown: number) {
   const gameStore = useGameStore()
 
-  // 更新倒计时
-  gameStore.updateCountdown(countdown)
-
-  // 根据倒计时设置游戏状态
-  if (countdown > 0) {
-    gameStore.updateGameStatus('betting')
-
-    // 检查是否是新一铺的开始
-    if (!gameProcessingState.countdownStarted) {
-      gameProcessingState.countdownStarted = true
-
-      // 重置其他状态
-      gameProcessingState.cardResultProcessed = false
-      gameProcessingState.betResultProcessed = false
-      gameProcessingState.lastPaiInfo = ''
-      gameProcessingState.lastPaiInfoTemp = ''
-
-      // 倒计时开始时更新所有数据
-      await updateAllGameData('倒计时开始')
-
-      // 播放投注开始音效
-      try {
-        await audioService.playAudioFile('bet.wav')
-        console.log('🔊 倒计时开始音效播放完成')
-      } catch (error) {
-        console.error('❌ 播放倒计时开始音效失败:', error)
-      }
-    }
-
-  } else {
-    gameStore.updateGameStatus('dealing')
-
-    // 倒计时结束时播放停止音效
-    if (gameProcessingState.countdownStarted && countdown === 0) {
-      gameProcessingState.countdownStarted = false
-      try {
-        await audioService.playAudioFile('stop.wav')
-        console.log('🔊 倒计时结束音效播放完成')
-      } catch (error) {
-        console.error('❌ 播放倒计时结束音效失败:', error)
-      }
-    }
+  try {
+    // 1. 播放投注音效
+    await audioService.playAudioFile('bet.wav')
+    console.log('🔊 播放投注开始音效')
+  } catch (error) {
+    console.error('❌ 播放音效失败:', error)
   }
 
-  console.log(`⏰ 倒计时 ${countdown} 秒`)
+  // 2. 刷新游戏数据（余额、台桌、统计、路珠）
+  await updateAllGameData('投注阶段开始')
+
+  // 3. 更新游戏状态
+  gameStore.updateGameStatus('betting')
+
+  // 4. 重置处理标记
+  gameProcessingState.cardResultProcessed = false
+  gameProcessingState.betResultProcessed = false
+  gameProcessingState.lastPaiInfo = ''
+  gameProcessingState.lastPaiInfoTemp = ''
+
+  console.log('✅ [BETTING] 投注阶段初始化完成')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 }
 
 /**
- * 处理开牌结果
- * @param {string} paiInfo - 牌型信息
+ * 进入开牌/结算阶段
+ * @description 倒计时结束，从 >0 → 0
  */
-async function handleGameResult(paiInfo: string) {
+async function enterDealingPhase(): Promise<void> {
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🎰 [DEALING] 进入开牌阶段')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
+  const gameStore = useGameStore()
+
+  try {
+    // 1. 播放停止音效
+    await audioService.playAudioFile('stop.wav')
+    console.log('🔊 播放投注停止音效')
+  } catch (error) {
+    console.error('❌ 播放音效失败:', error)
+  }
+
+  // 2. 更新游戏状态
+  gameStore.updateGameStatus('dealing')
+
+  // 3. 清空临时牌数据（准备接收新数据）
+  gameStore.clearTempCardInfo()
+
+  console.log('✅ [DEALING] 开牌阶段初始化完成，开始监控 WS 数据...')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+}
+
+/**
+ * 处理牌数据展示（整合临时牌和最终牌）
+ * @param paiInfo - 最终牌数据
+ * @param paiInfoTemp - 临时牌数据
+ * @description 在 DEALING 阶段持续监控并处理牌数据
+ */
+async function handleCardDisplay(paiInfo: string, paiInfoTemp: string): Promise<void> {
   const gameStore = useGameStore()
   const overLayerStore = useoverLayerStore()
 
-  // 防重复处理
-  if (gameProcessingState.cardResultProcessed) {
-    console.log('⚠️ 当前铺已处理过开牌结果，跳过重复处理')
-    return
-  }
+  // 优先级1: 如果有最终牌数据 pai_info（优先处理）
+  if (paiInfo && paiInfo !== '' && paiInfo !== gameProcessingState.lastPaiInfo) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🎴 [牌数据] 收到最终牌数据')
 
-  console.log('🎰 收到开牌结果:', paiInfo)
-
-  // 标记已处理
-  gameProcessingState.cardResultProcessed = true
-
-  // 解析开牌数据
-  const cardResult = parseCardResultData(paiInfo)
-
-  console.log(`🎯 开牌结果 - 牌型: ${cardResult.cardType}`)
-  console.log(`🎯 闪烁区域: [${cardResult.blinkAreas.join(', ')}]`)
-  console.log(`🎯 音频序列: [${cardResult.audioFiles.join(', ')}]`)
-
-  // 1. 保存开牌结果 - 传递解析后的数据
-  gameStore.updateGameResult({
-    pai_info: paiInfo,
-    result: cardResult
-  })
-
-  // 2. 开牌时更新所有数据
-  await updateAllGameData('开牌')
-
-  // 3. 显示开牌效果弹窗
-  overLayerStore.open('resultFly')
-
-  // 4. 播放开牌音效序列
-  if (cardResult.audioFiles.length > 0) {
-    try {
-      await audioService.playAudioSequence(cardResult.audioFiles, { interval: 500 })
-      console.log('🔊 开牌音效序列播放完成:', cardResult.audioFiles)
-    } catch (error) {
-      console.error('❌ 播放开牌音效序列失败:', error)
+    // 防止重复处理
+    if (gameProcessingState.cardResultProcessed) {
+      console.log('⚠️  已处理过开牌结果，跳过')
+      return
     }
+
+    // 解析开牌数据
+    const cardResult = parseCardResultData(paiInfo)
+
+    console.log(`🎯 开牌结果 - 牌型: ${cardResult.cardType}`)
+    console.log(`🎯 闪烁区域: [${cardResult.blinkAreas.join(', ')}]`)
+    console.log(`🎯 音频序列: [${cardResult.audioFiles.join(', ')}]`)
+
+    // 1. 保存开牌结果
+    gameStore.updateGameResult({
+      pai_info: paiInfo,
+      result: cardResult
+    })
+
+    // 2. 刷新游戏数据
+    await updateAllGameData('开牌')
+
+    // 3. 显示开牌效果弹窗
+    overLayerStore.open('resultFly')
+
+    // 4. 播放开牌音效序列
+    if (cardResult.audioFiles.length > 0) {
+      try {
+        await audioService.playAudioSequence(cardResult.audioFiles, { interval: 500 })
+        console.log('🔊 开牌音效序列播放完成')
+      } catch (error) {
+        console.error('❌ 播放开牌音效失败:', error)
+      }
+    }
+
+    // 5. 5秒后自动关闭开牌效果
+    setTimeout(() => {
+      overLayerStore.close()
+    }, 5000)
+
+    // 6. 标记已处理
+    gameProcessingState.cardResultProcessed = true
+    gameProcessingState.lastPaiInfo = paiInfo
+
+    console.log('✅ [牌数据] 最终牌数据处理完成')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   }
 
-  // 5. 5秒后自动关闭开牌效果
-  setTimeout(() => {
-    overLayerStore.close()
-  }, 5000)
+  // 优先级2: 如果没有最终牌，但有临时牌 pai_info_temp
+  else if (paiInfoTemp && paiInfoTemp !== '' && paiInfoTemp !== gameProcessingState.lastPaiInfoTemp) {
+    console.log('🃏 [牌数据] 收到临时牌数据:', paiInfoTemp)
 
-  console.log('🎯 开牌结果处理完成')
+    // 解析并更新临时牌数据
+    let parsedData: any = null
+    try {
+      parsedData = JSON.parse(paiInfoTemp)
+    } catch (parseError) {
+      console.error('❌ 解析临时牌信息失败:', parseError)
+      return
+    }
+
+    // 更新 store 中的临时牌状态
+    gameStore.updateTempCardInfo({
+      pai_info_temp: paiInfoTemp,
+      parsed: parsedData
+    })
+
+    // 统计有效牌的数量
+    let validCardCount = 0
+    if (parsedData && typeof parsedData === 'object') {
+      Object.values(parsedData).forEach((card: any) => {
+        if (card && card !== '0|0' && card !== '0') {
+          validCardCount++
+        }
+      })
+    }
+
+    console.log(`✅ [牌数据] 临时牌数据处理完成 - 有效牌数: ${validCardCount}`)
+
+    // 防重
+    gameProcessingState.lastPaiInfoTemp = paiInfoTemp
+  }
 }
 
 /**
  * 处理中奖信息
- * @param {number} winAmount - 中奖金额
+ * @param winAmount - 中奖金额
+ * @description 在 DEALING 阶段持续监控中奖信息
  */
-async function handleBetResult(winAmount: number) {
-  const gameStore = useGameStore()
-  const overLayerStore = useoverLayerStore()
+async function handleWinning(winAmount: number): Promise<void> {
+  // 只处理大于 0 的中奖金额
+  if (winAmount <= 0) return
 
   // 防重复处理
   if (gameProcessingState.betResultProcessed) {
-    console.log('⚠️ 当前铺已处理过中奖信息，跳过重复处理')
+    console.log('⚠️  中奖信息已处理，跳过')
     return
   }
 
-  // 标记已处理
-  gameProcessingState.betResultProcessed = true
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🏆 [中奖] 检测到中奖金额:', winAmount)
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-  console.log('🏆 收到中奖信息:', winAmount)
-  console.log(`💰 中奖金额: ${winAmount}`)
+  const gameStore = useGameStore()
+  const overLayerStore = useoverLayerStore()
 
   // 1. 保存中奖信息
   gameStore.updateBetResult({
@@ -454,7 +486,7 @@ async function handleBetResult(winAmount: number) {
     totalWin: winAmount
   })
 
-  // 2. 中奖时更新所有数据
+  // 2. 刷新游戏数据（更新余额）
   await updateAllGameData('中奖信息')
 
   // 3. 显示中奖效果
@@ -465,7 +497,45 @@ async function handleBetResult(winAmount: number) {
     overLayerStore.close()
   }, 5000)
 
-  console.log('🏆 中奖信息处理完成')
+  // 5. 标记已处理
+  gameProcessingState.betResultProcessed = true
+
+  console.log('💰 中奖金额:', winAmount)
+  console.log('✅ [中奖] 中奖信息处理完成')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+}
+
+/**
+ * 处理倒计时消息（状态机核心）
+ * @param countdown - 倒计时秒数
+ * @param paiInfoTemp - 临时牌信息（可选）
+ * @description 根据倒计时变化触发状态转换
+ */
+async function handleCountdownMessage(countdown: number, paiInfoTemp?: string): Promise<void> {
+  const gameStore = useGameStore()
+  const oldCountdown = gameStore.countdown
+
+  // 更新倒计时
+  gameStore.updateCountdown(countdown)
+
+  // 🔥 状态转换1: 进入投注阶段
+  // countdown: 0 → >0
+  if (countdown > 0 && oldCountdown === 0) {
+    await enterBettingPhase()
+  }
+
+  // 🔥 状态转换2: 进入开牌阶段
+  // countdown: >0 → 0
+  else if (countdown === 0 && oldCountdown > 0) {
+    await enterDealingPhase()
+
+    // 如果倒计时结束时就有临时牌数据，立即处理
+    if (paiInfoTemp && paiInfoTemp !== '') {
+      await handleCardDisplay('', paiInfoTemp)
+    }
+  }
+
+  console.log(`⏰ 倒计时: ${countdown} 秒`)
 }
 
 /**

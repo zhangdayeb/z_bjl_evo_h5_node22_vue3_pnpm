@@ -235,6 +235,10 @@ export const useBettingStore = defineStore('betting', () => {
       console.log(`  - totalPendingAmount: ${totalPendingAmount.value}`)
 
       if (newCountdown > 0 && oldCountdown === 0) {
+        // 🔥 投注阶段开始：清空投注数据 (这是唯一的清空时机)
+        console.log('🧹 倒计时开始，清空上一铺投注数据')
+        handleClearBetting()
+
         console.log('🎮 倒计时开始，启动模拟投注')
         startSimulation(simulatedData, {
           intervalMs: 1500,
