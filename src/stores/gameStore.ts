@@ -89,11 +89,20 @@ export const useGameStore = defineStore('game', {
     gameNumber: '',
 
     /**
-     * 用户余额
+     * 用户真实余额（从后端获取）
      * @type {number}
      * @default 0
+     * @description 后端 API 或 WebSocket 返回的真实余额
      */
-    balance: 0,
+    realBalance: 0,
+
+    /**
+     * 当前投注总额
+     * @type {number}
+     * @default 0
+     * @description 从 bettingStore 同步的所有投注金额总和
+     */
+    currentBetTotal: 0,
 
     /**
      * 视频流地址
@@ -215,6 +224,19 @@ export const useGameStore = defineStore('game', {
   // ========================= Getters 计算属性 =========================
   getters: {
     /**
+     * 展示余额（虚拟余额）
+     * @param {Object} state - Store 状态
+     * @returns {number} 真实余额 - 当前投注总额
+     * @description 用户看到的余额 = 后端真实余额 - 当前所有投注金额
+     */
+    displayBalance: (state): number => {
+      const real = state.realBalance || 0
+      const betTotal = state.currentBetTotal || 0
+      const result = real - betTotal
+      return Math.max(0, result) // 确保不为负数
+    },
+
+    /**
      * 统计总数
      * @param {Object} state - Store 状态
      * @returns {number} 庄、闲、和的总次数
@@ -326,16 +348,45 @@ export const useGameStore = defineStore('game', {
     },
 
     /**
-     * 更新用户余额
-     * @param {number} amount - 新的余额金额
-     * @description 验证并更新用户余额，确保为非负数
+     * 更新用户真实余额
+     * @param {number | string} amount - 新的余额金额（支持字符串格式，如 "98,390.00"）
+     * @description 验证并更新用户真实余额，自动处理逗号分隔符
      */
-    updateBalance(amount: number) {
-      // 验证输入：必须是非负数字
-      if (!isNaN(amount) && amount >= 0) {
-        this.balance = amount
-        console.log(`💰 API更新余额: ${amount}`)
+    updateRealBalance(amount: number | string) {
+      let balanceValue = 0
+
+      // 处理字符串格式（可能包含千位分隔符）
+      if (typeof amount === 'string') {
+        balanceValue = parseFloat(amount.replace(/,/g, '')) || 0
+      } else if (typeof amount === 'number' && !isNaN(amount)) {
+        balanceValue = amount
       }
+
+      // 验证：必须是非负数
+      if (balanceValue >= 0) {
+        this.realBalance = balanceValue
+        console.log(`💰 更新真实余额: ${balanceValue}, 展示余额: ${this.displayBalance}`)
+      }
+    },
+
+    /**
+     * 更新当前投注总额
+     * @param {number} total - 当前投注总额
+     * @description 由 bettingStore 通知更新，用于计算虚拟余额
+     */
+    updateCurrentBetTotal(total: number) {
+      const betTotal = typeof total === 'number' && !isNaN(total) ? total : 0
+      this.currentBetTotal = Math.max(0, betTotal)
+      console.log(`🎰 更新投注总额: ${this.currentBetTotal}, 展示余额: ${this.displayBalance}`)
+    },
+
+    /**
+     * 清空当前投注总额
+     * @description 在新一铺开始或清场时调用
+     */
+    clearCurrentBetTotal() {
+      this.currentBetTotal = 0
+      console.log(`🧹 清空投注总额, 展示余额恢复: ${this.displayBalance}`)
     },
 
     /**
@@ -364,16 +415,14 @@ export const useGameStore = defineStore('game', {
     /**
      * 更新用户信息
      * @param {UserInfo} userInfo - 用户信息对象
-     * @description 更新用户信息并同步更新余额
+     * @description 更新用户信息并同步更新真实余额
      */
     updateUserInfo(userInfo: UserInfo) {
       if (userInfo) {
         this.userInfo = userInfo
-        // 同时更新余额 - money_balance 是字符串，需要先移除千位分隔符再转换为数字
-        // 例如: "98,390.00" -> "98390.00" -> 98390.00
-        const balanceValue = parseFloat(userInfo.money_balance.replace(/,/g, '')) || 0
-        this.balance = balanceValue
-        console.log(`👤 API更新用户信息，余额:`, balanceValue)
+        // 同时更新真实余额（会自动处理千位分隔符）
+        this.updateRealBalance(userInfo.money_balance)
+        console.log(`👤 API更新用户信息`)
       }
     },
 
@@ -615,7 +664,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
         const userInfo = await apiService.getUserInfo()
 
         if (userInfo) {
-          this.updateBalance(userInfo.money_balance)
+          this.updateRealBalance(userInfo.money_balance)
           console.log('✅ 余额刷新成功:', userInfo.money_balance)
         } else {
           throw new Error('获取的用户信息格式错误')
@@ -757,7 +806,8 @@ async updateLuZhuData(data: Record<string, any> | null) {
 
       // --------------- 重置API数据 ---------------
       this.gameNumber = ''
-      this.balance = 0
+      this.realBalance = 0
+      this.currentBetTotal = 0
       this.videoUrl = ''
       this.tableName = '百家乐001'
 

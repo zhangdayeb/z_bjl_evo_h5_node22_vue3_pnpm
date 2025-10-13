@@ -143,9 +143,9 @@ export const useBettingStore = defineStore('betting', () => {
   const balance = computed(() => {
     try {
       const gameStore = getGameStore()
-      return ensureNumber(gameStore?.balance, 0)
+      return ensureNumber(gameStore?.displayBalance, 0)
     } catch (error) {
-      console.error('❌ 获取余额失败:', error)
+      console.error('❌ 获取展示余额失败:', error)
       return 0
     }
   })
@@ -221,6 +221,24 @@ export const useBettingStore = defineStore('betting', () => {
       return false
     }
   })
+
+  // ========================= 监听器 - 投注总额变化 =========================
+
+  /**
+   * 监听投注总额变化，自动同步到 gameStore
+   * 实现余额自动联动
+   */
+  watch(totalBetAmount, (newTotal) => {
+    try {
+      const gameStore = getGameStore()
+      if (gameStore) {
+        gameStore.updateCurrentBetTotal(newTotal)
+        console.log(`🔄 投注总额变化: ${newTotal}, 通知 gameStore 更新`)
+      }
+    } catch (error) {
+      console.error('❌ 同步投注总额到 gameStore 失败:', error)
+    }
+  }, { immediate: true })
 
   // ========================= 监听器 - 倒计时 =========================
 
@@ -403,8 +421,8 @@ export const useBettingStore = defineStore('betting', () => {
       hasSubmittedBets.value = true
 
       if (result.money_balance !== undefined) {
-        gameStore.updateBalance(result.money_balance)
-        console.log('💰 余额已更新:', result.money_balance)
+        gameStore.updateRealBalance(result.money_balance)
+        console.log('💰 真实余额已更新:', result.money_balance)
       }
 
       return {

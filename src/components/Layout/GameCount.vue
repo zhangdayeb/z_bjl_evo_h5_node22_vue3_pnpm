@@ -16,7 +16,7 @@
       <div class="total-bet-container">
         <div class="info-item">
           <span class="label" data-role="total-bet-title">Total Bet</span>
-          <span class="amount" data-role="total-bet-value">€{{ totalBet }}</span>
+          <span class="amount" data-role="total-bet-value">€{{ formattedTotalBet }}</span>
         </div>
       </div>
 
@@ -72,30 +72,15 @@ const gameStartTime = ref<number | null>(null)
  * 总投注金额 - 从 bettingStore 获取
  */
 const totalBet = computed(() => {
-  return bettingStore.totalConfirmedAmount || 0
+  return bettingStore.totalBetAmount || 0
 })
 
 /**
- * 真实余额 - 从 gameStore 获取（后端返回的真实余额）
- */
-const realBalance = computed(() => {
-  return gameStore.balance || 0
-})
-
-/**
- * 虚拟余额 - 用于即时显示（真实余额 - 当前所有投注金额）
- * 这样用户在点击投注时能立即看到余额减少，提供即时反馈
+ * 展示余额 - 从 gameStore 获取（自动计算的虚拟余额）
+ * gameStore 会自动计算：realBalance - currentBetTotal
  */
 const balance = computed(() => {
-  // 获取真实余额和投注金额，确保都是数字
-  const real = realBalance.value || 0
-  const betAmount = bettingStore.totalBetAmount || 0
-
-  // 计算虚拟余额 = 真实余额 - 所有当前投注（包括已确认和待确认）
-  const virtualBalance = real - betAmount
-
-  // 确保余额不为负数且不为 NaN
-  return isNaN(virtualBalance) ? 0 : Math.max(0, virtualBalance)
+  return gameStore.displayBalance || 0
 })
 
 /**
@@ -129,6 +114,16 @@ const maxBet = computed(() => {
   const zhuangMax = tableInfo.bjl_xian_hong_zhuang_max || 25000
   const xianMax = tableInfo.bjl_xian_hong_xian_max || 25000
   return Math.max(zhuangMax, xianMax)
+})
+
+/**
+ * 格式化总投注金额显示
+ */
+const formattedTotalBet = computed(() => {
+  return totalBet.value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 })
 
 /**
