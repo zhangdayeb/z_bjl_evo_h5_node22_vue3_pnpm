@@ -418,19 +418,19 @@ export class RoadmapCalculator {
     this.show_sanxing_num = this.createArray2D(99, 3);
 
     // 初始化转弯节点
-    this.change_point_dalu = new Array(99).fill(5);
-    this.change_point_dayan = new Array(99).fill(5);
-    this.change_point_xiaolu = new Array(99).fill(5);
-    this.change_point_xiaoqiang = new Array(99).fill(5);
+    this.change_point_dalu = Array.from({ length: 99 }, () => 5);
+    this.change_point_dayan = Array.from({ length: 99 }, () => 5);
+    this.change_point_xiaolu = Array.from({ length: 99 }, () => 5);
+    this.change_point_xiaoqiang = Array.from({ length: 99 }, () => 5);
   }
 
   /**
    * 创建二维数组
    */
   private createArray2D(rows: number, cols: number): any[][] {
-    const arr = new Array(rows);
+    const arr: any[] = Array.from({ length: rows });
     for (let i = 0; i < rows; i++) {
-      arr[i] = new Array(cols).fill('no_color');
+      arr[i] = Array.from({ length: cols }, () => 'no_color');
     }
     return arr;
   }
@@ -845,7 +845,7 @@ export class RoadmapCalculator {
   ): any[][] {
     const tmpArrayImg = this.createArray2D(99, 6);
     const tmpArrayNum = this.createArray2D(99, 6);
-    const tmpChangePoint = new Array(99).fill(5);
+    const tmpChangePoint = Array.from({ length: 99 }, () => 5);
     const tmpUseFlag = this.createArray2D(99, 99);
 
     for (let i = 0; i < 99; i++) {
