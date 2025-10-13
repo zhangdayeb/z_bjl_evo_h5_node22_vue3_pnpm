@@ -46,77 +46,142 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'GameCount',
-  data() {
-    return {
-      // 固定数据
-      totalBet: 0,
-      balance: 931890.44,
-      tableName: 'Always 8 Baccarat',
-      minBet: 1,
-      maxBet: 25000,
+<script setup lang="ts">
+/**
+ * @fileoverview 游戏底部信息栏组件
+ * @description 显示用户余额、投注总额、台桌信息、限红和时间
+ */
 
-      // 时间相关
-      currentTime: '00:00',
-      gameTime: '00:00:00',
-      timeInterval: null,
-      gameStartTime: null
-    }
-  },
-  computed: {
-    // 格式化余额显示
-    formattedBalance() {
-      return this.balance.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    },
-    // 格式化最大投注额
-    formattedMaxBet() {
-      return this.maxBet.toLocaleString('en-US');
-    }
-  },
-  mounted() {
-    this.startClock();
-    this.gameStartTime = Date.now();
-  },
-  beforeUnmount() {
-    this.stopClock();
-  },
-  methods: {
-    // 启动时钟
-    startClock() {
-      this.updateTime();
-      this.timeInterval = setInterval(() => {
-        this.updateTime();
-      }, 1000);
-    },
-    // 停止时钟
-    stopClock() {
-      if (this.timeInterval) {
-        clearInterval(this.timeInterval);
-        this.timeInterval = null;
-      }
-    },
-    // 更新时间
-    updateTime() {
-      const now = new Date();
-      // 当前时间 HH:MM
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      this.currentTime = `${hours}:${minutes}`;
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
+import { useBettingStore } from '@/stores/bettingStore'
 
-      // 游戏时间（从游戏开始计算的真实时间）
-      if (this.gameStartTime) {
-        const elapsed = Math.floor((Date.now() - this.gameStartTime) / 1000);
-        const gameHours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-        const gameMinutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-        const gameSeconds = String(elapsed % 60).padStart(2, '0');
-        this.gameTime = `${gameHours}:${gameMinutes}:${gameSeconds}`;
-      }
-    }
+// ========================= Stores =========================
+const gameStore = useGameStore()
+const bettingStore = useBettingStore()
+
+// ========================= 时间相关 =========================
+const currentTime = ref('00:00')
+const gameTime = ref('00:00:00')
+const timeInterval = ref<number | null>(null)
+const gameStartTime = ref<number | null>(null)
+
+// ========================= 计算属性 =========================
+
+/**
+ * 总投注金额 - 从 bettingStore 获取
+ */
+const totalBet = computed(() => {
+  return bettingStore.totalConfirmedAmount || 0
+})
+
+/**
+ * 用户余额 - 从 gameStore 获取
+ */
+const balance = computed(() => {
+  return gameStore.balance || 0
+})
+
+/**
+ * 台桌名称 - 从 gameStore 获取
+ */
+const tableName = computed(() => {
+  return gameStore.tableName || 'Baccarat'
+})
+
+/**
+ * 最小投注额 - 从 tableInfo 获取（取庄闲最小值）
+ */
+const minBet = computed(() => {
+  const tableInfo = gameStore.tableInfo
+  if (!tableInfo) return 1
+
+  // 取庄闲最小限红中的较小值
+  const zhuangMin = tableInfo.bjl_xian_hong_zhuang_min || 1
+  const xianMin = tableInfo.bjl_xian_hong_xian_min || 1
+  return Math.min(zhuangMin, xianMin)
+})
+
+/**
+ * 最大投注额 - 从 tableInfo 获取（取庄闲最大值）
+ */
+const maxBet = computed(() => {
+  const tableInfo = gameStore.tableInfo
+  if (!tableInfo) return 25000
+
+  // 取庄闲最大限红中的较大值
+  const zhuangMax = tableInfo.bjl_xian_hong_zhuang_max || 25000
+  const xianMax = tableInfo.bjl_xian_hong_xian_max || 25000
+  return Math.max(zhuangMax, xianMax)
+})
+
+/**
+ * 格式化余额显示
+ */
+const formattedBalance = computed(() => {
+  return balance.value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+})
+
+/**
+ * 格式化最大投注额
+ */
+const formattedMaxBet = computed(() => {
+  return maxBet.value.toLocaleString('en-US')
+})
+
+// ========================= 生命周期 =========================
+
+onMounted(() => {
+  startClock()
+  gameStartTime.value = Date.now()
+})
+
+onBeforeUnmount(() => {
+  stopClock()
+})
+
+// ========================= 方法 =========================
+
+/**
+ * 启动时钟
+ */
+function startClock() {
+  updateTime()
+  timeInterval.value = window.setInterval(() => {
+    updateTime()
+  }, 1000)
+}
+
+/**
+ * 停止时钟
+ */
+function stopClock() {
+  if (timeInterval.value) {
+    clearInterval(timeInterval.value)
+    timeInterval.value = null
+  }
+}
+
+/**
+ * 更新时间
+ */
+function updateTime() {
+  const now = new Date()
+  // 当前时间 HH:MM
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  currentTime.value = `${hours}:${minutes}`
+
+  // 游戏时间（从游戏开始计算的真实时间）
+  if (gameStartTime.value) {
+    const elapsed = Math.floor((Date.now() - gameStartTime.value) / 1000)
+    const gameHours = String(Math.floor(elapsed / 3600)).padStart(2, '0')
+    const gameMinutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')
+    const gameSeconds = String(elapsed % 60).padStart(2, '0')
+    gameTime.value = `${gameHours}:${gameMinutes}:${gameSeconds}`
   }
 }
 </script>
