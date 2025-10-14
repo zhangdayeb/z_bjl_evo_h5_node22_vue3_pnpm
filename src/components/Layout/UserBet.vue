@@ -83,8 +83,8 @@ const gameStatus = computed(() => gameStore.gameStatus)
 .betting-area-section {
   position: absolute;
   bottom: 114px;
-  left: 0;
-  right: 0;
+  left: 4px;
+  right: 4px;
   height: 230px;
   z-index: 98;
   justify-content: center;

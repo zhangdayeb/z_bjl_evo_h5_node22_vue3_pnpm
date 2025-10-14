@@ -130,7 +130,7 @@ const luzhuStyles = computed(() => {
     }
     }else {
       return {
-        bottom: '267px',  // 固定距离底部247px
+        bottom: '270px',  // 固定距离底部
         height: '233px', // 固定高度233px
         zIndex: 1
       }
@@ -205,7 +205,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   z-index: 1;
-  background: #c8102e;
+  background: linear-gradient(to bottom, #c8102e 71%, #2e1401 29%);
   overflow: hidden;
 }
 
