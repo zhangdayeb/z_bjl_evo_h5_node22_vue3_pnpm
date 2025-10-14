@@ -18,9 +18,9 @@
               <stop offset="100%" style="stop-color: rgb(0, 68, 221);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 35,100
-                   C34,100 33,99 33,98 L 33,45
-                   C33,27 18,14 0,14 Z"
+          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
+                   C30,100 29,99 29,98 L 29,45
+                   C29,32 20,22 0,22 Z"
                 :fill="isWinner('player') ? 'url(#playerWinGradient)' : 'url(#playerGradient)'"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="1"
@@ -57,9 +57,9 @@
               <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 35,100
-                   C34,100 33,99 33,98 L 33,45
-                   C33,27 18,14 0,14 Z"
+          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
+                   C30,100 29,99 29,98 L 29,45
+                   C29,32 20,22 0,22 Z"
                 :fill="isWinner('banker') ? 'url(#bankerWinGradient)' : 'url(#bankerGradient)'"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="1"
@@ -96,7 +96,7 @@
               <stop offset="100%" style="stop-color: rgb(3, 165, 1);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 70,0 C108.66,0 140,31.34 140,70 L 140,184 C140,188 138,190 134,190 L 6,190 C2,190 0,188 0,184 L 0,70 C0,31.34 31.34,0 70,0 Z"
+          <path d="M 70,0 C114.85,0 140,45 140,70 L 140,184 C140,188 138,190 134,190 L 6,190 C2,190 0,188 0,184 L 0,70 C0,45 25.15,0 70,0 Z"
                 :fill="isWinner('tie') ? 'url(#tieWinGradient)' : 'url(#tieGradient)'"
                 stroke="rgba(3, 165, 1, 0.8)"
                 stroke-width="2"
@@ -480,7 +480,7 @@ const isWinner = (zone: string): boolean => {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 31%;
+  width: 28%;
   top:17%;
   height: calc(100% - 17%);
   z-index: 10;
