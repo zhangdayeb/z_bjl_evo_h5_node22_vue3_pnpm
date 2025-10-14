@@ -63,10 +63,10 @@ export const useResultFlyStore = defineStore('resultFly', () => {
       onComplete
     } = params
 
-    console.log('[ResultFly] Start flying animation')
+    console.log('[ResultFly Store] Start flying animation')
 
     if (isFlying.value) {
-      console.log('[ResultFly] Already flying, ignore')
+      console.log('[ResultFly Store] Already flying, ignore')
       return
     }
 
@@ -79,7 +79,7 @@ export const useResultFlyStore = defineStore('resultFly', () => {
       duration: ANIMATION_DURATION
     }
 
-    console.log('[ResultFly] Flying params:', result)
+    console.log('[ResultFly Store] Flying params:', result)
 
     isFlying.value = true
     currentResult.value = result
@@ -88,7 +88,7 @@ export const useResultFlyStore = defineStore('resultFly', () => {
   const onFlyComplete = () => {
     if (!currentResult.value) return
 
-    console.log('[ResultFly] Flight complete')
+    console.log('[ResultFly Store] Flight complete')
 
     if (onCompleteCallback.value) {
       onCompleteCallback.value()

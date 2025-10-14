@@ -12,16 +12,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import { useResultFlyStore } from '@/stores/resultFlyStore'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
 import { useoverLayerStore } from '@/stores/overLayerStore'
+import { useVideoAndLuZhuTopConfigStore } from '@/stores/VideoAndLuZhuTopConfigStore'
 
-const resultFlyStore = useResultFlyStore()
+const gameStore = useGameStore()
 const overLayerStore = useoverLayerStore()
+const videoAndLuZhuTopConfigStore = useVideoAndLuZhuTopConfigStore()
 
 const isVisible = ref(false)
 const flyingDot = ref<any>(null)
 const isAnimating = ref(false)
+const lastProcessedPaiInfo = ref<string>('')
 
 const flyingDotStyle = computed(() => {
   if (!flyingDot.value) return {}
@@ -47,13 +50,45 @@ const flyingDotStyle = computed(() => {
   }
 })
 
-watch(() => resultFlyStore.currentResult, (newResult) => {
-  if (newResult) {
-    startAnimation(newResult)
+const getStartPoint = (videoHeight: number, isVideoOnTop: boolean) => {
+  const screenWidth = window.innerWidth
+  const x = screenWidth / 2
+
+  if (isVideoOnTop) {
+    const y = videoHeight - 20
+    return { x, y }
   } else {
-    cancelAnimation()
+    const y = 233 + videoHeight / 2
+    return { x, y }
   }
-})
+}
+
+const getEndPoint = (luzhuHeight: number, isVideoOnTop: boolean, gameStatus: string = 'betting') => {
+  const x = 40
+
+  if (isVideoOnTop) {
+    const bottomOffset = gameStatus === 'betting' ? 346 : 270
+    const y = window.innerHeight - bottomOffset + luzhuHeight / 2
+    return { x, y }
+  } else {
+    const y = luzhuHeight / 2
+    return { x, y }
+  }
+}
+
+const createFlyingDot = () => {
+  const videoHeight = 300
+  const luzhuHeight = 233
+  const isVideoOnTop = videoAndLuZhuTopConfigStore.isVideoOnTop
+  const gameStatus = gameStore.gameStatus
+
+  return {
+    id: Date.now(),
+    from: getStartPoint(videoHeight, isVideoOnTop),
+    to: getEndPoint(luzhuHeight, isVideoOnTop, gameStatus),
+    duration: 1000
+  }
+}
 
 const startAnimation = async (result: any) => {
   console.log('[ResultFly] Start animation:', result)
@@ -74,13 +109,6 @@ const startAnimation = async (result: any) => {
   })
 }
 
-const cancelAnimation = () => {
-  if (flyingDot.value) {
-    flyingDot.value = null
-    isAnimating.value = false
-  }
-}
-
 const onTransitionEnd = (event: TransitionEvent) => {
   console.log('[ResultFly] transitionend event:', event.propertyName)
 
@@ -94,9 +122,7 @@ const onTransitionEnd = (event: TransitionEvent) => {
     return
   }
 
-  console.log('[ResultFly] Animation complete, call onFlyComplete')
-
-  resultFlyStore.onFlyComplete()
+  console.log('[ResultFly] Animation complete')
 
   flyingDot.value = null
   isAnimating.value = false
@@ -104,6 +130,36 @@ const onTransitionEnd = (event: TransitionEvent) => {
 
   overLayerStore.close()
 }
+
+watch(
+  () => gameStore.gameResult,
+  (newResult) => {
+    if (!newResult || !newResult.pai_info) {
+      return
+    }
+
+    if (gameStore.gameStatus !== 'dealing') {
+      console.log('[ResultFly] Not in dealing phase, skip')
+      return
+    }
+
+    if (newResult.pai_info === lastProcessedPaiInfo.value) {
+      console.log('[ResultFly] Already processed this pai_info, skip')
+      return
+    }
+
+    console.log('[ResultFly] Auto trigger - detected new pai_info result')
+    lastProcessedPaiInfo.value = newResult.pai_info
+
+    const dot = createFlyingDot()
+    startAnimation(dot)
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  console.log('[ResultFly] Component mounted, auto watch enabled')
+})
 </script>
 
 <style scoped>

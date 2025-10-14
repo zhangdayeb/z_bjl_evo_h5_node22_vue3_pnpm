@@ -31,10 +31,8 @@
       <ChipFly v-if="overLayerStore.chipFly" />
     </transition>
 
-    <!-- 结果飞行动画 -->
-    <transition name="effect-fade">
-      <ResultFly v-if="overLayerStore.resultFly" />
-    </transition>
+    <!-- 结果飞行动画 - 始终挂载以监听游戏结果 -->
+    <ResultFly />
   </div>
 </template>
 
