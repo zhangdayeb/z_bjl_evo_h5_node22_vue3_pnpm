@@ -13,7 +13,7 @@
           </div>
           <div class="icons">
             <!-- 大眼路 -->
-            <div class="icon-item">
+            <div class="icon-item" v-if="predictions.player.bigEye !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
@@ -35,7 +35,7 @@
               </svg>
             </div>
             <!-- 小路 -->
-            <div class="icon-item">
+            <div class="icon-item" v-if="predictions.player.small !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
@@ -51,7 +51,7 @@
               </svg>
             </div>
             <!-- 蟑螂路 -->
-            <div class="icon-item last-item">
+            <div class="icon-item last-item" v-if="predictions.player.cockroach !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
@@ -79,7 +79,7 @@
           </div>
           <div class="icons">
             <!-- 大眼路 -->
-            <div class="icon-item">
+            <div class="icon-item" v-if="predictions.banker.bigEye !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
@@ -101,7 +101,7 @@
               </svg>
             </div>
             <!-- 小路 -->
-            <div class="icon-item">
+            <div class="icon-item" v-if="predictions.banker.small !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">
@@ -117,7 +117,7 @@
               </svg>
             </div>
             <!-- 蟑螂路 -->
-            <div class="icon-item last-item">
+            <div class="icon-item last-item" v-if="predictions.banker.cockroach !== 'empty'">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" viewBox="0 0 80 80">
                 <g>
                   <svg width="68px" height="68px" x="6" y="6" viewBox="0 0 80 80">

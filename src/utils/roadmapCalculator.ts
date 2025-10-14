@@ -58,14 +58,14 @@ export interface Statistics {
 /** 问路预测结果 */
 export interface Prediction {
   banker: {
-    bigEye: 'red' | 'blue';
-    small: 'red' | 'blue';
-    cockroach: 'red' | 'blue';
+    bigEye: 'red' | 'blue' | 'empty';
+    small: 'red' | 'blue' | 'empty';
+    cockroach: 'red' | 'blue' | 'empty';
   };
   player: {
-    bigEye: 'red' | 'blue';
-    small: 'red' | 'blue';
-    cockroach: 'red' | 'blue';
+    bigEye: 'red' | 'blue' | 'empty';
+    small: 'red' | 'blue' | 'empty';
+    cockroach: 'red' | 'blue' | 'empty';
   };
 }
 
@@ -122,17 +122,17 @@ const EMPTY_STATISTICS: Statistics = {
   playerPair: 0
 };
 
-/** 默认预测数据 */
-const DEFAULT_PREDICTION: Prediction = {
+/** 空预测数据 - 当没有数据或数据不足时使用 */
+const EMPTY_PREDICTION: Prediction = {
   banker: {
-    bigEye: 'red',
-    small: 'red',
-    cockroach: 'red'
+    bigEye: 'empty',
+    small: 'empty',
+    cockroach: 'empty'
   },
   player: {
-    bigEye: 'red',
-    small: 'red',
-    cockroach: 'red'
+    bigEye: 'empty',
+    small: 'empty',
+    cockroach: 'empty'
   }
 };
 
@@ -335,7 +335,7 @@ export class RoadmapCalculator {
   calculatePredictions(data: Record<string, GameResult> | null | undefined): Prediction {
     // 统一的空数据处理
     if (!this.isValidData(data)) {
-      return { ...DEFAULT_PREDICTION };
+      return { ...EMPTY_PREDICTION };
     }
 
     try {
@@ -353,7 +353,7 @@ export class RoadmapCalculator {
 
     } catch (error) {
       console.error("❌ 问路预测计算出错:", error);
-      return { ...DEFAULT_PREDICTION };
+      return { ...EMPTY_PREDICTION };
     }
   }
 
@@ -1019,9 +1019,9 @@ export class RoadmapCalculator {
    * 获取下一步预测
    */
   private getPredictionForNext(nextResult: 1 | 2): {
-    bigEye: 'red' | 'blue';
-    small: 'red' | 'blue';
-    cockroach: 'red' | 'blue';
+    bigEye: 'red' | 'blue' | 'empty';
+    small: 'red' | 'blue' | 'empty';
+    cockroach: 'red' | 'blue' | 'empty';
   } {
     // 模拟添加下一个结果
     const simulatedData = { ...this.res_org_obj };
@@ -1039,9 +1039,9 @@ export class RoadmapCalculator {
     const lastXiaoqiang = this.getLastColorFromObj(tempCalc.res_xiaoqiang_obj);
 
     return {
-      bigEye: lastDayan || 'red',
-      small: lastXiaolu || 'red',
-      cockroach: lastXiaoqiang || 'red'
+      bigEye: lastDayan || 'empty',
+      small: lastXiaolu || 'empty',
+      cockroach: lastXiaoqiang || 'empty'
     };
   }
 
