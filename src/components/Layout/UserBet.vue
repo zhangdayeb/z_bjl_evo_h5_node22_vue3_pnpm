@@ -76,13 +76,13 @@ const gameStatus = computed(() => gameStore.gameStatus)
   z-index: 99;
 }
 .chip-action-section.dealing-mode {
-  height: 22px;
+  height: 42px;
 }
 
 /* 投注区域 - 固定在筹码操作栏上方 */
 .betting-area-section {
   position: absolute;
-  bottom: 94px;
+  bottom: 114px;
   left: 0;
   right: 0;
   height: 230px;
@@ -92,21 +92,21 @@ const gameStatus = computed(() => gameStore.gameStatus)
 }
 .betting-area-section.dealing-mode {
   height: 180px;
-  bottom: 67px;
+  bottom: 107px;
 }
 
 /* 悬浮按钮位置 */
 .floating-button-left {
   position: absolute;
   bottom: 49px; /* 在统计栏上方 */
-  left: 20px;
+  left: 0px;
   z-index: 500;
 }
 
 .floating-button-right {
   position: absolute;
   bottom: 49px; /* 在统计栏上方 */
-  right: 20px;
+  right: 0px;
   z-index: 500;
 }
 
@@ -123,15 +123,15 @@ const gameStatus = computed(() => gameStore.gameStatus)
   }
 
   .betting-area-section {
-    bottom: calc(94px + env(safe-area-inset-bottom));
+    bottom: calc(114px + env(safe-area-inset-bottom));
   }
   .betting-area-section.dealing-mode {
-    bottom: calc(67px + env(safe-area-inset-bottom));
+    bottom: calc(87px + env(safe-area-inset-bottom));
   }
 
   .floating-button-left,
   .floating-button-right {
-    bottom: calc(49px + env(safe-area-inset-bottom));
+    bottom: calc(69px + env(safe-area-inset-bottom));
   }
 }
 </style>

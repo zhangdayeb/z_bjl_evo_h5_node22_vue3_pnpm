@@ -129,7 +129,7 @@ const handleChipClick = () => {
 /* 主容器 - 深棕色背景条 */
 .chip-action-container {
   width: 100%;
-  height: 45px;
+  height: 65px;
   background: linear-gradient(135deg,
     rgba(45, 25, 15, 0.98) 0%,
     rgba(61, 37, 20, 0.98) 100%
@@ -143,7 +143,7 @@ const handleChipClick = () => {
 
 /* 开牌状态：高度减少到22px */
 .chip-action-container.dealing-mode {
-  height: 22px;
+  height: 42px;
 }
 
 /* 内容包装器 - 三个元素整体居中 */

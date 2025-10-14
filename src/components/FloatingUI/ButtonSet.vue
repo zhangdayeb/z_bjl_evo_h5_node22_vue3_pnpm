@@ -41,11 +41,11 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   padding: 0;
-  background: rgba(26, 26, 26, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(26, 26, 26, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 44px;
   cursor: pointer;
   backdrop-filter: blur(10px);
@@ -76,9 +76,9 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  color: rgba(255, 255, 255, 0.8);
+  width: 28px;
+  height: 28px;
+  color: rgba(255, 255, 255, 1);
 }
 
 .icon {

@@ -130,7 +130,7 @@ const luzhuStyles = computed(() => {
     }
     }else {
       return {
-        bottom: '247px',  // 固定距离底部247px
+        bottom: '267px',  // 固定距离底部247px
         height: '233px', // 固定高度233px
         zIndex: 1
       }
