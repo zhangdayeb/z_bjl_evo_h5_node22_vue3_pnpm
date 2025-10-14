@@ -124,7 +124,7 @@ const luzhuStyles = computed(() => {
     // 视频在上，露珠在下
     if (gameStatus.value === 'betting') {
     return {
-      bottom: '324px', // 固定距离底部320px
+      bottom: '346px', // 固定距离底部
       height: '233px', // 固定高度233px
       zIndex: 1
     }

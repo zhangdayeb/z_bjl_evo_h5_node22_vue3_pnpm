@@ -27,7 +27,7 @@
  * @description 负责展示筹码从起点飞到终点的动画效果
  */
 
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useChipFlyStore } from '@/stores/chipFlyStore'
 import { useoverLayerStore } from '@/stores/overLayerStore'
 
@@ -50,18 +50,19 @@ const flyingChipStyle = computed(() => {
   if (!isAnimating.value) {
     return {
       left: `${chip.from.x}px`,
-      top: `${chip.from.y}px`,
-      transform: 'translate(-50%, -50%) scale(1)',
+      bottom: `${chip.from.bottom}px`,
+      transform: 'translate(-50%, 50%) scale(1)',
       transition: 'none'
     }
   }
 
   // 飞行到目标位置
+  // 使用 bottom 定位,更加兼容
   return {
-    left: `${chip.from.x}px`,
-    top: `${chip.from.y}px`,
-    transform: `translate(calc(-50% + ${chip.to.x - chip.from.x}px), calc(-50% + ${chip.to.y - chip.from.y}px)) scale(0.8)`,
-    transition: `transform ${chip.duration || 400}ms cubic-bezier(0.4, 0, 0.2, 1)`
+    left: `${chip.to.x}px`,
+    bottom: `${chip.to.bottom}px`,
+    transform: 'translate(-50%, 50%) scale(0.8)',
+    transition: `all ${chip.duration || 400}ms cubic-bezier(0.4, 0, 0.2, 1)`
   }
 })
 
@@ -79,7 +80,7 @@ watch(() => chipFlyStore.currentChip, (newChip) => {
 /**
  * 开始飞行动画
  */
-const startAnimation = (chip: any) => {
+const startAnimation = async (chip: any) => {
   console.log('[ChipFly] 开始动画:', chip)
 
   // 显示图层
@@ -89,6 +90,9 @@ const startAnimation = (chip: any) => {
   // 设置飞行筹码
   flyingChip.value = { ...chip }
   isAnimating.value = false
+
+  // 等待 DOM 更新完成
+  await nextTick()
 
   // 强制重排，确保初始位置生效
   void document.body.offsetHeight

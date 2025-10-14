@@ -157,31 +157,9 @@ const betAmounts = reactive<Record<BetZone, number>>({
 // ========================= 方法 =========================
 
 /**
- * 获取点击区域的中心坐标
- */
-const getZoneCenterPosition = (zone: BetZone): { x: number, y: number } => {
-  const selector = `.${zone.replace('-', '-')}-chip-area`
-  const chipArea = document.querySelector(selector) as HTMLElement
-
-  if (chipArea) {
-    const rect = chipArea.getBoundingClientRect()
-    return {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
-    }
-  }
-
-  // 默认位置
-  return {
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2
-  }
-}
-
-/**
- * 处理投注（三步骤架构）
+ * 处理投注（简化版 - 三步骤架构）
  * 1. 更新投注信息统计
- * 2. 飞行动画 300ms
+ * 2. 飞行动画 300ms (chipFlyStore 自动计算起点和终点)
  * 3. 延迟 300ms 更新筹码显示
  */
 const handleBet = (zone: BetZone): void => {
@@ -207,12 +185,11 @@ const handleBet = (zone: BetZone): void => {
 
   // =================== 步骤2: 飞行动画 300ms ===================
   console.log(`[BettingArea] 步骤2: 开始飞行动画 (300ms)`)
-  const targetPosition = getZoneCenterPosition(zone)
   overLayerStore.open('chipFly')
 
+  // 简化调用 - 只需传入区域和金额,起点和终点由 chipFlyStore 自动计算
   chipFlyStore.startFly({
     value: amount,
-    to: targetPosition,
     zone
   })
 

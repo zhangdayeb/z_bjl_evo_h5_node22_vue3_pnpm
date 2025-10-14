@@ -9,15 +9,15 @@ import { ref } from 'vue'
 // ========================= 类型定义 =========================
 export type BetZone = 'player' | 'banker' | 'tie' | 'player-pair' | 'banker-pair'
 
-interface Point {
+interface BottomPoint {
   x: number
-  y: number
+  bottom: number // 距离屏幕底部的距离
 }
 
 interface FlyingChip {
   value: number
-  from: Point
-  to: Point
+  from: BottomPoint
+  to: BottomPoint
   zone: BetZone
   duration?: number
 }
@@ -41,26 +41,79 @@ export const useChipFlyStore = defineStore('chipFly', () => {
   // ========================= 方法 =========================
 
   /**
-   * 获取筹码起点位置
-   * @returns 起点坐标
+   * 获取筹码起点位置(固定在底部筹码选择器中心)
+   * @returns 起点坐标 (使用 bottom 定位,兼容性更好)
    */
-  const getStartPoint = (): Point => {
+  const getStartPoint = (): BottomPoint => {
     const CHIP_SIZE = 40
     const BOTTOM_MARGIN = 49
 
     return {
-      x: window.innerWidth / 2,  // 直接居中，不需要调整
-      y: window.innerHeight - BOTTOM_MARGIN - (CHIP_SIZE / 2)  // 需要考虑筹码半高
+      x: window.innerWidth / 2,  // 水平居中
+      bottom: BOTTOM_MARGIN + (CHIP_SIZE / 2)  // 距离屏幕底部的距离
     }
   }
 
   /**
-   * 开始飞行动画
+   * 获取筹码终点位置(根据投注区域返回固定的筹码显示位置)
+   * @param zone 投注区域
+   * @returns 终点坐标 (使用 bottom 定位,兼容性更好)
+   */
+  const getEndPoint = (zone: BetZone): BottomPoint => {
+    const CHIP_SIZE = 40
+    const SMALL_CHIP_SIZE = 32
+    const windowWidth = window.innerWidth
+
+    // 投注区域容器距离屏幕底部的距离
+    const BETTING_AREA_BOTTOM_OFFSET = 114
+
+    // 根据不同区域返回对应的筹码显示位置
+    // 计算方式: BETTING_AREA_BOTTOM_OFFSET + CSS_BOTTOM + CHIP_SIZE/2
+    switch (zone) {
+      case 'player':
+        // CSS: bottom: 60px, left: 20%
+        return {
+          x: windowWidth * 0.2,
+          bottom: BETTING_AREA_BOTTOM_OFFSET + 60 + CHIP_SIZE / 2
+        }
+      case 'banker':
+        // CSS: bottom: 60px, right: 20% (即 left: 80%)
+        return {
+          x: windowWidth * 0.8,
+          bottom: BETTING_AREA_BOTTOM_OFFSET + 60 + CHIP_SIZE / 2
+        }
+      case 'tie':
+        // CSS: bottom: 80px, left: 50%
+        return {
+          x: windowWidth * 0.5,
+          bottom: BETTING_AREA_BOTTOM_OFFSET + 80 + CHIP_SIZE / 2
+        }
+      case 'player-pair':
+        // CSS: bottom: 15px, left: 20%
+        return {
+          x: windowWidth * 0.2,
+          bottom: BETTING_AREA_BOTTOM_OFFSET + 15 + SMALL_CHIP_SIZE / 2
+        }
+      case 'banker-pair':
+        // CSS: bottom: 15px, right: 20% (即 left: 80%)
+        return {
+          x: windowWidth * 0.8,
+          bottom: BETTING_AREA_BOTTOM_OFFSET + 15 + SMALL_CHIP_SIZE / 2
+        }
+      default:
+        return {
+          x: windowWidth / 2,
+          bottom: 200  // 默认位置
+        }
+    }
+  }
+
+  /**
+   * 开始飞行动画(简化版 - 只需传入区域和金额)
    * @param params 飞行参数
    */
   const startFly = (params: {
     value: number
-    to: Point
     zone: BetZone
     onComplete?: (zone: BetZone, amount: number) => void
   }) => {
@@ -113,7 +166,7 @@ export const useChipFlyStore = defineStore('chipFly', () => {
     const chip: FlyingChip = {
       value: params.value + pendingAmount.value, // 包含待处理金额
       from: getStartPoint(),
-      to: params.to,
+      to: getEndPoint(params.zone), // 根据区域自动计算终点
       zone: params.zone,
       duration
     }
