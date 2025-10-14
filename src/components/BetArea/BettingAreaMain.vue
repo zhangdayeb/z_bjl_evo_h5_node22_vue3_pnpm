@@ -110,7 +110,7 @@
         <div v-if="isWinner('tie')" class="winner-glow"></div>
 
         <div class="spot-content">
-          <div class="title-section">
+          <div class="title-section" style="flex-direction: row;">
             <div class="zone-title">TIE</div>
             <div class="zone-odds">9:1</div>
           </div>
@@ -453,16 +453,15 @@ const isWinner = (zone: string): boolean => {
   letter-spacing: 0;
   line-height: 22px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-  color: #ffffff;
+  color: #ddd;
   font-family: 'Palatino', 'Georgia', serif;
   white-space: pre;
 }
 
 .zone-odds {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1;
-  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-left: 4px;
 }
 
 /* Player 赔率颜色 */
@@ -505,12 +504,11 @@ const isWinner = (zone: string): boolean => {
 
 .tie-spot .zone-title {
   font-size: 18px;
-  color: white;
+  color: #ddd;
 }
 
 .tie-spot .zone-odds {
   color: #0DD80C;
-  font-size: 13px;
 }
 
 /* ========================= 对子区域 ========================= */
@@ -557,7 +555,7 @@ const isWinner = (zone: string): boolean => {
 .pair-zone-title {
   font-size: 13px;
   font-weight: 700;
-  color: white;
+  color: #ddd;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
