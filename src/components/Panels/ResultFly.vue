@@ -1,13 +1,68 @@
 <template>
-  <div v-if="isVisible" class="result-fly-layer">
+  <div v-if="isActive" class="result-fly-layer">
+    <!-- 步骤1&2: 横条显示和缩短 -->
     <div
-      v-if="flyingDot"
-      class="flying-dot-wrapper"
-      :style="flyingDotStyle"
-      @transitionend="onTransitionEnd"
+      v-if="currentStep === 'bar'"
+      class="result-bar"
+      :class="[animConfig.result, { shrinking: isShrinking }]"
+      :style="barStyle"
     >
-      <div class="flying-dot"></div>
+      {{ animConfig.bar.text }}
     </div>
+
+    <!-- 步骤3&4: 圆球显示和飞行 -->
+    <div
+      v-if="currentStep === 'ball'"
+      class="result-ball"
+      :class="[animConfig.result, { flying: isFlying, shrinking: isBallShrinking }]"
+      :style="ballStyle"
+    >
+      <div class="ball-highlight"></div>
+      {{ animConfig.ball.letter }}
+    </div>
+
+    <!-- 步骤5: 路单图标飞散 -->
+    <template v-if="currentStep === 'roads'">
+      <!-- 大路图标 -->
+      <div
+        v-if="showRoadIcon.bigRoad"
+        class="road-icon big-road"
+        :class="{ flying: roadIconFlying.bigRoad }"
+        :style="getRoadIconStyle('bigRoad')"
+      >
+        <div class="big-road-ring" :class="animConfig.result"></div>
+      </div>
+
+      <!-- 大眼路图标 -->
+      <div
+        v-if="showRoadIcon.bigEye"
+        class="road-icon big-eye"
+        :class="{ flying: roadIconFlying.bigEye }"
+        :style="getRoadIconStyle('bigEye')"
+      >
+        <div class="big-eye-circle" :class="animConfig.result"></div>
+      </div>
+
+      <!-- 小路图标 -->
+      <div
+        v-if="showRoadIcon.smallRoad"
+        class="road-icon small-road"
+        :class="{ flying: roadIconFlying.smallRoad }"
+        :style="getRoadIconStyle('smallRoad')"
+      >
+        <div class="small-road-dot" :class="animConfig.result"></div>
+      </div>
+
+      <!-- 曱甴路图标 -->
+      <div
+        v-if="showRoadIcon.cockroach"
+        class="road-icon cockroach"
+        :class="{ flying: roadIconFlying.cockroach }"
+        :style="getRoadIconStyle('cockroach')"
+      >
+        <div class="cockroach-slash" :class="animConfig.result"></div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -16,121 +71,197 @@ import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useoverLayerStore } from '@/stores/overLayerStore'
 import { useVideoAndLuZhuTopConfigStore } from '@/stores/VideoAndLuZhuTopConfigStore'
+import {
+  type ResultType,
+  type ResultFlyConfig,
+  type PositionConfig,
+  defaultAnimationConfig,
+  getPositionConfig
+} from '@/config/resultFlyConfig'
 
 const gameStore = useGameStore()
 const overLayerStore = useoverLayerStore()
 const videoAndLuZhuTopConfigStore = useVideoAndLuZhuTopConfigStore()
 
-const isVisible = ref(false)
-const flyingDot = ref<any>(null)
-const isAnimating = ref(false)
+// 动画状态
+type AnimationStep = 'bar' | 'ball' | 'roads' | 'complete'
+
+const isActive = ref(false)
+const currentStep = ref<AnimationStep>('bar')
+const isShrinking = ref(false)
+const isFlying = ref(false)
+const isBallShrinking = ref(false)
+
+// 当前动画配置
+const animConfig = ref<ResultFlyConfig>(defaultAnimationConfig.banker)
+const posConfig = ref<PositionConfig>(getPositionConfig(false))
+
+// 路单图标状态
+const showRoadIcon = ref({
+  bigRoad: false,
+  bigEye: false,
+  smallRoad: false,
+  cockroach: false
+})
+
+const roadIconFlying = ref({
+  bigRoad: false,
+  bigEye: false,
+  smallRoad: false,
+  cockroach: false
+})
+
 const lastProcessedPaiInfo = ref<string>('')
 
-const flyingDotStyle = computed(() => {
-  if (!flyingDot.value) return {}
+// 横条样式
+const barStyle = computed(() => {
+  const pos = posConfig.value.barStart
+  return {
+    left: `${pos.x}px`,
+    top: `${pos.y}px`,
+    width: isShrinking.value ? animConfig.value.bar.endWidth : animConfig.value.bar.startWidth
+  }
+})
 
-  const dot = flyingDot.value
+// 圆球样式
+const ballStyle = computed(() => {
+  const startPos = posConfig.value.barStart
+  const endPos = posConfig.value.ballTarget
 
-  if (!isAnimating.value) {
+  if (!isFlying.value) {
+    // 初始位置（横条位置）
     return {
-      left: `${dot.from.x}px`,
-      top: `${dot.from.y}px`,
-      transform: 'translate(-50%, -50%) scale(0.5)',
-      opacity: '0',
-      transition: 'none'
+      left: `${startPos.x}px`,
+      top: `${startPos.y}px`,
+      width: `${animConfig.value.ball.size}px`,
+      height: `${animConfig.value.ball.size}px`,
+      opacity: 1
+    }
+  }
+
+  // 飞行中/到达目标位置
+  return {
+    left: `${endPos.x}px`,
+    top: `${endPos.y}px`,
+    width: isBallShrinking.value ? '14px' : `${animConfig.value.ball.size}px`,
+    height: isBallShrinking.value ? '14px' : `${animConfig.value.ball.size}px`,
+    opacity: isBallShrinking.value ? 0 : 1
+  }
+})
+
+// 路单图标样式
+const getRoadIconStyle = (roadType: 'bigRoad' | 'bigEye' | 'smallRoad' | 'cockroach') => {
+  const startPos = posConfig.value.ballTarget
+  const endPos = posConfig.value.roadTargets[roadType]
+  const flying = roadIconFlying.value[roadType]
+
+  if (!flying) {
+    return {
+      left: `${startPos.x}px`,
+      top: `${startPos.y}px`,
+      opacity: 1
     }
   }
 
   return {
-    left: `${dot.to.x}px`,
-    top: `${dot.to.y}px`,
-    transform: 'translate(-50%, -50%) scale(0.8)',
-    opacity: '0',
-    transition: `all ${dot.duration || 1000}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`
-  }
-})
-
-const getStartPoint = (videoHeight: number, isVideoOnTop: boolean) => {
-  const screenWidth = window.innerWidth
-  const x = screenWidth / 2
-
-  if (isVideoOnTop) {
-    const y = videoHeight - 20
-    return { x, y }
-  } else {
-    const y = 233 + videoHeight / 2
-    return { x, y }
+    left: `${endPos.x}px`,
+    top: `${endPos.y}px`,
+    opacity: 0
   }
 }
 
-const getEndPoint = (luzhuHeight: number, isVideoOnTop: boolean, gameStatus: string = 'betting') => {
-  const x = 40
+/**
+ * 启动完整动画序列
+ */
+const startAnimation = async (result: ResultType) => {
+  console.log('[ResultFly] Starting animation for:', result)
 
-  if (isVideoOnTop) {
-    const bottomOffset = gameStatus === 'betting' ? 346 : 270
-    const y = window.innerHeight - bottomOffset + luzhuHeight / 2
-    return { x, y }
-  } else {
-    const y = luzhuHeight / 2
-    return { x, y }
-  }
-}
+  // 重置状态
+  isActive.value = true
+  currentStep.value = 'bar'
+  isShrinking.value = false
+  isFlying.value = false
+  isBallShrinking.value = false
+  showRoadIcon.value = { bigRoad: false, bigEye: false, smallRoad: false, cockroach: false }
+  roadIconFlying.value = { bigRoad: false, bigEye: false, smallRoad: false, cockroach: false }
 
-const createFlyingDot = () => {
-  const videoHeight = 300
-  const luzhuHeight = 233
-  const isVideoOnTop = videoAndLuZhuTopConfigStore.isVideoOnTop
-  const gameStatus = gameStore.gameStatus
+  // 加载配置
+  animConfig.value = defaultAnimationConfig[result]
+  posConfig.value = getPositionConfig(videoAndLuZhuTopConfigStore.isVideoOnTop)
 
-  return {
-    id: Date.now(),
-    from: getStartPoint(videoHeight, isVideoOnTop),
-    to: getEndPoint(luzhuHeight, isVideoOnTop, gameStatus),
-    duration: 1000
-  }
-}
-
-const startAnimation = async (result: any) => {
-  console.log('[ResultFly] Start animation:', result)
-
-  isVisible.value = true
   overLayerStore.open('resultFly')
-
-  flyingDot.value = { ...result }
-  isAnimating.value = false
 
   await nextTick()
 
-  void document.body.offsetHeight
+  // 步骤1: 显示横条
+  console.log('[ResultFly] Step 1: Show bar')
+  await sleep(animConfig.value.bar.showDuration)
 
-  requestAnimationFrame(() => {
-    console.log('[ResultFly] Start transform animation')
-    isAnimating.value = true
-  })
-}
+  // 步骤2: 横条缩短
+  console.log('[ResultFly] Step 2: Shrink bar')
+  isShrinking.value = true
+  await sleep(animConfig.value.bar.shrinkDuration)
 
-const onTransitionEnd = (event: TransitionEvent) => {
-  console.log('[ResultFly] transitionend event:', event.propertyName)
+  // 步骤3: 切换到圆球
+  console.log('[ResultFly] Step 3: Show ball')
+  currentStep.value = 'ball'
+  await nextTick()
 
-  if (!isAnimating.value) {
-    console.log('[ResultFly] isAnimating is false, ignore')
-    return
+  // 步骤4: 圆球飞行
+  console.log('[ResultFly] Step 4: Ball flying')
+  await sleep(50) // 等待DOM更新
+  isFlying.value = true
+  await sleep(animConfig.value.ball.flyDuration)
+
+  // 圆球到达后缩小消失
+  console.log('[ResultFly] Ball shrinking')
+  isBallShrinking.value = true
+  await sleep(animConfig.value.ball.shrinkDuration)
+
+  // 步骤5: 路单图标飞散
+  console.log('[ResultFly] Step 5: Road icons scatter')
+  currentStep.value = 'roads'
+  await nextTick()
+
+  // 依次显示并飞出路单图标
+  const roadTypes: Array<'bigRoad' | 'bigEye' | 'smallRoad' | 'cockroach'> = [
+    'bigRoad',
+    'bigEye',
+    'smallRoad',
+    'cockroach'
+  ]
+
+  for (const roadType of roadTypes) {
+    showRoadIcon.value[roadType] = true
+    await nextTick()
+    await sleep(50)
+    roadIconFlying.value[roadType] = true
+    await sleep(animConfig.value.roadIcons.delay)
   }
 
-  if (event.propertyName !== 'opacity') {
-    console.log('[ResultFly] Not opacity property, ignore')
-    return
-  }
+  // 等待最后一个图标飞行完成
+  await sleep(animConfig.value.roadIcons.flyDuration)
 
+  // 动画完成
   console.log('[ResultFly] Animation complete')
-
-  flyingDot.value = null
-  isAnimating.value = false
-  isVisible.value = false
-
+  currentStep.value = 'complete'
+  isActive.value = false
   overLayerStore.close()
 }
 
+/**
+ * 辅助函数：延迟
+ */
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+/**
+ * 测试用：手动触发动画
+ */
+const testAnimation = (result: ResultType = 'banker') => {
+  startAnimation(result)
+}
+
+// 监听游戏结果
 watch(
   () => gameStore.gameResult,
   (newResult) => {
@@ -151,14 +282,26 @@ watch(
     console.log('[ResultFly] Auto trigger - detected new pai_info result')
     lastProcessedPaiInfo.value = newResult.pai_info
 
-    const dot = createFlyingDot()
-    startAnimation(dot)
+    // 根据结果类型触发动画
+    const resultType: ResultType = newResult.result === 1 ? 'banker' : newResult.result === 2 ? 'player' : 'tie'
+    startAnimation(resultType)
   },
   { deep: true }
 )
 
 onMounted(() => {
-  console.log('[ResultFly] Component mounted, auto watch enabled')
+  console.log('[ResultFly] Component mounted')
+
+  // 开发测试：5秒后自动播放庄家动画
+  setTimeout(() => {
+    console.log('[ResultFly] Auto test animation')
+    testAnimation('banker')
+  }, 2000)
+})
+
+// 暴露测试方法
+defineExpose({
+  testAnimation
 })
 </script>
 
@@ -173,20 +316,283 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.flying-dot-wrapper {
+/* ========== 横条样式 ========== */
+.result-bar {
   position: fixed;
-  width: 14px;
-  height: 14px;
-  will-change: transform, opacity;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease-out;
 }
 
-.flying-dot {
+/* 横条渐变背景 - 庄 */
+.result-bar.banker {
+  background: linear-gradient(
+    90deg,
+    rgba(139, 0, 0, 0) 0%,
+    rgba(139, 0, 0, 1) 33.33%,
+    rgba(139, 0, 0, 1) 66.66%,
+    rgba(139, 0, 0, 0) 100%
+  );
+}
+
+.result-bar.banker::before,
+.result-bar.banker::after {
+  content: '';
+  position: absolute;
+  left: 0;
   width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, #ff4444 0%, #ff0000 50%, #cc0000 100%);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 1) 33.33%,
+    rgba(255, 215, 0, 1) 66.66%,
+    rgba(255, 215, 0, 0) 100%
+  );
+}
+
+.result-bar.banker::before {
+  top: 0;
+}
+
+.result-bar.banker::after {
+  bottom: 0;
+}
+
+/* 横条渐变背景 - 闲 */
+.result-bar.player {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 255, 0) 0%,
+    rgba(0, 0, 255, 1) 33.33%,
+    rgba(0, 0, 255, 1) 66.66%,
+    rgba(0, 0, 255, 0) 100%
+  );
+}
+
+.result-bar.player::before,
+.result-bar.player::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 1) 33.33%,
+    rgba(255, 215, 0, 1) 66.66%,
+    rgba(255, 215, 0, 0) 100%
+  );
+}
+
+.result-bar.player::before {
+  top: 0;
+}
+
+.result-bar.player::after {
+  bottom: 0;
+}
+
+/* 横条渐变背景 - 和 */
+.result-bar.tie {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 128, 0, 0) 0%,
+    rgba(0, 128, 0, 1) 33.33%,
+    rgba(0, 128, 0, 1) 66.66%,
+    rgba(0, 128, 0, 0) 100%
+  );
+}
+
+.result-bar.tie::before,
+.result-bar.tie::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 1) 33.33%,
+    rgba(255, 215, 0, 1) 66.66%,
+    rgba(255, 215, 0, 0) 100%
+  );
+}
+
+.result-bar.tie::before {
+  top: 0;
+}
+
+.result-bar.tie::after {
+  bottom: 0;
+}
+
+/* ========== 圆球样式 ========== */
+.result-ball {
+  position: fixed;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  border: 2px solid #ffd700;
   box-shadow:
-    0 0 8px rgba(255, 0, 0, 0.8),
-    0 0 16px rgba(255, 0, 0, 0.4);
+    0 0 8px rgba(255, 215, 0, 0.8),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.3),
+    inset 0 6px 12px rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.result-ball.flying {
+  transition: left 1s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              top 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.result-ball.shrinking {
+  transition: all 0.3s ease-out;
+}
+
+/* 圆球高光 */
+.ball-highlight {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.result-ball.banker {
+  background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000 50%, #8b0000);
+}
+
+.result-ball.player {
+  background: radial-gradient(circle at 30% 30%, #6666ff, #0000cc 50%, #000088);
+}
+
+.result-ball.tie {
+  background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00 50%, #008800);
+}
+
+/* ========== 路单图标样式 ========== */
+.road-icon {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 大路 - 空心圆环 */
+.big-road-ring {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.big-road-ring.banker {
+  border-color: #EC2024;
+}
+
+.big-road-ring.player {
+  border-color: #2E83FF;
+}
+
+.big-road-ring.tie {
+  border-color: #00CC00;
+}
+
+/* 大眼路 - 空心小圆 */
+.big-eye-circle {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.2px solid;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.big-eye-circle.banker {
+  border-color: #EC2024;
+}
+
+.big-eye-circle.player {
+  border-color: #2E83FF;
+}
+
+.big-eye-circle.tie {
+  border-color: #00CC00;
+}
+
+/* 小路 - 实心圆点 */
+.small-road-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.small-road-dot.banker {
+  background: #EC2024;
+}
+
+.small-road-dot.player {
+  background: #2E83FF;
+}
+
+.small-road-dot.tie {
+  background: #00CC00;
+}
+
+/* 曱甴路 - 斜线 */
+.cockroach-slash {
+  width: 9px;
+  height: 9px;
+  position: relative;
+}
+
+.cockroach-slash::before {
+  content: '';
+  position: absolute;
+  width: 120%;
+  height: 1.5px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  transform-origin: center;
+}
+
+.cockroach-slash.banker::before {
+  background: #EC2024;
+}
+
+.cockroach-slash.player::before {
+  background: #2E83FF;
+}
+
+.cockroach-slash.tie::before {
+  background: #00CC00;
 }
 </style>
