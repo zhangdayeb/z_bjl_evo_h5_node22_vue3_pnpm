@@ -99,14 +99,14 @@ const gameStatus = computed(() => gameStore.gameStatus)
 .floating-button-left {
   position: absolute;
   bottom: 49px; /* 在统计栏上方 */
-  left: 0px;
+  left: 4px;
   z-index: 500;
 }
 
 .floating-button-right {
   position: absolute;
   bottom: 49px; /* 在统计栏上方 */
-  right: 0px;
+  right: 4px;
   z-index: 500;
 }
 
