@@ -338,13 +338,6 @@ const startAnimation = async (result: ResultType) => {
  */
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-/**
- * 测试用：手动触发动画
- */
-const testAnimation = (result: ResultType = 'banker') => {
-  startAnimation(result)
-}
-
 // 监听游戏结果
 watch(
   () => gameStore.gameResult,
@@ -375,17 +368,6 @@ watch(
 
 onMounted(() => {
   console.log('[ResultFly] Component mounted')
-
-  // 开发测试：5秒后自动播放庄家动画
-  setTimeout(() => {
-    console.log('[ResultFly] Auto test animation')
-    testAnimation('banker')
-  }, 2000)
-})
-
-// 暴露测试方法
-defineExpose({
-  testAnimation
 })
 </script>
 
