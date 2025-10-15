@@ -74,10 +74,13 @@ import { useVideoAndLuZhuTopConfigStore } from '@/stores/VideoAndLuZhuTopConfigS
 import {
   type ResultType,
   type ResultFlyConfig,
-  type PositionConfig,
+  type Position,
   defaultAnimationConfig,
-  getPositionConfig
+  getBarStartPosition,
+  getBallTargetPosition,
+  convertToScreenPosition
 } from '@/config/resultFlyConfig'
+import roadmapCalculator, { type RoadmapData } from '@/utils/roadmapCalculator'
 
 const gameStore = useGameStore()
 const overLayerStore = useoverLayerStore()
@@ -94,7 +97,21 @@ const isBallShrinking = ref(false)
 
 // 当前动画配置
 const animConfig = ref<ResultFlyConfig>(defaultAnimationConfig.banker)
-const posConfig = ref<PositionConfig>(getPositionConfig(false))
+
+// 位置配置
+const barStartPos = ref<Position>({ x: 0, y: 0 })
+const ballTargetPos = ref<Position>({ x: 0, y: 0 })
+const roadTargetPositions = ref<{
+  bigRoad: Position
+  bigEye: Position
+  smallRoad: Position
+  cockroach: Position
+}>({
+  bigRoad: { x: 0, y: 0 },
+  bigEye: { x: 0, y: 0 },
+  smallRoad: { x: 0, y: 0 },
+  cockroach: { x: 0, y: 0 }
+})
 
 // 路单图标状态
 const showRoadIcon = ref({
@@ -115,24 +132,20 @@ const lastProcessedPaiInfo = ref<string>('')
 
 // 横条样式
 const barStyle = computed(() => {
-  const pos = posConfig.value.barStart
   return {
-    left: `${pos.x}px`,
-    top: `${pos.y}px`,
+    left: `${barStartPos.value.x}px`,
+    top: `${barStartPos.value.y}px`,
     width: isShrinking.value ? animConfig.value.bar.endWidth : animConfig.value.bar.startWidth
   }
 })
 
 // 圆球样式
 const ballStyle = computed(() => {
-  const startPos = posConfig.value.barStart
-  const endPos = posConfig.value.ballTarget
-
   if (!isFlying.value) {
     // 初始位置（横条位置）
     return {
-      left: `${startPos.x}px`,
-      top: `${startPos.y}px`,
+      left: `${barStartPos.value.x}px`,
+      top: `${barStartPos.value.y}px`,
       width: `${animConfig.value.ball.size}px`,
       height: `${animConfig.value.ball.size}px`,
       opacity: 1
@@ -141,8 +154,8 @@ const ballStyle = computed(() => {
 
   // 飞行中/到达目标位置
   return {
-    left: `${endPos.x}px`,
-    top: `${endPos.y}px`,
+    left: `${ballTargetPos.value.x}px`,
+    top: `${ballTargetPos.value.y}px`,
     width: isBallShrinking.value ? '14px' : `${animConfig.value.ball.size}px`,
     height: isBallShrinking.value ? '14px' : `${animConfig.value.ball.size}px`,
     opacity: isBallShrinking.value ? 0 : 1
@@ -151,18 +164,19 @@ const ballStyle = computed(() => {
 
 // 路单图标样式
 const getRoadIconStyle = (roadType: 'bigRoad' | 'bigEye' | 'smallRoad' | 'cockroach') => {
-  const startPos = posConfig.value.ballTarget
-  const endPos = posConfig.value.roadTargets[roadType]
   const flying = roadIconFlying.value[roadType]
 
   if (!flying) {
+    // 起始位置：圆球目标位置（露珠中心）
     return {
-      left: `${startPos.x}px`,
-      top: `${startPos.y}px`,
+      left: `${ballTargetPos.value.x}px`,
+      top: `${ballTargetPos.value.y}px`,
       opacity: 1
     }
   }
 
+  // 飞行目标位置：各路的实际位置
+  const endPos = roadTargetPositions.value[roadType]
   return {
     left: `${endPos.x}px`,
     top: `${endPos.y}px`,
@@ -185,9 +199,26 @@ const startAnimation = async (result: ResultType) => {
   showRoadIcon.value = { bigRoad: false, bigEye: false, smallRoad: false, cockroach: false }
   roadIconFlying.value = { bigRoad: false, bigEye: false, smallRoad: false, cockroach: false }
 
-  // 加载配置
+  // 加载动画配置
   animConfig.value = defaultAnimationConfig[result]
-  posConfig.value = getPositionConfig(videoAndLuZhuTopConfigStore.isVideoOnTop)
+
+  // 计算位置
+  const isVideoOnTop = videoAndLuZhuTopConfigStore.isVideoOnTop
+
+  // 横条起始位置
+  barStartPos.value = getBarStartPosition(isVideoOnTop)
+
+  // 圆球目标位置（露珠区域中心）
+  ballTargetPos.value = getBallTargetPosition(isVideoOnTop)
+
+  // TODO: 从路珠数据获取各路的最新位置并转换为屏幕坐标
+  // 暂时使用临时位置
+  roadTargetPositions.value = {
+    bigRoad: { x: 100, y: 100 },
+    bigEye: { x: 150, y: 150 },
+    smallRoad: { x: 200, y: 150 },
+    cockroach: { x: 250, y: 150 }
+  }
 
   overLayerStore.open('resultFly')
 
