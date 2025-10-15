@@ -37,22 +37,26 @@ const gamePhase = computed(() => {
 </script>
 
 <style scoped>
+/* PC版投注容器 - 适应横向宽屏布局 */
 .betting-container {
   width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   position: relative;
   background: #35260d;
-  padding-left: 4px;
-  padding-right: 2px;
+  border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* 投注阶段高度 */
+/* 投注阶段 - 正常尺寸 */
 .betting-container.betting-phase {
-  height: 230px;
+  padding: 10px 15px;
 }
 
-/* 开牌阶段高度 */
+/* 开牌阶段 - 稍微紧凑 */
 .betting-container.dealing-phase {
-  height: 180px;
+  padding: 8px 12px;
 }
 </style>
