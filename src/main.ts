@@ -3,6 +3,7 @@ import './assets/css/main.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import router from './router'
 import App from './App.vue'
 
 // 🎨 Naive UI 按需导入（推荐）
@@ -39,6 +40,9 @@ const pinia = createPinia()
 
 // 🍍 注册 Pinia（必须在其他插件之前）
 app.use(pinia)
+
+// 🛣️ 注册 Vue Router
+app.use(router)
 
 // 🎨 注册 Naive UI
 app.use(naive)

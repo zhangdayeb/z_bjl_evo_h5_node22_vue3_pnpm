@@ -10,8 +10,8 @@
         <n-notification-provider>
           <!-- 主应用内容 -->
           <div class="app-container">
-            <!-- 主游戏区域 - 后续用你的专门布局替换 -->
-            <GameSection />
+            <!-- 路由视图 - 根据路由加载 H5 或 PC 版本 -->
+            <router-view />
           </div>
         </n-notification-provider>
       </n-message-provider>
@@ -27,9 +27,6 @@ import {
   NNotificationProvider,
   darkTheme
 } from 'naive-ui'
-
-// 引入你的专门布局组件
-import GameSection from '@/components/Layout/BaseLayout.vue'
 
 // 主题配置
 const gameTheme = computed(() => darkTheme)
