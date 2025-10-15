@@ -1,10 +1,7 @@
 <!-- src/components/pc/Layout/GameRun.vue - PC版本固定布局 -->
 <template>
   <div class="pc-game-container">
-    <!-- 顶部: 视频区域 (固定高度) -->
-    <div class="pc-video-section">
-      <VideoAndLuZhu />
-    </div>
+
 
     <!-- 中部: 投注区域 + 路单统计 (横向布局) -->
     <div class="pc-betting-and-road-section">
@@ -15,7 +12,12 @@
 
       <!-- 路单统计 (固定宽度在右侧) -->
       <div class="pc-road-stats">
-        <LuZhu />
+        <LuZhuLeft />
+      </div>
+
+      <!-- 路单统计 (固定宽度在右侧) -->
+      <div class="pc-road-stats">
+        <LuZhuRight />
       </div>
     </div>
 
@@ -30,9 +32,9 @@
 import { onMounted } from 'vue'
 
 // 导入组件
-import VideoAndLuZhu from './VideoAndLuZhu.vue'
 import UserBet from './UserBet.vue'
-import LuZhu from './LuZhu.vue'
+import LuZhuLeft from './LuZhuLeft.vue'
+import LuZhuRight from './LuZhuRight.vue'
 import Overlay from './Overlay.vue'
 
 onMounted(() => {
