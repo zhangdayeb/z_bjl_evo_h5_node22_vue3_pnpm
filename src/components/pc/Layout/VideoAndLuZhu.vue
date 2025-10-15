@@ -65,9 +65,9 @@ import { useGameStore } from '@/stores/gameStore'
 import { useVideoAndLuZhuTopConfigStore } from '@/stores/VideoAndLuZhuTopConfigStore'
 
 // 组件导入
-import VideoPlayer from '@/components/VideoPlayer/VideoPlayer.vue'
-import Countdown from '@/components/FloatingUI/Countdown.vue'
-import OtherUserBetList from '@/components/FloatingUI/OtherUserBetList.vue'
+import VideoPlayer from '@/components/pc/VideoPlayer/VideoPlayer.vue'
+import Countdown from '@/components/pc/FloatingUI/Countdown.vue'
+import OtherUserBetList from '@/components/pc/FloatingUI/OtherUserBetList.vue'
 import LuZhu from './LuZhu.vue'
 
 // 使用 Stores

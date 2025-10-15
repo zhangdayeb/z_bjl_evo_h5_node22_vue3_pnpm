@@ -81,9 +81,10 @@ export function formatDateToYYMMDD(date: Date = new Date()): string {
 /**
  * 简化的金额显示 - 仅返回数字
  * @param amount 金额
+ * @param _decimals 小数位数(暂未使用)
  * @returns 纯数字字符串
  */
-export function formatCurrency(amount: number, decimals: number = 0): string {
+export function formatCurrency(amount: number, _decimals: number = 0): string {
   return amount.toString()
 }
 

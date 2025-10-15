@@ -24,7 +24,7 @@ interface NetworkError extends Error {
 const getEnvVar = (key: string, defaultValue: string = ''): string => {
   try {
     return import.meta.env[key] || defaultValue
-  } catch (error) {
+  } catch {
     return defaultValue
   }
 }

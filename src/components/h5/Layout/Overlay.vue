@@ -40,13 +40,13 @@
 import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // 组件导入
-import ChipSelector from '@/components/Panels/ChipSelector.vue'
-import WinningEffect from '@/components/Panels/WinningEffect.vue'
-import LuZhuList from '@/components/LuZhuList/LuZhuList.vue'
-import SettingsPanel from '@/components/Panels/SettingsPanel.vue'
-import Cashier from '@/components/Panels/Cashier.vue'
-import ChipFly from '@/components/Panels/ChipFly.vue'
-import ResultFly from '@/components/Panels/ResultFly.vue'
+import ChipSelector from '@/components/h5/Panels/ChipSelector.vue'
+import WinningEffect from '@/components/h5/Panels/WinningEffect.vue'
+import LuZhuList from '@/components/h5/LuZhuList/LuZhuList.vue'
+import SettingsPanel from '@/components/h5/Panels/SettingsPanel.vue'
+import Cashier from '@/components/h5/Panels/Cashier.vue'
+import ChipFly from '@/components/h5/Panels/ChipFly.vue'
+import ResultFly from '@/components/h5/Panels/ResultFly.vue'
 
 const overLayerStore = useoverLayerStore()
 // overLayerStore.open('chipFly')

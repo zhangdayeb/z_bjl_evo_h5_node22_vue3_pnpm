@@ -218,7 +218,7 @@ export function calculateBetAmount(
  */
 export function buildBetApiData(
   currentBets: Record<BaccaratBetType, number>,
-  isCommissionFree: boolean = false
+  _isCommissionFree: boolean = false
 ): Array<{ money: number; rate_id: number }> {
   return Object.entries(currentBets)
     .filter(([_, amount]) => amount > 0)

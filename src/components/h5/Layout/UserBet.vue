@@ -23,11 +23,11 @@
 
 <script setup lang="ts">
 // 组件导入
-import BettingAreaLayout from '@/components/BetArea/BettingAreaLayout.vue'
-import ChipAction from '@/components/Layout/ChipAction.vue'
-import GameCount from '@/components/Layout/GameCount.vue'
-import ButtonSet from '@/components/FloatingUI/ButtonSet.vue'
-import ButtonLuZhuList from '@/components/FloatingUI/ButtonLuZhuList.vue'
+import BettingAreaLayout from '@/components/h5/BetArea/BettingAreaLayout.vue'
+import ChipAction from '@/components/h5/Layout/ChipAction.vue'
+import GameCount from '@/components/h5/Layout/GameCount.vue'
+import ButtonSet from '@/components/h5/FloatingUI/ButtonSet.vue'
+import ButtonLuZhuList from '@/components/h5/FloatingUI/ButtonLuZhuList.vue'
 
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'

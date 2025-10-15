@@ -6,7 +6,7 @@
 import BaseLayout from '@/components/pc/Layout/BaseLayout.vue'
 
 // PC 端游戏主页面
-console.log('[PC] Game view loaded')
+console.log('[PC] 游戏页面已加载')
 </script>
 
 <style scoped>

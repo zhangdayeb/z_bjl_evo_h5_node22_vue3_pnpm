@@ -312,7 +312,7 @@ export const useGameStore = defineStore('game', {
       if (typeof seconds === 'number' && !isNaN(seconds) && seconds >= 0) {
         // 向下取整并确保不小于0
         this.countdown = Math.max(0, Math.floor(seconds))
-        console.log(`⏰ WebSocket更新倒计时: ${seconds}秒`)
+        console.log('[GameStore] 更新倒计时', { seconds })
       }
     },
 
@@ -328,7 +328,7 @@ export const useGameStore = defineStore('game', {
       // 验证状态是否有效
       if (validStatuses.includes(status)) {
         this.gameStatus = status
-        console.log(`🎮 WebSocket更新游戏状态: ${status}`)
+        console.log('[GameStore] 更新游戏状态', { status })
       }
     },
 
@@ -343,7 +343,7 @@ export const useGameStore = defineStore('game', {
       // 验证输入：必须是非空字符串
       if (typeof formattedGameNumber === 'string' && formattedGameNumber.trim()) {
         this.gameNumber = formattedGameNumber.trim()
-        console.log(`🎯 API更新格式化局号: ${formattedGameNumber}`)
+        console.log('[GameStore] 更新游戏局号', { gameNumber: formattedGameNumber })
       }
     },
 
@@ -365,7 +365,7 @@ export const useGameStore = defineStore('game', {
       // 验证：必须是非负数
       if (balanceValue >= 0) {
         this.realBalance = balanceValue
-        console.log(`💰 更新真实余额: ${balanceValue}, 展示余额: ${this.displayBalance}`)
+        console.log('[GameStore] 更新真实余额', { realBalance: balanceValue, displayBalance: this.displayBalance })
       }
     },
 
@@ -377,7 +377,7 @@ export const useGameStore = defineStore('game', {
     updateCurrentBetTotal(total: number) {
       const betTotal = typeof total === 'number' && !isNaN(total) ? total : 0
       this.currentBetTotal = Math.max(0, betTotal)
-      console.log(`🎰 更新投注总额: ${this.currentBetTotal}, 展示余额: ${this.displayBalance}`)
+      console.log('[GameStore] 更新投注总额', { betTotal: this.currentBetTotal, displayBalance: this.displayBalance })
     },
 
     /**
@@ -386,7 +386,7 @@ export const useGameStore = defineStore('game', {
      */
     clearCurrentBetTotal() {
       this.currentBetTotal = 0
-      console.log(`🧹 清空投注总额, 展示余额恢复: ${this.displayBalance}`)
+      console.log('[GameStore] 清空投注总额', { displayBalance: this.displayBalance })
     },
 
     /**
@@ -396,7 +396,7 @@ export const useGameStore = defineStore('game', {
     updateVideoUrl(url: string) {
       if (typeof url === 'string') {
         this.videoUrl = url
-        console.log(`📹 API更新视频地址`)
+        console.log('[GameStore] 更新视频地址', { url })
       }
     },
 
@@ -408,7 +408,7 @@ export const useGameStore = defineStore('game', {
       // 验证输入：必须是非空字符串
       if (typeof name === 'string' && name.trim()) {
         this.tableName = name.trim()
-        console.log(`🏠 API更新台桌名称: ${name}`)
+        console.log('[GameStore] 更新台桌名称', { name })
       }
     },
 
@@ -422,7 +422,7 @@ export const useGameStore = defineStore('game', {
         this.userInfo = userInfo
         // 同时更新真实余额（会自动处理千位分隔符）
         this.updateRealBalance(userInfo.money_balance)
-        console.log(`👤 API更新用户信息`)
+        console.log('[GameStore] 更新用户信息', { userInfo })
       }
     },
 
@@ -436,7 +436,7 @@ export const useGameStore = defineStore('game', {
         this.tableInfo = tableInfo
         // 同时更新台桌名称
         this.tableName = tableInfo.table_title
-        console.log(`🏠 API更新台桌信息`)
+        console.log('[GameStore] 更新台桌信息', { tableInfo })
       }
     },
 
@@ -457,7 +457,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
       // 从API获取数据
       const apiService = getGlobalApiService()
       if (!apiService) {
-        console.error('❌ API服务未初始化')
+        console.error('[GameStore] API服务未初始化')
         return
       }
 
@@ -484,16 +484,18 @@ async updateLuZhuData(data: Record<string, any> | null) {
         // 尝试计算路单
         this.roadmapData = roadmapCalculator.calculateAll(formattedData)
 
-        console.log(`📊 露珠数据已更新，共 ${Object.keys(formattedData).length} 条记录`)
-        console.log(`📈 路单计算完成:`, {
-          beadPlate: this.roadmapData?.beadPlate?.length || 0,
-          bigRoad: this.roadmapData?.bigRoad?.length || 0,
-          bigEyeRoad: this.roadmapData?.bigEyeRoad?.length || 0,
-          smallRoad: this.roadmapData?.smallRoad?.length || 0,
-          cockroachRoad: this.roadmapData?.cockroachRoad?.length || 0
+        console.log('[GameStore] 露珠数据已更新', {
+          recordCount: Object.keys(formattedData).length,
+          roadmapStats: {
+            beadPlate: this.roadmapData?.beadPlate?.length || 0,
+            bigRoad: this.roadmapData?.bigRoad?.length || 0,
+            bigEyeRoad: this.roadmapData?.bigEyeRoad?.length || 0,
+            smallRoad: this.roadmapData?.smallRoad?.length || 0,
+            cockroachRoad: this.roadmapData?.cockroachRoad?.length || 0
+          }
         })
       } catch (calcError) {
-        console.error('⚠️ 路单计算失败，使用空数据:', calcError)
+        console.error('[GameStore] 路单计算失败，使用空数据', calcError)
 
         // 如果计算失败，设置空路单
         this.roadmapData = {
@@ -515,14 +517,14 @@ async updateLuZhuData(data: Record<string, any> | null) {
         cockroachRoad: [],
         sanxing: []
       }
-      console.log('📊 露珠数据为空')
+      console.log('[GameStore] 露珠数据为空')
     }
 
     // 保存原始数据（保持兼容性）
     this.luZhuData = formattedData
 
   } catch (error) {
-    console.error('❌ 露珠数据更新失败:', error)
+    console.error('[GameStore] 露珠数据更新失败', error)
 
     // 错误时设置空路单，避免显示异常
     this.roadmapData = {
@@ -547,7 +549,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
       if (data && typeof data === 'object') {
         // 深拷贝数据，避免外部修改
         this.tempCardInfo = { ...data }
-        console.log(`🃏 更新临时牌数据:`, data)
+        console.log('[GameStore] 更新临时牌数据', data)
       }
     },
 
@@ -557,7 +559,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
      */
     clearTempCardInfo() {
       this.tempCardInfo = null
-      console.log(`🧹 清除临时牌数据`)
+      console.log('[GameStore] 清除临时牌数据')
     },
 
     /**
@@ -569,7 +571,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
       if (data && typeof data === 'object') {
         // 深拷贝数据，避免外部修改
         this.gameResult = { ...data }
-        console.log(`🎰 更新开牌结果:`, data)
+        console.log('[GameStore] 更新开牌结果', data)
 
         // 清除临时牌数据（最终结果到来）
         this.clearTempCardInfo()
@@ -586,7 +588,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
       if (data && typeof data === 'object') {
         // 深拷贝数据
         this.betResult = { ...data }
-        console.log(`🏆 更新中奖信息:`, data)
+        console.log('[GameStore] 更新中奖信息', data)
       }
     },
 
@@ -597,7 +599,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
      */
     clearBettingData() {
       try {
-        console.log('🧹 GameStore 触发投注数据清场')
+        console.log('[GameStore] 触发投注数据清场')
 
         // 通过自定义事件通知其他 Store
         // 避免直接引用造成循环依赖
@@ -611,7 +613,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
         }
 
       } catch (error) {
-        console.error('❌ 清场操作失败:', error)
+        console.error('[GameStore] 清场操作失败', error)
       }
     },
 
@@ -632,7 +634,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
           xianDui: data.xianDui || 0,
           zhuangXianDui: data.zhuangXianDui || 0
         }
-        console.log(`📊 更新统计数据:`, this.statistics)
+        console.log('[GameStore] 更新统计数据', this.statistics)
       }
     },
 
@@ -646,11 +648,11 @@ async updateLuZhuData(data: Record<string, any> | null) {
     async refreshBalance() {
       // 防止重复请求
       if (this.isRefreshingBalance) {
-        console.log('⚠️ 余额正在刷新中，跳过重复请求')
+        console.log('[GameStore] 余额正在刷新中，跳过重复请求')
         return
       }
 
-      console.log('🔄 开始手动刷新余额...')
+      console.log('[GameStore] 开始手动刷新余额')
       this.isRefreshingBalance = true
 
       try {
@@ -665,13 +667,13 @@ async updateLuZhuData(data: Record<string, any> | null) {
 
         if (userInfo) {
           this.updateRealBalance(userInfo.money_balance)
-          console.log('✅ 余额刷新成功:', userInfo.money_balance)
+          console.log('[GameStore] 余额刷新成功', { balance: userInfo.money_balance })
         } else {
           throw new Error('获取的用户信息格式错误')
         }
 
       } catch (error) {
-        console.error('❌ 余额刷新失败:', error)
+        console.error('[GameStore] 余额刷新失败', error)
         this.setError(`余额刷新失败: ${error instanceof Error ? error.message : '未知错误'}`)
 
         // 3秒后自动清除错误提示
@@ -694,11 +696,11 @@ async updateLuZhuData(data: Record<string, any> | null) {
     async refreshStatistics() {
       // 防止重复请求
       if (this.isLoadingStatistics) {
-        console.log('⚠️ 统计数据正在刷新中，跳过重复请求')
+        console.log('[GameStore] 统计数据正在刷新中，跳过重复请求')
         return
       }
 
-      console.log('🔄 开始手动刷新统计数据...')
+      console.log('[GameStore] 开始手动刷新统计数据')
       this.isLoadingStatistics = true
 
       try {
@@ -713,13 +715,13 @@ async updateLuZhuData(data: Record<string, any> | null) {
 
         if (statistics) {
           this.updateStatistics(statistics)
-          console.log('✅ 统计数据刷新成功:', statistics)
+          console.log('[GameStore] 统计数据刷新成功', statistics)
         } else {
           throw new Error('获取的统计数据为空')
         }
 
       } catch (error) {
-        console.error('❌ 统计数据刷新失败:', error)
+        console.error('[GameStore] 统计数据刷新失败', error)
         this.setError(`统计数据刷新失败: ${error instanceof Error ? error.message : '未知错误'}`)
 
         // 3秒后自动清除错误提示
@@ -742,7 +744,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
      */
     updateWebSocketStatus(connected: boolean) {
       this.isWebSocketConnected = connected
-      console.log(`🔌 WebSocket连接状态: ${connected}`)
+      console.log('[GameStore] WebSocket连接状态', { connected })
     },
 
     /**
@@ -751,7 +753,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
      */
     updateApiStatus(ready: boolean) {
       this.isApiReady = ready
-      console.log(`🔌 API就绪状态: ${ready}`)
+      console.log('[GameStore] API就绪状态', { ready })
     },
 
     /**
@@ -761,7 +763,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
     setError(error: string | null) {
       this.lastError = error
       if (error) {
-        console.error(`❌ 设置错误: ${error}`)
+        console.error('[GameStore] 设置错误', { error })
       }
     },
 
@@ -783,7 +785,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
       if (params && typeof params === 'object') {
         // 深拷贝参数对象
         this.gameParams = { ...params }
-        console.log(`🎮 初始化游戏参数:`, params)
+        console.log('[GameStore] 初始化游戏参数', params)
       }
     },
 
@@ -794,7 +796,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
      * @description 重置所有状态到默认值
      */
     init() {
-      console.log('🎮 GameStore 初始化')
+      console.log('[GameStore] 开始初始化')
 
       // --------------- 重置用户和桌台信息 ---------------
       this.userInfo = null
@@ -847,7 +849,7 @@ async updateLuZhuData(data: Record<string, any> | null) {
         token: ''
       }
 
-      console.log('✅ GameStore 初始化完成')
+      console.log('[GameStore] 初始化完成')
     }
   }
 })

@@ -240,14 +240,14 @@ const updateRoadTargetPositions = () => {
     cockroach: convertToScreenPosition(cockroachPos.left, cockroachPos.top, isVideoOnTop, gameStatus, 'cockroach')
   }
 
-  console.log('[ResultFly] Road target positions:', roadTargetPositions.value)
+  console.log('[ResultFly] 路单目标位置已计算', roadTargetPositions.value)
 }
 
 /**
  * 启动完整动画序列
  */
 const startAnimation = async (result: ResultType) => {
-  console.log('[ResultFly] Starting animation for:', result)
+  console.log('[ResultFly] 开始动画', { result })
 
   // 重置状态
   isActive.value = true
@@ -278,32 +278,32 @@ const startAnimation = async (result: ResultType) => {
   await nextTick()
 
   // 步骤1: 显示横条
-  console.log('[ResultFly] Step 1: Show bar')
+  console.log('[ResultFly] 步骤1: 显示横条')
   await sleep(animConfig.value.bar.showDuration)
 
   // 步骤2: 横条缩短
-  console.log('[ResultFly] Step 2: Shrink bar')
+  console.log('[ResultFly] 步骤2: 横条缩短')
   isShrinking.value = true
   await sleep(animConfig.value.bar.shrinkDuration)
 
   // 步骤3: 切换到圆球
-  console.log('[ResultFly] Step 3: Show ball')
+  console.log('[ResultFly] 步骤3: 显示圆球')
   currentStep.value = 'ball'
   await nextTick()
 
   // 步骤4: 圆球飞行
-  console.log('[ResultFly] Step 4: Ball flying')
+  console.log('[ResultFly] 步骤4: 圆球飞行')
   await sleep(50) // 等待DOM更新
   isFlying.value = true
   await sleep(animConfig.value.ball.flyDuration)
 
   // 圆球到达后缩小消失
-  console.log('[ResultFly] Ball shrinking')
+  console.log('[ResultFly] 圆球缩小消失')
   isBallShrinking.value = true
   await sleep(animConfig.value.ball.shrinkDuration)
 
   // 步骤5: 路单图标飞散
-  console.log('[ResultFly] Step 5: Road icons scatter')
+  console.log('[ResultFly] 步骤5: 路单图标飞散')
   currentStep.value = 'roads'
   await nextTick()
 
@@ -327,7 +327,7 @@ const startAnimation = async (result: ResultType) => {
   await sleep(animConfig.value.roadIcons.flyDuration)
 
   // 动画完成
-  console.log('[ResultFly] Animation complete')
+  console.log('[ResultFly] 动画完成')
   currentStep.value = 'complete'
   isActive.value = false
   overLayerStore.close()
@@ -347,16 +347,16 @@ watch(
     }
 
     if (gameStore.gameStatus !== 'dealing') {
-      console.log('[ResultFly] Not in dealing phase, skip')
+      console.log('[ResultFly] 非开牌阶段,跳过动画')
       return
     }
 
     if (newResult.pai_info === lastProcessedPaiInfo.value) {
-      console.log('[ResultFly] Already processed this pai_info, skip')
+      console.log('[ResultFly] 已处理过此结果,跳过')
       return
     }
 
-    console.log('[ResultFly] Auto trigger - detected new pai_info result')
+    console.log('[ResultFly] 检测到新结果,自动触发动画')
     lastProcessedPaiInfo.value = newResult.pai_info
 
     // 根据结果类型触发动画
@@ -367,7 +367,7 @@ watch(
 )
 
 onMounted(() => {
-  console.log('[ResultFly] Component mounted')
+  console.log('[ResultFly] 组件已挂载')
 })
 </script>
 

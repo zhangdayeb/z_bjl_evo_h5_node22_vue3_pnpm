@@ -6,7 +6,7 @@
 import BaseLayout from '@/components/h5/Layout/BaseLayout.vue'
 
 // H5 移动端游戏主页面
-console.log('[H5] Game view loaded')
+console.log('[H5] 游戏页面已加载')
 </script>
 
 <style scoped>
