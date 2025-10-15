@@ -1,4 +1,4 @@
-<!-- LuZhu.vue - PC版路单统计组件（右侧边栏） -->
+<!-- LuZhuRight.vue - PC版路单组件（右侧：大路+下三路） -->
 <template>
   <div class="pc-luzhu-component">
     <!-- 大路区域 -->
@@ -67,7 +67,7 @@
       </div>
     </div>
 
-    <!-- 下三路区域 -->
+    <!-- 下三路区域 - 横向排列 -->
     <div class="pc-three-roads-section">
       <!-- 大眼路 -->
       <div class="pc-road-section pc-small-road-section">
@@ -154,16 +154,12 @@
         </div>
       </div>
     </div>
-
-    <!-- 统计栏组件 -->
-    <LuZhuCount :game-data="gameStore.luZhuData" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick, watch, computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
-import LuZhuCount from './LuZhuCount.vue'
 import type { RoadmapData } from '@/utils/roadmapCalculator'
 
 // 使用 gameStore
@@ -195,6 +191,7 @@ const cockroachRoadOffset = ref(0)
 const calculateOffsets = () => {
   nextTick(() => {
     const viewportWidth = 340 // PC右侧栏宽度减去padding
+    const smallRoadWidth = viewportWidth / 3 // 三个小路横向排列，每个占 1/3 宽度
 
     // 大路偏移
     if (roadmapData.value.bigRoad.length > 0) {
@@ -211,8 +208,8 @@ const calculateOffsets = () => {
     if (roadmapData.value.bigEyeRoad.length > 0) {
       const lastItem = roadmapData.value.bigEyeRoad[roadmapData.value.bigEyeRoad.length - 1]
       const maxX = lastItem.left + 11
-      if (maxX > viewportWidth) {
-        bigEyeRoadOffset.value = -(maxX - viewportWidth + 5)
+      if (maxX > smallRoadWidth) {
+        bigEyeRoadOffset.value = -(maxX - smallRoadWidth + 5)
       } else {
         bigEyeRoadOffset.value = 0
       }
@@ -222,8 +219,8 @@ const calculateOffsets = () => {
     if (roadmapData.value.smallRoad.length > 0) {
       const lastItem = roadmapData.value.smallRoad[roadmapData.value.smallRoad.length - 1]
       const maxX = lastItem.left + 11
-      if (maxX > viewportWidth) {
-        smallRoadOffset.value = -(maxX - viewportWidth + 5)
+      if (maxX > smallRoadWidth) {
+        smallRoadOffset.value = -(maxX - smallRoadWidth + 5)
       } else {
         smallRoadOffset.value = 0
       }
@@ -233,8 +230,8 @@ const calculateOffsets = () => {
     if (roadmapData.value.cockroachRoad.length > 0) {
       const lastItem = roadmapData.value.cockroachRoad[roadmapData.value.cockroachRoad.length - 1]
       const maxX = lastItem.left + 11
-      if (maxX > viewportWidth) {
-        cockroachRoadOffset.value = -(maxX - viewportWidth + 5)
+      if (maxX > smallRoadWidth) {
+        cockroachRoadOffset.value = -(maxX - smallRoadWidth + 5)
       } else {
         cockroachRoadOffset.value = 0
       }
@@ -249,7 +246,7 @@ watch(roadmapData, () => {
 
 // 生命周期
 onMounted(() => {
-  console.log('[PC-LuZhu] PC版路单组件已加载')
+  console.log('[PC-LuZhuRight] PC版大路和下三路组件已加载')
 
   if (roadmapData.value && Object.keys(roadmapData.value).length > 0) {
     calculateOffsets()
@@ -270,7 +267,7 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #1a1a1a;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -284,7 +281,7 @@ onUnmounted(() => {
 .pc-big-road-section {
   flex: 1;
   min-height: 120px;
-  background: linear-gradient(rgba(37, 37, 37, 0.95), rgb(30, 30, 30));
+  background: transparent;
 }
 
 /* 路单标题 */
@@ -324,18 +321,26 @@ onUnmounted(() => {
   background-size: 22px 22px;
 }
 
-/* 下三路区域 */
+/* 下三路区域 - 横向排列 */
 .pc-three-roads-section {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  background: rgba(20, 20, 20, 0.95);
+  flex-direction: row;
+  height: 70px;
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 小路区域 */
+/* 小路区域 - 横向布局，平均分配空间 */
 .pc-small-road-section {
-  height: 70px;
-  background: linear-gradient(rgba(30, 30, 30, 0.95), rgb(25, 25, 25));
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pc-small-road-section:last-child {
+  border-right: none;
 }
 
 /* 小路视口 */
@@ -385,7 +390,7 @@ onUnmounted(() => {
     min-height: 150px;
   }
 
-  .pc-small-road-section {
+  .pc-three-roads-section {
     height: 80px;
   }
 

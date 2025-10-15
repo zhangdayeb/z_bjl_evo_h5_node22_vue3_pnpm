@@ -7,7 +7,6 @@
       scrolling="no"
       class="video-iframe"
     />
-    <div class="gradient-mask"></div>
   </div>
 </template>
 
@@ -33,15 +32,5 @@ defineProps<Props>()
   height: 100%;
   border: none;
   display: block;
-}
-
-.gradient-mask {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  background: linear-gradient(to bottom, transparent, #c8102e);
-  pointer-events: none;
 }
 </style>

@@ -1,134 +1,72 @@
 <template>
-  <div class="table-info-container">
-    <!-- 第一行：聊天消息区域 -->
-    <div class="message-row">
-      <div class="message-one-line" data-role="one-line-chat">
-        <div class="chat-message">
-          <span class="sender-name">Vita: </span>
-          <span class="message-text">Hello, 1234! Welcome to Always 8 Baccarat!</span>
+  <div class="pc-game-count">
+    <!-- 左侧：余额 -->
+    <div class="balance-section">
+      <div class="balance-label">余额</div>
+      <div class="balance-amount">€{{ formattedBalance }}</div>
+      <button class="refresh-btn" @click="handleRefresh" title="刷新余额">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- 中间：终局和总投注 -->
+    <div class="center-section">
+      <div class="stat-item">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="10" fill="#4CAF50"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">终局</div>
+          <div class="stat-value">{{ gameNumber }}</div>
+        </div>
+      </div>
+
+      <div class="stat-item">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="10" fill="#FFA726"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">总投注</div>
+          <div class="stat-value">€{{ formattedTotalBet }}</div>
         </div>
       </div>
     </div>
 
-    <!-- 第二行：Total Bet 和 时间 -->
-    <div class="info-row">
-      <!-- Total Bet -->
-      <div class="total-bet-container">
-        <div class="info-item">
-          <span class="label" data-role="total-bet-title">Total Bet</span>
-          <span class="amount" data-role="total-bet-value">€{{ formattedTotalBet }}</span>
-        </div>
-      </div>
+    <!-- 右侧：赔率和游戏大厅按钮 -->
+    <div class="actions-section">
+      <button class="action-btn odds-btn" @click="handleOdds">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+        </svg>
+        <span>赔率</span>
+      </button>
 
-      <!-- 时间容器 -->
-      <div class="clock-container">
-        <div class="clock" data-role="clock">{{ currentTime }}</div>
-        <div class="game-time" data-role="game-time">#{{ gameTime }}</div>
-      </div>
-    </div>
-
-    <!-- 第三行：Balance 和 桌台信息 -->
-    <div class="info-row">
-      <!-- Balance -->
-      <div class="balance-container">
-        <div class="info-item">
-          <span class="label" data-role="balance-title">Balance</span>
-          <span class="amount" data-role="balance-value">€{{ formattedBalance }}</span>
-        </div>
-      </div>
-
-      <!-- 桌台信息 -->
-      <div class="table-name-container">
-        <span class="table-name" data-role="table-name">{{ tableName }}</span>
-        <span class="table-limits" data-role="table-limits">€{{ minBet }} – {{ formattedMaxBet }}</span>
-      </div>
+      <button class="action-btn lobby-btn" @click="handleLobby">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        <span>游戏大厅</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-/**
- * @fileoverview 游戏底部信息栏组件
- * @description 显示用户余额、投注总额、台桌信息、限红和时间
- */
-
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useBettingStore } from '@/stores/bettingStore'
 
-// ========================= Stores =========================
 const gameStore = useGameStore()
 const bettingStore = useBettingStore()
 
-// ========================= 时间相关 =========================
-const currentTime = ref('00:00')
-const gameTime = ref('00:00:00')
-const timeInterval = ref<number | null>(null)
-const gameStartTime = ref<number | null>(null)
-
-// ========================= 计算属性 =========================
-
-/**
- * 总投注金额 - 从 bettingStore 获取
- */
-const totalBet = computed(() => {
-  return bettingStore.totalBetAmount || 0
-})
-
-/**
- * 展示余额 - 从 gameStore 获取（自动计算的虚拟余额）
- * gameStore 会自动计算：realBalance - currentBetTotal
- */
-const balance = computed(() => {
-  return gameStore.displayBalance || 0
-})
-
-/**
- * 台桌名称 - 从 gameStore 获取
- */
-const tableName = computed(() => {
-  return gameStore.tableName || 'Baccarat'
-})
-
-/**
- * 最小投注额 - 从 tableInfo 获取（取庄闲最小值）
- */
-const minBet = computed(() => {
-  const tableInfo = gameStore.tableInfo
-  if (!tableInfo) return 1
-
-  // 取庄闲最小限红中的较小值
-  const zhuangMin = tableInfo.bjl_xian_hong_zhuang_min || 1
-  const xianMin = tableInfo.bjl_xian_hong_xian_min || 1
-  return Math.min(zhuangMin, xianMin)
-})
-
-/**
- * 最大投注额 - 从 tableInfo 获取（取庄闲最大值）
- */
-const maxBet = computed(() => {
-  const tableInfo = gameStore.tableInfo
-  if (!tableInfo) return 25000
-
-  // 取庄闲最大限红中的较大值
-  const zhuangMax = tableInfo.bjl_xian_hong_zhuang_max || 25000
-  const xianMax = tableInfo.bjl_xian_hong_xian_max || 25000
-  return Math.max(zhuangMax, xianMax)
-})
-
-/**
- * 格式化总投注金额显示
- */
-const formattedTotalBet = computed(() => {
-  return totalBet.value.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
-})
-
-/**
- * 格式化余额显示
- */
+// 余额
+const balance = computed(() => gameStore.displayBalance || 0)
 const formattedBalance = computed(() => {
   return balance.value.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -136,220 +74,215 @@ const formattedBalance = computed(() => {
   })
 })
 
-/**
- * 格式化最大投注额
- */
-const formattedMaxBet = computed(() => {
-  return maxBet.value.toLocaleString('en-US')
+// 局号
+const gameNumber = computed(() => gameStore.gameNumber || '0')
+
+// 总投注
+const totalBet = computed(() => bettingStore.totalBetAmount || 0)
+const formattedTotalBet = computed(() => {
+  return totalBet.value.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  })
 })
 
-// ========================= 生命周期 =========================
-
-onMounted(() => {
-  startClock()
-  gameStartTime.value = Date.now()
-})
-
-onBeforeUnmount(() => {
-  stopClock()
-})
-
-// ========================= 方法 =========================
-
-/**
- * 启动时钟
- */
-function startClock() {
-  updateTime()
-  timeInterval.value = window.setInterval(() => {
-    updateTime()
-  }, 1000)
+// 事件处理
+const handleRefresh = () => {
+  console.log('[GameCount] 刷新余额')
+  gameStore.refreshBalance()
 }
 
-/**
- * 停止时钟
- */
-function stopClock() {
-  if (timeInterval.value) {
-    clearInterval(timeInterval.value)
-    timeInterval.value = null
-  }
+const handleOdds = () => {
+  console.log('[GameCount] 打开赔率')
 }
 
-/**
- * 更新时间
- */
-function updateTime() {
-  const now = new Date()
-  // 当前时间 HH:MM
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  currentTime.value = `${hours}:${minutes}`
-
-  // 游戏时间（从游戏开始计算的真实时间）
-  if (gameStartTime.value) {
-    const elapsed = Math.floor((Date.now() - gameStartTime.value) / 1000)
-    const gameHours = String(Math.floor(elapsed / 3600)).padStart(2, '0')
-    const gameMinutes = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')
-    const gameSeconds = String(elapsed % 60).padStart(2, '0')
-    gameTime.value = `${gameHours}:${gameMinutes}:${gameSeconds}`
-  }
+const handleLobby = () => {
+  console.log('[GameCount] 返回游戏大厅')
 }
 </script>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-/* 主容器 */
-.table-info-container {
-  position: fixed;
+.pc-game-count {
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
-  height: 49px;
-  padding: 0 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-family: Inter, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  color: #fff;
-  /* 双层渐变背景 - 与目标完全一致 */
-  background:
-  linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(0, 0, 0) 140%),
-  linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 100%),
-  #35260d; /* 底色 */
-  box-sizing: border-box;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
-
-/* 第一行：聊天消息 - 17px高 */
-.message-row {
-  height: 17px;
+  height: 60px;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(53, 38, 13, 0.8) 100%);
+  z-index: 20;
 }
 
-.message-one-line {
-  font-size: 11px;
+/* 左侧余额区域 */
+.balance-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+}
+
+.balance-label {
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 17px;
-  width: 100%;
+  font-weight: 500;
 }
 
-.chat-message {
+.balance-amount {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FFD700;
+}
+
+.refresh-btn {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 3px;
-  overflow: hidden;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.sender-name {
-  color: #FFD700;
-  font-weight: 500;
-  flex-shrink: 0;
+.refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(180deg);
 }
 
-.message-text {
-  color: rgba(255, 255, 255, 0.9);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.refresh-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
-/* 信息行 - 16px高 */
-.info-row {
-  height: 16px;
+/* 中间统计区域 */
+.center-section {
   display: flex;
+  gap: 24px;
   align-items: center;
-  justify-content: space-between;
 }
 
-/* 容器 */
-.total-bet-container,
-.balance-container {
-  flex: 1;
-}
-
-.info-item {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-/* 标签 */
-.label {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 16px;
-}
-
-/* 金额 */
-.amount {
-  font-size: 12px;
-  font-weight: 600;
-  color: #FFD700;
-  line-height: 16px;
-}
-
-/* 时钟容器 */
-.clock-container {
+.stat-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 16px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
 }
 
-.clock {
-  font-size: 12px;
-  font-weight: 500;
-  color: #ffffff80;
-  line-height: 16px;
-  display: inline-block;
+.stat-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.game-time {
-  font-size: 12px;
-  font-weight: 400;
-  color: #ffffff80;
-  line-height: 16px;
-  display: inline-block;
-  position: relative;
+.stat-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
-/* 桌台信息容器 */
-.table-name-container {
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+/* 右侧按钮区域 */
+.actions-section {
+  display: flex;
+  gap: 12px;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: flex-end;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  color: white;
 }
 
-.table-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: #FFFFFF;
-  line-height: 16px;
+.action-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
-.table-limits {
-  font-size: 11px;
-  font-weight: 400;
-  color: #FFD700;
-  line-height: 16px;
+.odds-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.odds-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.lobby-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.lobby-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+/* 响应式调整 */
+@media (max-width: 1366px) {
+  .pc-game-count {
+    height: 50px;
+    padding: 0 16px;
+  }
+
+  .balance-amount {
+    font-size: 16px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+
+  .action-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .pc-game-count {
+    height: 70px;
+  }
+
+  .balance-amount {
+    font-size: 20px;
+  }
+
+  .stat-value {
+    font-size: 16px;
+  }
 }
 </style>

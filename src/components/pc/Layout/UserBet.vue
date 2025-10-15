@@ -11,11 +11,6 @@
       <div class="pc-chip-action-section">
         <ChipAction />
       </div>
-
-      <!-- 统计信息栏 -->
-      <div class="pc-game-count-section">
-        <GameCount />
-      </div>
     </div>
 
     <!-- 悬浮按钮 - 始终显示 -->
@@ -30,7 +25,6 @@ import { onMounted } from 'vue'
 // 组件导入
 import BettingAreaLayout from '@/components/pc/BetArea/BettingAreaLayout.vue'
 import ChipAction from '@/components/pc/Layout/ChipAction.vue'
-import GameCount from '@/components/pc/Layout/GameCount.vue'
 import ButtonSet from '@/components/pc/FloatingUI/ButtonSet.vue'
 import ButtonLuZhuList from '@/components/pc/FloatingUI/ButtonLuZhuList.vue'
 
@@ -71,13 +65,6 @@ onMounted(() => {
 .pc-chip-action-section {
   height: 50px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* 统计信息栏 */
-.pc-game-count-section {
-  height: 40px;
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* 悬浮按钮位置 */

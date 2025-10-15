@@ -1,25 +1,42 @@
 <!-- src/components/pc/Layout/GameRun.vue - PC版本固定布局 -->
 <template>
   <div class="pc-game-container">
+    <!-- 顶部按钮栏 -->
+    <TopButtons />
 
+    <!-- 播放层 - 全屏背景，z-index最底层 -->
+    <div class="pc-video-background">
+      <VideoPlayer :videoUrl="currentVideoUrl" />
+    </div>
 
-    <!-- 中部: 投注区域 + 路单统计 (横向布局) -->
+    <!-- 底部: 路单 + 投注区域 + 路单 (横向布局) -->
     <div class="pc-betting-and-road-section">
-      <!-- 投注区域 (占据大部分宽度) -->
+      <!-- 左侧路单: 珠子路 (固定宽度) -->
+      <div class="pc-road-stats pc-road-left">
+        <LuZhuLeft />
+      </div>
+
+      <!-- 中间投注区域 (占据剩余宽度) -->
       <div class="pc-betting-area">
         <UserBet />
       </div>
 
-      <!-- 路单统计 (固定宽度在右侧) -->
-      <div class="pc-road-stats">
-        <LuZhuLeft />
-      </div>
+      <!-- 右侧路单: 统计 + 大路和下三路 (固定宽度) -->
+      <div class="pc-road-stats pc-road-right">
+        <!-- 顶部: 路单统计 -->
+        <div class="pc-road-count">
+          <LuZhuCount :gameData="gameStore.luZhuData" />
+        </div>
 
-      <!-- 路单统计 (固定宽度在右侧) -->
-      <div class="pc-road-stats">
-        <LuZhuRight />
+        <!-- 下方: 大路和下三路 -->
+        <div class="pc-road-maps">
+          <LuZhuRight />
+        </div>
       </div>
     </div>
+
+    <!-- 游戏统计栏 - 最底部 -->
+    <GameCount />
 
     <!-- 弹窗和特效层 -->
     <div class="pc-overlay-layer">
@@ -29,13 +46,26 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
+import { useGameStore } from '@/stores/gameStore'
 
 // 导入组件
+import TopButtons from './TopButtons.vue'
+import VideoPlayer from '../VideoPlayer/VideoPlayer.vue'
+import GameCount from './GameCount.vue'
 import UserBet from './UserBet.vue'
 import LuZhuLeft from './LuZhuLeft.vue'
+import LuZhuCount from './LuZhuCount.vue'
 import LuZhuRight from './LuZhuRight.vue'
 import Overlay from './Overlay.vue'
+
+// 使用 Store
+const gameStore = useGameStore()
+
+// 计算属性：获取视频URL
+const currentVideoUrl = computed(() => {
+  return gameStore.videoUrl || ''
+})
 
 onMounted(() => {
   console.log('[PC-GameRun] PC版游戏布局已加载')
@@ -45,43 +75,79 @@ onMounted(() => {
 <style scoped>
 /* PC版游戏容器 - 垂直布局 */
 .pc-game-container {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
   background: #0a0e1a;
 }
 
-/* 视频区域 - 占据上方大部分空间 */
-.pc-video-section {
-  flex: 1;
-  min-height: 400px;
-  max-height: calc(100vh - 400px);
-  position: relative;
-  overflow: hidden;
+/* 播放层背景 - 100%宽高，z-index最底层 */
+.pc-video-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: #000;
 }
 
-/* 投注区域和路单 - 横向布局 */
+/* 底部区域 - 路单 + 投注 + 路单，背景透明 */
 .pc-betting-and-road-section {
+  position: absolute;
+  bottom: 60px;
+  left: 0;
+  right: 0;
   display: flex;
   height: 250px;
-  background: rgba(10, 14, 26, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  z-index: 10;
 }
 
-/* 投注区域 - 占据剩余宽度 */
+/* 左侧路单 - 固定宽度，透明背景 */
+.pc-road-stats.pc-road-left {
+  width: 350px;
+  background: transparent;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 中间投注区域 - 占据剩余宽度，透明背景 */
 .pc-betting-area {
   flex: 1;
   padding: 20px;
   overflow: hidden;
+  background: transparent;
 }
 
-/* 路单统计 - 固定宽度 */
+/* 右侧路单 - 固定宽度，透明背景，垂直布局 */
+.pc-road-stats.pc-road-right {
+  width: 350px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 路单统计区域 - 顶部固定高度 */
+.pc-road-count {
+  flex-shrink: 0;
+  background: transparent;
+}
+
+/* 大路和下三路区域 - 占据剩余空间 */
+.pc-road-maps {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+/* 路单统计通用样式 */
 .pc-road-stats {
   width: 350px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 20, 30, 0.8);
+  background: transparent;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -104,7 +170,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 弹窗层 - 覆盖整个屏幕 */
+/* 弹窗层 - 覆盖整个屏幕，最高层级 */
 .pc-overlay-layer {
   position: fixed;
   top: 0;
@@ -112,7 +178,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .pc-overlay-layer :deep(.overlay-system > *) {
