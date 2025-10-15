@@ -80,7 +80,6 @@ import {
   getBallTargetPosition,
   convertToScreenPosition
 } from '@/config/resultFlyConfig'
-import roadmapCalculator, { type RoadmapData } from '@/utils/roadmapCalculator'
 
 const gameStore = useGameStore()
 const overLayerStore = useoverLayerStore()
@@ -185,6 +184,66 @@ const getRoadIconStyle = (roadType: 'bigRoad' | 'bigEye' | 'smallRoad' | 'cockro
 }
 
 /**
+ * 更新路单图标的目标位置
+ * 从路珠数据获取最新位置并转换为屏幕坐标
+ */
+const updateRoadTargetPositions = () => {
+  const isVideoOnTop = videoAndLuZhuTopConfigStore.isVideoOnTop
+  const gameStatus = gameStore.gameStatus
+
+  // 从 gameStore 获取已计算好的路单数据
+  const roadmapData = gameStore.roadmapData
+
+  // 如果没有路单数据，使用默认位置
+  if (!roadmapData) {
+    roadTargetPositions.value = {
+      bigRoad: convertToScreenPosition(0, 0, isVideoOnTop, gameStatus, 'bigRoad'),
+      bigEye: convertToScreenPosition(0, 0, isVideoOnTop, gameStatus, 'bigEye'),
+      smallRoad: convertToScreenPosition(0, 0, isVideoOnTop, gameStatus, 'smallRoad'),
+      cockroach: convertToScreenPosition(0, 0, isVideoOnTop, gameStatus, 'cockroach')
+    }
+    return
+  }
+
+  // 默认位置（0, 0）
+  let bigRoadPos = { left: 0, top: 0 }
+  let bigEyePos = { left: 0, top: 0 }
+  let smallRoadPos = { left: 0, top: 0 }
+  let cockroachPos = { left: 0, top: 0 }
+
+  // 如果有数据，获取最后一个位置
+  if (roadmapData.bigRoad && roadmapData.bigRoad.length > 0) {
+    const last = roadmapData.bigRoad[roadmapData.bigRoad.length - 1]
+    bigRoadPos = { left: last.left, top: last.top }
+  }
+
+  if (roadmapData.bigEyeRoad && roadmapData.bigEyeRoad.length > 0) {
+    const last = roadmapData.bigEyeRoad[roadmapData.bigEyeRoad.length - 1]
+    bigEyePos = { left: last.left, top: last.top }
+  }
+
+  if (roadmapData.smallRoad && roadmapData.smallRoad.length > 0) {
+    const last = roadmapData.smallRoad[roadmapData.smallRoad.length - 1]
+    smallRoadPos = { left: last.left, top: last.top }
+  }
+
+  if (roadmapData.cockroachRoad && roadmapData.cockroachRoad.length > 0) {
+    const last = roadmapData.cockroachRoad[roadmapData.cockroachRoad.length - 1]
+    cockroachPos = { left: last.left, top: last.top }
+  }
+
+  // 转换为屏幕坐标
+  roadTargetPositions.value = {
+    bigRoad: convertToScreenPosition(bigRoadPos.left, bigRoadPos.top, isVideoOnTop, gameStatus, 'bigRoad'),
+    bigEye: convertToScreenPosition(bigEyePos.left, bigEyePos.top, isVideoOnTop, gameStatus, 'bigEye'),
+    smallRoad: convertToScreenPosition(smallRoadPos.left, smallRoadPos.top, isVideoOnTop, gameStatus, 'smallRoad'),
+    cockroach: convertToScreenPosition(cockroachPos.left, cockroachPos.top, isVideoOnTop, gameStatus, 'cockroach')
+  }
+
+  console.log('[ResultFly] Road target positions:', roadTargetPositions.value)
+}
+
+/**
  * 启动完整动画序列
  */
 const startAnimation = async (result: ResultType) => {
@@ -211,14 +270,8 @@ const startAnimation = async (result: ResultType) => {
   // 圆球目标位置（露珠区域中心）
   ballTargetPos.value = getBallTargetPosition(isVideoOnTop)
 
-  // TODO: 从路珠数据获取各路的最新位置并转换为屏幕坐标
-  // 暂时使用临时位置
-  roadTargetPositions.value = {
-    bigRoad: { x: 100, y: 100 },
-    bigEye: { x: 150, y: 150 },
-    smallRoad: { x: 200, y: 150 },
-    cockroach: { x: 250, y: 150 }
-  }
+  // 从路珠数据获取各路的最新位置并转换为屏幕坐标
+  updateRoadTargetPositions()
 
   overLayerStore.open('resultFly')
 
