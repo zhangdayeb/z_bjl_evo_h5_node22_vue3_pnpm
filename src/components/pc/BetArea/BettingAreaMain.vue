@@ -601,7 +601,6 @@ const isWinner = (zone: string): boolean => {
   font-weight: 700;
   color: #ddd;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  writing-mode: vertical-rl;
   text-orientation: upright;
   letter-spacing: 2px;
 }
@@ -610,7 +609,6 @@ const isWinner = (zone: string): boolean => {
   font-size: 12px;
   font-weight: 600;
   color: white;
-  writing-mode: vertical-rl;
 }
 
 .player-pair .pair-zone-odds {

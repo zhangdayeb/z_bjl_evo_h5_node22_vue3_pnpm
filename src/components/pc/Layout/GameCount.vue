@@ -1,55 +1,60 @@
 <template>
   <div class="pc-game-count">
-    <!-- 悬浮按钮 - 始终显示 -->
-    <ButtonLuZhuList class="pc-floating-button-left" />
-
-    <!-- 左侧：余额 -->
-    <div class="balance-section">
-      <div class="balance-label">余额</div>
-      <div class="balance-amount">€{{ formattedBalance }}</div>
-      <button class="refresh-btn" @click="handleRefresh" title="刷新余额">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-        </svg>
+    <!-- 左侧：收银台按钮 + 余额 + 总投注 -->
+    <div class="left-section">
+      <!-- 收银台按钮 -->
+      <button class="cashier-btn" @click="handleCashier">
+        <span class="button-content">
+          <div class="button-base"></div>
+          <div class="icon-wrapper">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+            </svg>
+          </div>
+        </span>
       </button>
-    </div>
 
-    <!-- 中间：终局和总投注 -->
-    <div class="center-section">
-      <div class="stat-item">
-        <div class="stat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="10" fill="#4CAF50"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">终局</div>
-          <div class="stat-value">{{ gameNumber }}</div>
-        </div>
+      <!-- 余额信息 -->
+      <div class="info-capsule">
+        <div class="info-label">余额</div>
+        <div class="info-value">€{{ formattedBalance }}</div>
       </div>
 
-      <div class="stat-item">
-        <div class="stat-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="12" r="10" fill="#FFA726"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">总投注</div>
-          <div class="stat-value">€{{ formattedTotalBet }}</div>
-        </div>
+      <!-- 总投注信息 -->
+      <div class="info-capsule">
+        <div class="info-label">总投注</div>
+        <div class="info-value">€{{ formattedTotalBet }}</div>
       </div>
     </div>
 
-    <!-- 右侧：赔率和游戏大厅按钮 -->
+    <!-- 右侧：路珠、赔率、游戏大厅按钮 -->
     <div class="actions-section">
-      <button class="action-btn odds-btn" @click="handleOdds">
+      <!-- 路珠按钮 -->
+      <button class="luzhu-btn" @click="handleLuZhuList">
+        <span class="button-content">
+          <div class="button-base"></div>
+          <div class="icon-wrapper">
+            <svg class="icon" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                fill="currentColor"
+                d="M12.0042 6.35163C10.8048 6.35163 9.63338 5.98849 8.64424 5.31C7.25248 5.35955 5.93717 5.95901 4.98674 6.97692C4.03631 7.99483 3.52835 9.34811 3.57424 10.74C3.56892 12.128 4.11453 13.4614 5.09131 14.4476C6.06809 15.4337 7.39624 15.9921 8.78424 16H15.2242C16.6114 15.9894 17.938 15.4303 18.9142 14.4447C19.8905 13.4591 20.4369 12.1272 20.4342 10.74C20.4801 9.34811 19.9722 7.99483 19.0217 6.97692C18.0713 5.95901 16.756 5.35955 15.3642 5.31C14.3751 5.98849 13.2037 6.35163 12.0042 6.35163ZM15.5742 17.31H8.43424V17.33C7.57978 17.3209 6.73551 17.1433 5.94973 16.8076C5.16395 16.4718 4.45209 15.9844 3.85487 15.3733C3.25765 14.7621 2.78679 14.0392 2.46924 13.2459C2.15169 12.4526 1.99368 11.6044 2.00424 10.75C1.94204 9.02551 2.56601 7.34668 3.73942 6.08143C4.91282 4.81618 6.53995 4.06769 8.26424 4H8.44424V4.48C9.49614 5.18892 10.7358 5.56764 12.0042 5.56764C13.2727 5.56764 14.5123 5.18892 15.5642 4.48V4H15.7442C17.4685 4.07286 19.0941 4.8243 20.2667 6.09056C21.4393 7.35681 22.0638 9.03523 22.0042 10.76C22.0176 12.4805 21.3482 14.1361 20.1429 15.3639C18.9376 16.5917 17.2947 17.2915 15.5742 17.31ZM19.944 16.9077C18.7586 18.019 17.199 18.6444 15.5742 18.66H8.43424C6.80292 18.6566 5.2333 18.0361 4.04059 16.9231C2.84788 15.8102 2.1204 14.2872 2.00424 12.66V13.42C1.98556 15.1449 2.65223 16.8067 3.85783 18.0404C5.06343 19.2741 6.70939 19.9789 8.43424 20H15.5742C17.2956 19.971 18.9354 19.2614 20.1348 18.0264C21.3343 16.7913 21.9956 15.1315 21.9742 13.41V12.66C21.854 14.2804 21.1293 15.7964 19.944 16.9077Z"
+              />
+            </svg>
+          </div>
+        </span>
+      </button>
+
+      <!-- 台桌按钮 -->
+      <button class="action-btn table-btn" @click="handleTable">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
         <span>赔率</span>
       </button>
 
+      <!-- 游戏大厅按钮 -->
       <button class="action-btn lobby-btn" @click="handleLobby">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
@@ -64,12 +69,11 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useBettingStore } from '@/stores/bettingStore'
-
-// 组件导入
-import ButtonLuZhuList from '@/components/pc/FloatingUI/ButtonLuZhuList.vue'
+import { useoverLayerStore } from '@/stores/overLayerStore'
 
 const gameStore = useGameStore()
 const bettingStore = useBettingStore()
+const overLayerStore = useoverLayerStore()
 
 // 余额
 const balance = computed(() => gameStore.displayBalance || 0)
@@ -79,9 +83,6 @@ const formattedBalance = computed(() => {
     maximumFractionDigits: 2
   })
 })
-
-// 局号
-const gameNumber = computed(() => gameStore.gameNumber || '0')
 
 // 总投注
 const totalBet = computed(() => bettingStore.totalBetAmount || 0)
@@ -93,17 +94,20 @@ const formattedTotalBet = computed(() => {
 })
 
 // 事件处理
-const handleRefresh = () => {
-  console.log('[GameCount] 刷新余额')
-  gameStore.refreshBalance()
+const handleCashier = () => {
+  console.log('[GameCount] 打开收银台')
 }
 
-const handleOdds = () => {
-  console.log('[GameCount] 打开赔率')
+const handleTable = () => {
+  console.log('[GameCount] 打开台桌')
 }
 
 const handleLobby = () => {
   console.log('[GameCount] 返回游戏大厅')
+}
+
+const handleLuZhuList = () => {
+  overLayerStore.open('luZhuList')
 }
 </script>
 
@@ -122,139 +126,197 @@ const handleLobby = () => {
   z-index: 20;
 }
 
-/* 左侧余额区域 */
-.balance-section {
+/* 左侧区域 */
+.left-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
+  gap: 8px;
 }
 
-.balance-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
-}
-
-.balance-amount {
-  font-size: 18px;
-  font-weight: bold;
-  color: #FFD700;
-}
-
-.refresh-btn {
-  width: 32px;
-  height: 32px;
+/* 收银台按钮 */
+.cashier-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  background: rgba(26, 26, 26, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.6);
   border-radius: 50%;
-  color: white;
   cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transition: all 0.2s;
 }
 
-.refresh-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(180deg);
+.cashier-btn:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 215, 0, 0.8);
 }
 
-.refresh-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* 中间统计区域 */
-.center-section {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
-}
-
-.stat-icon {
-  width: 24px;
-  height: 24px;
+.cashier-btn .button-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.stat-icon svg {
+.cashier-btn .button-base {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.cashier-btn .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 215, 0, 1);
+}
+
+.cashier-btn .icon-wrapper svg {
   width: 100%;
   height: 100%;
+  fill: currentColor;
 }
 
-.stat-content {
+/* 信息胶囊 */
+.info-capsule {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  height: 46px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  border-radius: 23px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.stat-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
+.info-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.stat-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
+.info-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #FFD700;
+  white-space: nowrap;
 }
 
 /* 右侧按钮区域 */
 .actions-section {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 10px 18px;
+  height: 46px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 23px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  border: none;
   color: white;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.action-btn:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .action-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
-.odds-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.odds-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+.table-btn {
+  /* 台桌按钮特殊样式 */
 }
 
 .lobby-btn {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  /* 游戏大厅按钮特殊样式 */
 }
 
-.lobby-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+.luzhu-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  background: rgba(26, 26, 26, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 44px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s;
+}
+
+.luzhu-btn:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.luzhu-btn .button-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.luzhu-btn .button-base {
+  position: absolute;
+  inset: 1px;
+  border-radius: 44px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.luzhu-btn .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: rgba(255, 255, 255, 1);
+}
+
+.luzhu-btn .icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
 }
 
 /* 响应式调整 */
@@ -290,13 +352,5 @@ const handleLobby = () => {
   .stat-value {
     font-size: 16px;
   }
-}
-
-/* 悬浮按钮位置 */
-.pc-floating-button-left {
-  position: absolute;
-  bottom: 100px;
-  left: 10px;
-  z-index: 500;
 }
 </style>
