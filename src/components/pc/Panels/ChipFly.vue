@@ -173,9 +173,10 @@ const formatChipValue = (value: number): string => {
  * 获取筹码文字样式类
  */
 const getChipValueClass = (value: number): string => {
-  if (value >= 100 && value < 1000) return 'chip-value-small'
-  if (value >= 1000) return 'chip-value-small-more'
-  return 'chip-value-normal'
+  if (value >= 1000) return 'chip-value-small-more'  // 四位数及以上: 1000+
+  if (value >= 100) return 'chip-value-small'        // 三位数: 100-999
+  if (value >= 10) return 'chip-value-normal'        // 两位数: 10-99
+  return 'chip-value-large'                          // 一位数: 1-9
 }
 </script>
 
@@ -219,16 +220,20 @@ const getChipValueClass = (value: number): string => {
 }
 
 /* 字体大小 */
+.chip-value-large {
+  font-size: 40px;  /* 一位数: 1-9 */
+}
+
 .chip-value-normal {
-  font-size: 36px;
+  font-size: 36px;  /* 两位数: 10-99 */
 }
 
 .chip-value-small {
-  font-size: 26px;
+  font-size: 26px;  /* 三位数: 100-999 */
 }
 
 .chip-value-small-more {
-  font-size: 24px;
+  font-size: 24px;  /* 四位数及以上: 1000+ */
 }
 
 /* ========================= 筹码颜色 ========================= */

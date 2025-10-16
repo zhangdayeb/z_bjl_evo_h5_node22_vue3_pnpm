@@ -26,7 +26,7 @@
               <circle class="chip-center" cx="39" cy="39" r="25.5"></circle>
               <path class="chip-border" d="M38.941 0a39 39 0 1 0 39 39 39.046 39.046 0 0 0-39-39zm-2.088 76.439l.483-8.471a28.99 28.99 0 0 1-4.668-.639l-1.783 8.291a37.277 37.277 0 0 1-12.144-5.051l4.6-7.124a29.143 29.143 0 0 1-8.85-8.851l-7.124 4.6a37.28 37.28 0 0 1-5.045-12.13l8.3-1.784a28.99 28.99 0 0 1-.639-4.668l-8.483.482C1.463 40.4 1.44 39.7 1.44 39s.023-1.391.061-2.08l8.478.483a28.99 28.99 0 0 1 .639-4.668l-8.3-1.785a37.275 37.275 0 0 1 5.047-12.142l7.126 4.6a29.143 29.143 0 0 1 8.85-8.851l-4.6-7.125a37.28 37.28 0 0 1 12.142-5.05l1.786 8.3a28.99 28.99 0 0 1 4.668-.639l-.483-8.484c.692-.038 1.388-.061 2.089-.061s1.4.023 2.087.061l-.483 8.484a28.99 28.99 0 0 1 4.668.639L47 2.381a37.276 37.276 0 0 1 12.14 5.05l-4.6 7.126a29.14 29.14 0 0 1 8.849 8.85l7.127-4.6a37.276 37.276 0 0 1 5.044 12.142l-8.3 1.785a28.99 28.99 0 0 1 .64 4.666l8.478-.483c.038.689.061 1.382.061 2.08s-.023 1.4-.062 2.1l-8.477-.486a28.99 28.99 0 0 1-.639 4.668l8.3 1.784a37.282 37.282 0 0 1-5.046 12.132l-7.125-4.6a29.14 29.14 0 0 1-8.849 8.85l4.6 7.125A37.275 37.275 0 0 1 47 75.619l-1.783-8.291a28.99 28.99 0 0 1-4.668.639l.483 8.471c-.691.038-1.386.061-2.087.061s-1.401-.022-2.092-.06z"></path>
             </g>
-            <text class="chip-value" :class="getChipValueClass(chip.value)" x="50%" y="50%" dy="7" font-weight="bold">{{ chip.text }}</text>
+            <text class="chip-value" :class="getChipValueClass(chip.value)" x="50%" y="50%" font-weight="bold">{{ chip.text }}</text>
           </svg>
         </div>
       </div>
@@ -69,9 +69,10 @@ const availableChips = [
 
 // 辅助函数：获取筹码文字样式类
 const getChipValueClass = (value: number) => {
-  if (value >= 100 && value < 1000) return 'chip-value-small'
-  if (value >= 1000) return 'chip-value-smaller'
-  return 'chip-value-normal'
+  if (value >= 1000) return 'chip-value-smaller'  // 四位数及以上: 1000+
+  if (value >= 100) return 'chip-value-small'     // 三位数: 100-999
+  if (value >= 10) return 'chip-value-normal'     // 两位数: 10-99
+  return 'chip-value-large'                       // 一位数: 1-9
 }
 
 // 事件处理函数
@@ -103,35 +104,33 @@ const handleSelectChip = (value: number) => {
 </script>
 
 <style scoped>
-/* 主容器 - 深棕色背景条 */
+/* 主容器 - 透明背景 */
 .chip-action-container {
   width: 100%;
-  height: 65px;
-  background: linear-gradient(135deg,
-    rgba(45, 25, 15, 0.95) 0%,
-    rgba(61, 37, 20, 0.95) 100%
-  );
+  height: 100px;
+  max-width: 700px;
+  margin: 0 auto;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: height 0.3s ease;
-  border-top: 1px solid rgba(255, 215, 0, 0.1);
 }
 
 /* 开牌状态：高度减少 */
 .chip-action-container.dealing-mode {
-  height: 42px;
+  height: 50px;
 }
 
 /* 内容包装器 - 整体居中 */
 .content-wrapper {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
-  max-width: 900px;
-  padding: 0 20px;
+  max-width: 700px;
+  padding: 0 15px;
   transition: opacity 0.2s ease;
 }
 
@@ -178,7 +177,7 @@ const handleSelectChip = (value: number) => {
 .chips-list {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   justify-content: center;
 }
@@ -201,23 +200,43 @@ const handleSelectChip = (value: number) => {
   transform: translateY(-2px);
 }
 
-/* 选中状态 */
+/* 选中状态 - PC端：金色圆环边框 */
 .chip-wrapper.selected {
-  transform: translateY(-6px) scale(1.1);
-  filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.5));
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 4px 10px rgba(255, 215, 0, 0.6));
 }
 
-.chip-wrapper.selected::after {
+/* 金色圆环边框 */
+.chip-wrapper.selected::before {
   content: '';
   position: absolute;
-  bottom: -8px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 3px;
-  background: #FFD700;
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+  transform: translate(-50%, -50%);
+  width: calc(100% + 8px);
+  height: calc(100% + 8px);
+  border-radius: 50%;
+  border: 3px solid #FFD700;
+  box-shadow:
+    0 0 10px rgba(255, 215, 0, 0.8),
+    inset 0 0 10px rgba(255, 215, 0, 0.3);
+  animation: pulse-ring 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 金色圆环脉动动画 */
+@keyframes pulse-ring {
+  0%, 100% {
+    box-shadow:
+      0 0 10px rgba(255, 215, 0, 0.8),
+      inset 0 0 10px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(255, 215, 0, 1),
+      inset 0 0 15px rgba(255, 215, 0, 0.5);
+  }
 }
 
 /* SVG 筹码样式 */
@@ -225,6 +244,8 @@ const handleSelectChip = (value: number) => {
   width: 100%;
   height: 100%;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  background: white;
+  border-radius: 100%;
 }
 
 .chip-outer {
@@ -239,16 +260,20 @@ const handleSelectChip = (value: number) => {
 }
 
 /* 字体大小 */
+.chip-value-large {
+  font-size: 24px;  /* 一位数: 1-9 */
+}
+
 .chip-value-normal {
-  font-size: 20px;
+  font-size: 20px;  /* 两位数: 10-99 */
 }
 
 .chip-value-small {
-  font-size: 16px;
+  font-size: 16px;  /* 三位数: 100-999 */
 }
 
 .chip-value-smaller {
-  font-size: 14px;
+  font-size: 14px;  /* 四位数及以上: 1000+ */
 }
 
 /* 筹码颜色 */

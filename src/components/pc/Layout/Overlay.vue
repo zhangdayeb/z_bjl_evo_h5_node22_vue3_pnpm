@@ -1,11 +1,6 @@
 <!-- src/components/Layout/Overlay.vue -->
 <template>
   <div class="overlay-system">
-    <!-- 筹码选择器 -->
-    <transition name="panel-fade">
-      <ChipSelector v-if="overLayerStore.chipSelector" />
-    </transition>
-
     <!-- 中奖效果 -->
     <transition name="effect-fade">
       <WinningEffect v-if="overLayerStore.winningEffect" />
@@ -14,11 +9,6 @@
     <!-- 露珠列表 -->
     <transition name="panel-fade">
       <LuZhuList v-if="overLayerStore.luZhuList" />
-    </transition>
-
-    <!-- 设置面板 -->
-    <transition name="panel-fade">
-      <SettingsPanel v-if="overLayerStore.settingsPanel" />
     </transition>
 
     <!-- 收银台 -->
@@ -40,10 +30,8 @@
 import { useoverLayerStore } from '@/stores/overLayerStore'
 
 // 组件导入
-import ChipSelector from '@/components/pc/Panels/ChipSelector.vue'
 import WinningEffect from '@/components/pc/Panels/WinningEffect.vue'
 import LuZhuList from '@/components/pc/LuZhuList/LuZhuList.vue'
-import SettingsPanel from '@/components/pc/Panels/SettingsPanel.vue'
 import Cashier from '@/components/pc/Panels/Cashier.vue'
 import ChipFly from '@/components/pc/Panels/ChipFly.vue'
 import ResultFly from '@/components/pc/Panels/ResultFly.vue'

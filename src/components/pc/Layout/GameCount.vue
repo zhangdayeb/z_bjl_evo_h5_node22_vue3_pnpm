@@ -1,5 +1,8 @@
 <template>
   <div class="pc-game-count">
+    <!-- 悬浮按钮 - 始终显示 -->
+    <ButtonLuZhuList class="pc-floating-button-left" />
+
     <!-- 左侧：余额 -->
     <div class="balance-section">
       <div class="balance-label">余额</div>
@@ -61,6 +64,9 @@
 import { computed } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { useBettingStore } from '@/stores/bettingStore'
+
+// 组件导入
+import ButtonLuZhuList from '@/components/pc/FloatingUI/ButtonLuZhuList.vue'
 
 const gameStore = useGameStore()
 const bettingStore = useBettingStore()
@@ -284,5 +290,13 @@ const handleLobby = () => {
   .stat-value {
     font-size: 16px;
   }
+}
+
+/* 悬浮按钮位置 */
+.pc-floating-button-left {
+  position: absolute;
+  bottom: 100px;
+  left: 10px;
+  z-index: 500;
 }
 </style>

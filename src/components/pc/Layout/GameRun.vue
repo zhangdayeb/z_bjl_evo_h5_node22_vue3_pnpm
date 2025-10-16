@@ -100,7 +100,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   display: flex;
-  height: 250px;
+  height: auto;
   background: transparent;
   z-index: 10;
 }
@@ -108,6 +108,7 @@ onMounted(() => {
 /* 左侧路单 - 固定宽度，透明背景 */
 .pc-road-stats.pc-road-left {
   width: 350px;
+  height: 150px;
   background: transparent;
   overflow-y: auto;
   overflow-x: hidden;
@@ -116,6 +117,7 @@ onMounted(() => {
 /* 中间投注区域 - 占据剩余宽度，透明背景 */
 .pc-betting-area {
   flex: 1;
+  height: 200px;
   padding: 20px;
   overflow: hidden;
   background: transparent;
@@ -124,6 +126,7 @@ onMounted(() => {
 /* 右侧路单 - 固定宽度，透明背景，垂直布局 */
 .pc-road-stats.pc-road-right {
   width: 350px;
+  height: 180px;
   background: transparent;
   display: flex;
   flex-direction: column;

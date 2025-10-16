@@ -1,10 +1,36 @@
 <template>
   <div class="betting-main-layer">
-    <!-- 主投注区域 -->
-    <div class="main-betting-area">
+    <!-- 整体布局容器 - 左中右一行 -->
+    <div class="betting-layout-row">
 
-      <!-- =================== 闲家区域 Player =================== -->
-      <div class="bet-spot player-spot" :class="{ 'winner-highlight': isWinner('player') }">
+      <!-- =================== 左侧：闲对区域 =================== -->
+      <div class="pair-zone player-pair left-pair" :class="{ 'winner-highlight': isWinner('player-pair') }">
+        <!-- SVG半圆形状 -->
+        <svg class="svg-builder" viewBox="-30 0 150 170" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="playerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
+              <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
+            </linearGradient>
+          </defs>
+          <!-- 左侧半圆：右边一小段直线，左边大圆弧 -->
+          <path d="M 120,0 L 120,170 L 150,170 A 150,85 0 0,1 150,0 Z"
+                fill="url(#playerPairGradient)"
+                stroke="rgba(0, 68, 221, 0.8)"
+                stroke-width="2"/>
+        </svg>
+
+        <div class="pair-zone-content">
+          <div class="pair-zone-title">P PAIR</div>
+          <div class="pair-zone-odds">11:1</div>
+        </div>
+      </div>
+
+      <!-- =================== 中间：主投注区域 =================== -->
+      <div class="main-betting-area">
+
+        <!-- =================== 闲家区域 Player =================== -->
+        <div class="bet-spot player-spot" :class="{ 'winner-highlight': isWinner('player') }">
         <!-- SVG形状 -->
         <svg class="svg-builder" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
@@ -116,25 +142,32 @@
           </div>
         </div>
       </div>
+
     </div>
 
-    <!-- =================== 对子投注区域 Pairs =================== -->
-    <div class="pairs-row">
-      <!-- 闲对 Player Pair -->
-      <div class="pair-zone player-pair" :class="{ 'winner-highlight': isWinner('player-pair') }">
-        <div class="pair-zone-content">
-          <div class="pair-zone-title">P PAIR</div>
-          <div class="pair-zone-odds">11:1</div>
-        </div>
-      </div>
+      <!-- =================== 右侧：庄对区域 =================== -->
+      <div class="pair-zone banker-pair right-pair" :class="{ 'winner-highlight': isWinner('banker-pair') }">
+        <!-- SVG半圆形状 -->
+        <svg class="svg-builder" viewBox="0 0 150 170" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="bankerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color: rgb(181, 0, 0);"></stop>
+              <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
+            </linearGradient>
+          </defs>
+          <!-- 右侧半圆：左边一小段直线，右边大圆弧 -->
+          <path d="M 0,0 L 0,170 L -30,170 A 150,85 0 0,0 -30,0 Z"
+                fill="url(#bankerPairGradient)"
+                stroke="rgba(230, 0, 0, 0.8)"
+                stroke-width="2"/>
+        </svg>
 
-      <!-- 庄对 Banker Pair -->
-      <div class="pair-zone banker-pair" :class="{ 'winner-highlight': isWinner('banker-pair') }">
         <div class="pair-zone-content">
           <div class="pair-zone-title">B PAIR</div>
           <div class="pair-zone-odds">11:1</div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -298,11 +331,21 @@ const isWinner = (zone: string): boolean => {
   z-index: 1;
 }
 
-/* ========================= 主投注区域 ========================= */
-.main-betting-area {
+/* ========================= 整体布局：左中右一行 ========================= */
+.betting-layout-row {
   position: relative;
   width: 100%;
-  height: calc(100% - 48px);
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+/* ========================= 主投注区域（中间部分）========================= */
+.main-betting-area {
+  position: relative;
+  flex: 1;
+  height: 100%;
   display: flex;
   justify-content: space-between;
 }
@@ -316,7 +359,7 @@ const isWinner = (zone: string): boolean => {
 
 .spot-content {
   position: absolute;
-  bottom: 15px;
+  bottom: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -326,14 +369,14 @@ const isWinner = (zone: string): boolean => {
 
 /* Player 区域内容定位 */
 .player-spot .spot-content {
-  right: 75px;
-  left: 15px;
+  right: 50px;
+  left: 10px;
 }
 
 /* Banker 区域内容定位 */
 .banker-spot .spot-content {
-  left: 75px;
-  right: 15px;
+  left: 50px;
+  right: 10px;
 }
 
 /* ========================= SVG 形状 ========================= */
@@ -379,13 +422,13 @@ const isWinner = (zone: string): boolean => {
 
 /* Player 区域背景定位 */
 .player-spot .spot-background {
-  right: 75px;
+  right: 50px;
   left: 0;
 }
 
 /* Banker 区域背景定位 */
 .banker-spot .spot-background {
-  left: 75px;
+  left: 50px;
   right: 0;
 }
 
@@ -448,10 +491,10 @@ const isWinner = (zone: string): boolean => {
 }
 
 .zone-title {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: 0;
-  line-height: 22px;
+  line-height: 18px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
   color: #ddd;
   font-family: 'Palatino', 'Georgia', serif;
@@ -459,7 +502,7 @@ const isWinner = (zone: string): boolean => {
 }
 
 .zone-odds {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
   margin-left: 4px;
 }
@@ -491,19 +534,19 @@ const isWinner = (zone: string): boolean => {
 
 .tie-spot .spot-content {
   position: absolute;
-  bottom: 14px;
+  bottom: 8px;
   left: 0;
   right: 0;
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   justify-content: center;
   z-index: 2;
 }
 
 .tie-spot .zone-title {
-  font-size: 18px;
+  font-size: 14px;
   color: #ddd;
 }
 
@@ -511,37 +554,37 @@ const isWinner = (zone: string): boolean => {
   color: #0DD80C;
 }
 
-/* ========================= 对子区域 ========================= */
-.pairs-row {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  gap: 4px;
-  height: 45px;
-}
-
+/* ========================= 对子区域（左右两侧半圆）========================= */
 .pair-zone {
-  flex: 1;
   position: relative;
+  width: 120px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 6px;
 }
 
-/* 闲对样式 */
+/* 左侧闲对 */
+.left-pair {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+/* 右侧庄对 */
+.right-pair {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* 闲对样式 - 不需要背景渐变，SVG已经处理 */
 .player-pair {
-  background: linear-gradient(135deg, rgb(0, 68, 221) 0%, rgb(0, 58, 136) 100%);
-  border: 2px solid rgba(0, 68, 221, 0.8);
+  /* SVG 已经有渐变，这里不需要额外背景 */
 }
 
-/* 庄对样式 */
+/* 庄对样式 - 不需要背景渐变，SVG已经处理 */
 .banker-pair {
-  background: linear-gradient(135deg, rgb(230, 0, 0) 0%, rgb(181, 0, 0) 100%);
-  border: 2px solid rgba(230, 0, 0, 0.8);
+  /* SVG 已经有渐变，这里不需要额外背景 */
 }
 
 .pair-zone-content {
@@ -550,6 +593,7 @@ const isWinner = (zone: string): boolean => {
   display: flex;
   align-items: center;
   flex-direction: column;
+  gap: 4px;
 }
 
 .pair-zone-title {
@@ -557,12 +601,16 @@ const isWinner = (zone: string): boolean => {
   font-weight: 700;
   color: #ddd;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 2px;
 }
 
 .pair-zone-odds {
   font-size: 12px;
   font-weight: 600;
   color: white;
+  writing-mode: vertical-rl;
 }
 
 .player-pair .pair-zone-odds {
@@ -571,6 +619,16 @@ const isWinner = (zone: string): boolean => {
 
 .banker-pair .pair-zone-odds {
   color: #ffb8b5;
+}
+
+/* 对子区域的 SVG 形状 */
+.pair-zone .svg-builder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
 </style>
