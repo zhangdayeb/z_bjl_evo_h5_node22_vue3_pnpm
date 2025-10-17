@@ -115,11 +115,11 @@ const handleLuZhuList = () => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
+  padding: 4px 10px;
   z-index: 20;
 }
 
@@ -130,14 +130,14 @@ const handleLuZhuList = () => {
   gap: 8px;
 }
 
-/* 收银台按钮 - 统一高度50px */
+/* 收银台按钮 - 统一高度30px */
 .cashier-btn {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(255, 215, 0, 0.6);
@@ -190,43 +190,45 @@ const handleLuZhuList = () => {
 }
 
 .cashier-btn .euro-symbol {
-  font-size: 28px;
+  font-size: 18px;
   font-weight: bold;
   color: rgba(255, 215, 0, 1);
   line-height: 1;
 }
 
-/* 信息胶囊 - 改为上下布局，左右半圆，统一高度50px */
+/* 信息胶囊 - 改为上下布局，左右半圆，统一高度30px */
 .info-capsule {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 2px 20px;
-  height: 46px;
-  min-width: 120px;
+  gap: 0px;
+  padding: 2px 16px;
+  height: 30px;
+  min-width: 100px;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 215, 0, 0.6);
-  border-radius: 46px;
+  border-radius: 30px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .info-label {
-  font-size: 10px;
+  font-size: 8px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   white-space: nowrap;
   text-align: center;
+  line-height: 1;
 }
 
 .info-value {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: bold;
   color: #FFD700;
   white-space: nowrap;
   text-align: center;
+  line-height: 1;
 }
 
 /* 右侧按钮区域 */
@@ -239,13 +241,13 @@ const handleLuZhuList = () => {
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  height: 50px;
+  gap: 4px;
+  padding: 6px 12px;
+  height: 30px;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 25px;
-  font-size: 14px;
+  border-radius: 15px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -260,8 +262,8 @@ const handleLuZhuList = () => {
 }
 
 .action-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
 }
 
 .table-btn {
@@ -277,8 +279,8 @@ const handleLuZhuList = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -318,8 +320,8 @@ const handleLuZhuList = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   color: rgba(255, 255, 255, 1);
 }
 
