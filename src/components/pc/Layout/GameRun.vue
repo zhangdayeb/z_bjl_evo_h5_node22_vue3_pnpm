@@ -73,11 +73,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* PC版游戏容器 - 垂直布局 */
+/* PC版游戏容器 - 固定1280×720尺寸 */
 .pc-game-container {
   position: relative;
-  width: 100%;
-  height: 100vh;
+  width: 1280px;
+  height: 720px;
   overflow: hidden;
   background: #0a0e1a;
 }
@@ -186,27 +186,5 @@ onMounted(() => {
 
 .pc-overlay-layer :deep(.overlay-system > *) {
   pointer-events: auto;
-}
-
-/* 响应式调整 - 小屏PC */
-@media (max-width: 1366px) {
-  .pc-road-stats {
-    width: 300px;
-  }
-
-  .pc-betting-and-road-section {
-    height: 220px;
-  }
-}
-
-/* 响应式调整 - 大屏PC */
-@media (min-width: 1920px) {
-  .pc-road-stats {
-    width: 400px;
-  }
-
-  .pc-betting-and-road-section {
-    height: 280px;
-  }
 }
 </style>

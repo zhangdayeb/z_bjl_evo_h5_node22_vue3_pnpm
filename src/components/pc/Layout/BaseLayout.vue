@@ -1,17 +1,19 @@
 <template>
-  <div class="game-section">
-    <!-- 加载页面 -->
-    <LoadingPage v-if="showLoading" />
+  <div class="game-viewport">
+    <div class="game-section" ref="gameContainer">
+      <!-- 加载页面 -->
+      <LoadingPage v-if="showLoading" />
 
-    <!-- 维护模式 - 只显示图标 -->
-    <div v-if="isMaintenanceMode" class="maintenance-overlay">
-      <div class="maintenance-icon-container">
-        <div class="maintenance-icon">⚙️</div>
+      <!-- 维护模式 - 只显示图标 -->
+      <div v-if="isMaintenanceMode" class="maintenance-overlay">
+        <div class="maintenance-icon-container">
+          <div class="maintenance-icon">⚙️</div>
+        </div>
       </div>
-    </div>
 
-    <!-- 游戏主界面 - 改为加载 GameRun -->
-    <GameRun v-if="!showLoading && !isMaintenanceMode" />
+      <!-- 游戏主界面 - 改为加载 GameRun -->
+      <GameRun v-if="!showLoading && !isMaintenanceMode" />
+    </div>
   </div>
 </template>
 
@@ -31,6 +33,7 @@ const gameStore = useGameStore()
 
 // 状态
 const showLoading = ref(true)  // 显示加载页面
+const gameContainer = ref<HTMLElement | null>(null)  // 游戏容器引用
 
 // 计算属性判断是否维护模式
 const isMaintenanceMode = computed(() => {
@@ -41,6 +44,33 @@ const isMaintenanceMode = computed(() => {
     return false
   }
 })
+
+// 缩放逻辑 - 保持16:9比例
+const updateScale = () => {
+  if (!gameContainer.value) return
+
+  const designWidth = 1280
+  const designHeight = 720
+  const designRatio = designWidth / designHeight
+
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+  const windowRatio = windowWidth / windowHeight
+
+  let scale = 1
+
+  if (windowRatio > designRatio) {
+    // 窗口更宽，以高度为准
+    scale = windowHeight / designHeight
+  } else {
+    // 窗口更高，以宽度为准
+    scale = windowWidth / designWidth
+  }
+
+  gameContainer.value.style.transform = `scale(${scale})`
+
+  console.log(`🎮 缩放比例: ${scale.toFixed(3)} (窗口: ${windowWidth}x${windowHeight})`)
+}
 
 // 组件生命周期
 onMounted(async () => {
@@ -59,6 +89,12 @@ onMounted(async () => {
     console.error('❌ 网络服务初始化失败:', error)
   }
 
+  // 初始化缩放
+  updateScale()
+
+  // 监听窗口大小变化
+  window.addEventListener('resize', updateScale)
+
   // 3秒后自动隐藏加载页面
   setTimeout(() => {
     showLoading.value = false
@@ -69,21 +105,39 @@ onMounted(async () => {
 onUnmounted(() => {
   console.log('🎮 BaseLayout 组件已卸载')
 
+  // 移除窗口监听
+  window.removeEventListener('resize', updateScale)
+
   // 清理网络服务
   cleanupNetworkService()
 })
 </script>
 
 <style scoped>
-/* 容器样式 */
-.game-section {
-  width: 100%;
+/* 外层viewport - 黑色背景，全屏居中 */
+.game-viewport {
+  width: 100vw;
   height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* 游戏容器 - 固定1280×720设计尺寸 */
+.game-section {
+  width: 1280px;
+  height: 720px;
   position: relative;
   overflow: hidden;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transform-origin: center center;
+  background: #0a0e1a;
 }
 
 /* 维护模式 - 只有图标 */
@@ -118,19 +172,6 @@ onUnmounted(() => {
   }
   100% {
     transform: rotate(360deg);
-  }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .maintenance-icon {
-    font-size: 60px;
-  }
-}
-
-@media (max-width: 480px) {
-  .maintenance-icon {
-    font-size: 52px;
   }
 }
 </style>
