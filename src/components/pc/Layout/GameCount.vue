@@ -13,13 +13,13 @@
       </button>
 
       <!-- 余额信息 -->
-      <div class="info-capsule">
+      <div class="info-capsule balance-capsule">
         <div class="info-label">BALANCE</div>
         <div class="info-value">€{{ formattedBalance }}</div>
       </div>
 
       <!-- 总投注信息 -->
-      <div class="info-capsule">
+      <div class="info-capsule totalbet-capsule">
         <div class="info-label">TOTAL BET</div>
         <div class="info-value">€{{ formattedTotalBet }}</div>
       </div>
@@ -150,8 +150,8 @@ const handleLuZhuList = () => {
 }
 
 .cashier-btn:hover {
-  transform: scale(1.05);
-  border-color: rgba(255, 215, 0, 0.8);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 1);
 }
 
 .cashier-btn .button-content {
@@ -213,6 +213,22 @@ const handleLuZhuList = () => {
   -webkit-backdrop-filter: blur(10px);
 }
 
+/* BALANCE 胶囊 - 添加悬停效果 */
+.balance-capsule {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.balance-capsule:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 1);
+}
+
+/* TOTAL BET 胶囊 - 无悬停效果 */
+.totalbet-capsule {
+  cursor: default;
+}
+
 .info-label {
   font-size: 8px;
   color: rgba(255, 255, 255, 0.9);
@@ -257,8 +273,8 @@ const handleLuZhuList = () => {
 }
 
 .action-btn:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 1);
 }
 
 .action-btn svg {
@@ -292,8 +308,8 @@ const handleLuZhuList = () => {
 }
 
 .luzhu-btn:hover {
-  transform: scale(1.05);
-  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 215, 0, 1);
 }
 
 .luzhu-btn .button-content {
