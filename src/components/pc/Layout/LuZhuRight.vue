@@ -3,7 +3,6 @@
   <div class="pc-luzhu-component">
     <!-- 大路区域 -->
     <div class="pc-road-section pc-big-road-section">
-      <div class="pc-road-header">大路</div>
       <div class="pc-road-viewport">
         <div class="pc-road-container" :style="{ transform: `translateX(${bigRoadOffset}px)` }">
           <div
@@ -71,7 +70,6 @@
     <div class="pc-three-roads-section">
       <!-- 大眼路 -->
       <div class="pc-road-section pc-small-road-section">
-        <div class="pc-road-header-small">大眼路</div>
         <div class="pc-road-viewport-small">
           <div class="pc-road-container" :style="{ transform: `translateX(${bigEyeRoadOffset}px)` }">
             <div
@@ -100,7 +98,6 @@
 
       <!-- 小路 -->
       <div class="pc-road-section pc-small-road-section">
-        <div class="pc-road-header-small">小路</div>
         <div class="pc-road-viewport-small">
           <div class="pc-road-container" :style="{ transform: `translateX(${smallRoadOffset}px)` }">
             <div
@@ -127,7 +124,6 @@
 
       <!-- 蟑螂路 -->
       <div class="pc-road-section pc-small-road-section">
-        <div class="pc-road-header-small">蟑螂路</div>
         <div class="pc-road-viewport-small">
           <div class="pc-road-container" :style="{ transform: `translateX(${cockroachRoadOffset}px)` }">
             <div
@@ -310,7 +306,7 @@ onUnmounted(() => {
 /* 大路视口 */
 .pc-road-viewport {
   width: 100%;
-  height: calc(100% - 24px);
+  height: 100%;
   overflow: hidden;
   position: relative;
   background-image: radial-gradient(
@@ -346,7 +342,7 @@ onUnmounted(() => {
 /* 小路视口 */
 .pc-road-viewport-small {
   width: 100%;
-  height: calc(100% - 20px);
+  height: 100%;
   overflow: hidden;
   position: relative;
   background-image: radial-gradient(

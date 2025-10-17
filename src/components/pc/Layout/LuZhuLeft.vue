@@ -3,7 +3,6 @@
   <div class="pc-bead-plate-component">
     <!-- 珠子路区域 -->
     <div class="pc-bead-plate-section">
-      <div class="pc-road-header">珠盘路</div>
       <div class="pc-bead-plate-viewport">
         <div class="pc-bead-plate-container">
           <div
@@ -149,7 +148,7 @@ const getBeadText = (item: BeadPlatePosition): string => {
 /* 珠子路视口 */
 .pc-bead-plate-viewport {
   width: 100%;
-  height: calc(100% - 24px);
+  height: 100%;
   overflow: hidden;
   position: relative;
   background-image: radial-gradient(

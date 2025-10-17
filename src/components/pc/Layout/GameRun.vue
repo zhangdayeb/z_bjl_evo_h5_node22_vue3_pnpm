@@ -96,7 +96,7 @@ onMounted(() => {
 /* 底部区域 - 路单 + 投注 + 路单，背景透明 */
 .pc-betting-and-road-section {
   position: absolute;
-  bottom: 60px;
+  bottom: 0px;
   left: 0;
   right: 0;
   display: flex;
@@ -105,32 +105,38 @@ onMounted(() => {
   z-index: 10;
 }
 
-/* 左侧路单 - 固定宽度，透明背景 */
+/* 左侧路单 - 固定宽度，半透明黑色背景 */
 .pc-road-stats.pc-road-left {
   width: 350px;
   height: 150px;
-  background: transparent;
-  overflow-y: auto;
-  overflow-x: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  position: absolute;
+  bottom: 40px;
+  left: 0px;
 }
 
-/* 中间投注区域 - 占据剩余宽度，透明背景 */
+/* 中间投注区域 - 绝对定位，固定宽度，居中 */
 .pc-betting-area {
-  flex: 1;
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
   height: 200px;
   padding: 20px;
   overflow: hidden;
   background: transparent;
 }
 
-/* 右侧路单 - 固定宽度，透明背景，垂直布局 */
+/* 右侧路单 - 固定宽度，半透明黑色背景，垂直布局 */
 .pc-road-stats.pc-road-right {
   width: 350px;
   height: 180px;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
+  background: rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  position: absolute;
+  bottom: 40px;
+  right: 0px;
 }
 
 /* 路单统计区域 - 顶部固定高度 */
