@@ -7,22 +7,20 @@
         <span class="button-content">
           <div class="button-base"></div>
           <div class="icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-            </svg>
+            <span class="euro-symbol">€</span>
           </div>
         </span>
       </button>
 
       <!-- 余额信息 -->
       <div class="info-capsule">
-        <div class="info-label">余额</div>
+        <div class="info-label">BALANCE</div>
         <div class="info-value">€{{ formattedBalance }}</div>
       </div>
 
       <!-- 总投注信息 -->
       <div class="info-capsule">
-        <div class="info-label">总投注</div>
+        <div class="info-label">TOTAL BET</div>
         <div class="info-value">€{{ formattedTotalBet }}</div>
       </div>
     </div>
@@ -51,7 +49,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
         </svg>
-        <span>赔率</span>
+        <span>TABLE</span>
       </button>
 
       <!-- 游戏大厅按钮 -->
@@ -59,7 +57,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
-        <span>游戏大厅</span>
+        <span>LOBBY</span>
       </button>
     </div>
   </div>
@@ -117,12 +115,11 @@ const handleLuZhuList = () => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 50%, rgba(53, 38, 13, 0.8) 100%);
+  padding: 10px;
   z-index: 20;
 }
 
@@ -133,14 +130,14 @@ const handleLuZhuList = () => {
   gap: 8px;
 }
 
-/* 收银台按钮 */
+/* 收银台按钮 - 统一高度50px */
 .cashier-btn {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   padding: 0;
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(255, 215, 0, 0.6);
@@ -149,6 +146,7 @@ const handleLuZhuList = () => {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .cashier-btn:hover {
@@ -191,25 +189,36 @@ const handleLuZhuList = () => {
   fill: currentColor;
 }
 
-/* 信息胶囊 */
+.cashier-btn .euro-symbol {
+  font-size: 28px;
+  font-weight: bold;
+  color: rgba(255, 215, 0, 1);
+  line-height: 1;
+}
+
+/* 信息胶囊 - 改为上下布局，左右半圆，统一高度50px */
 .info-capsule {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 20px;
   height: 46px;
+  min-width: 120px;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 215, 0, 0.6);
-  border-radius: 23px;
+  border-radius: 46px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .info-label {
-  font-size: 12px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   white-space: nowrap;
+  text-align: center;
 }
 
 .info-value {
@@ -217,6 +226,7 @@ const handleLuZhuList = () => {
   font-weight: bold;
   color: #FFD700;
   white-space: nowrap;
+  text-align: center;
 }
 
 /* 右侧按钮区域 */
@@ -231,10 +241,10 @@ const handleLuZhuList = () => {
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  height: 46px;
+  height: 50px;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 23px;
+  border-radius: 25px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -267,12 +277,12 @@ const handleLuZhuList = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 50px;
+  height: 50px;
   padding: 0;
   background: rgba(26, 26, 26, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 44px;
+  border-radius: 50%;
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -296,7 +306,7 @@ const handleLuZhuList = () => {
 .luzhu-btn .button-base {
   position: absolute;
   inset: 1px;
-  border-radius: 44px;
+  border-radius: 50%;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.03) 0%,
     rgba(255, 255, 255, 0) 100%
@@ -317,40 +327,5 @@ const handleLuZhuList = () => {
   width: 100%;
   height: 100%;
   fill: currentColor;
-}
-
-/* 响应式调整 */
-@media (max-width: 1366px) {
-  .pc-game-count {
-    height: 50px;
-    padding: 0 16px;
-  }
-
-  .balance-amount {
-    font-size: 16px;
-  }
-
-  .stat-value {
-    font-size: 13px;
-  }
-
-  .action-btn {
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .pc-game-count {
-    height: 70px;
-  }
-
-  .balance-amount {
-    font-size: 20px;
-  }
-
-  .stat-value {
-    font-size: 16px;
-  }
 }
 </style>
