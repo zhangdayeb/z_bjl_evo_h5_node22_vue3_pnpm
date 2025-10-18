@@ -3,11 +3,11 @@
     <!-- 基础展示层 -->
     <BettingAreaMain />
 
-    <!-- 用户统计信息层 - 投注阶段显示 -->
-    <BettingAreaShowUserBetMsg v-if="gamePhase === 'betting'" />
+    <!-- 用户统计信息层 - 始终显示 -->
+    <BettingAreaShowUserBetMsg />
 
-    <!-- 筹码显示层 - 投注阶段显示（包含交互） -->
-    <BettingAreaShowChip v-if="gamePhase === 'betting'" />
+    <!-- 筹码显示层 - 始终显示（dealing阶段禁用交互） -->
+    <BettingAreaShowChip :disabled="gamePhase === 'dealing'" />
 
     <!-- 开牌显示层 - 开牌阶段显示 -->
     <BettingAreaShowCard v-if="gamePhase === 'dealing'" />
@@ -48,15 +48,6 @@ const gamePhase = computed(() => {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* 投注阶段 - 正常尺寸 */
-.betting-container.betting-phase {
-  padding: 0;
-}
-
-/* 开牌阶段 - 稍微紧凑 */
-.betting-container.dealing-phase {
   padding: 0;
 }
 </style>

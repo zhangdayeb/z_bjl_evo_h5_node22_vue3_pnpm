@@ -46,7 +46,7 @@
           </defs>
           <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
                    C30,100 29,99 29,98 L 29,45
-                   C29,32 20,22 0,22 Z"
+                   C29,32 20,14 0,14 Z"
                 :fill="isWinner('player') ? 'url(#playerWinGradient)' : 'url(#playerGradient)'"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="1"
@@ -85,7 +85,7 @@
           </defs>
           <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
                    C30,100 29,99 29,98 L 29,45
-                   C29,32 20,22 0,22 Z"
+                   C29,32 20,14 0,14 Z"
                 :fill="isWinner('banker') ? 'url(#bankerWinGradient)' : 'url(#bankerGradient)'"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="1"
@@ -348,7 +348,7 @@ const isWinner = (zone: string): boolean => {
   width: 330px;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  gap: 2px;
 }
 
 /* ========================= 庄闲区域样式 ========================= */

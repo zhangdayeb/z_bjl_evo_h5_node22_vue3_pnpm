@@ -1,5 +1,5 @@
 <template>
-  <div class="show-chip-layer">
+  <div class="show-chip-layer" :class="{ 'disabled': disabled }">
     <!-- =================== 透明点击区域 =================== -->
     <!-- Player 点击区域 -->
     <div
@@ -124,6 +124,11 @@ import { ref, reactive } from 'vue'
 import { useChipFlyStore } from '@/stores/chipFlyStore'
 import { useBettingStore } from '@/stores/bettingStore'
 
+// ========================= Props =========================
+const props = defineProps<{
+  disabled?: boolean  // dealing 阶段禁用交互
+}>()
+
 // ========================= 类型定义 =========================
 type BetZone = 'player' | 'banker' | 'tie' | 'player-pair' | 'banker-pair'
 
@@ -163,6 +168,12 @@ const betAmounts = reactive<Record<BetZone, number>>({
  * 3. 延迟 300ms 更新筹码显示
  */
 const handleBet = (zone: BetZone): void => {
+  // 如果处于禁用状态（dealing阶段），直接返回
+  if (props.disabled) {
+    console.log(`[BettingArea] ⚠️ 处于禁用状态，无法投注`)
+    return
+  }
+
   console.log(`[BettingArea] 点击投注区域: ${zone}, 筹码值: ${defaultChipValue.value}`)
 
   const amount = defaultChipValue.value
@@ -271,11 +282,22 @@ defineExpose({
   z-index: 2;
 }
 
+/* 禁用状态 - dealing 阶段 */
+.show-chip-layer.disabled {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
 /* ========================= 透明点击区域 ========================= */
 .click-area {
   position: absolute;
   background: transparent;
   cursor: pointer;
+}
+
+/* 禁用状态下的点击区域 */
+.show-chip-layer.disabled .click-area {
+  cursor: not-allowed;
 }
 
 .player-click-area {
