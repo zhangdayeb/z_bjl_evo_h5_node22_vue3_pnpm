@@ -6,15 +6,15 @@
       <!-- =================== 左侧：闲对区域 =================== -->
       <div class="pair-zone player-pair left-pair" :class="{ 'winner-highlight': isWinner('player-pair') }">
         <!-- SVG半圆形状 -->
-        <svg class="svg-builder" viewBox="-30 0 150 170" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 85 170" preserveAspectRatio="none">
           <defs>
             <linearGradient id="playerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
               <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
             </linearGradient>
           </defs>
-          <!-- 左侧半圆：右边一小段直线，左边大圆弧 -->
-          <path d="M 120,0 L 120,170 L 150,170 A 150,85 0 0,1 150,0 Z"
+          <!-- 左侧半圆：右边直线，左边标准圆弧 -->
+          <path d="M 85,0 L 85,170 A 85,85 0 0,1 85,0 Z"
                 fill="url(#playerPairGradient)"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="2"/>
@@ -148,15 +148,15 @@
       <!-- =================== 右侧：庄对区域 =================== -->
       <div class="pair-zone banker-pair right-pair" :class="{ 'winner-highlight': isWinner('banker-pair') }">
         <!-- SVG半圆形状 -->
-        <svg class="svg-builder" viewBox="0 0 150 170" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 85 170" preserveAspectRatio="none">
           <defs>
             <linearGradient id="bankerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color: rgb(181, 0, 0);"></stop>
               <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
             </linearGradient>
           </defs>
-          <!-- 右侧半圆：左边一小段直线，右边大圆弧 -->
-          <path d="M 0,0 L 0,170 L -30,170 A 150,85 0 0,0 -30,0 Z"
+          <!-- 右侧半圆：左边直线，右边标准圆弧 -->
+          <path d="M 0,0 L 0,170 A 85,85 0 0,0 0,0 Z"
                 fill="url(#bankerPairGradient)"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="2"/>
@@ -338,7 +338,7 @@ const isWinner = (zone: string): boolean => {
   height: 100%;
   display: flex;
   align-items: stretch;
-  gap: 0px;
+  gap: 2px;
   margin: 0 auto;
 }
 
