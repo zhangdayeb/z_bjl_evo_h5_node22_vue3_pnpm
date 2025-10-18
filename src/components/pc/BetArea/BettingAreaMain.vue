@@ -13,8 +13,8 @@
               <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
             </linearGradient>
           </defs>
-          <!-- 左侧：圆弧半径65px，矩形宽度20px -->
-          <path d="M 85,0 L 85,125 A 65,62.5 0 0,1 85,0 Z"
+          <!-- 左侧：圆弧半径85px（完整），形成完整的半圆 -->
+          <path d="M 85,0 L 85,125 A 85,62.5 0 0,1 85,0 Z"
                 fill="url(#playerPairGradient)"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="2"/>
@@ -155,8 +155,8 @@
               <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
             </linearGradient>
           </defs>
-          <!-- 右侧：圆弧半径65px，矩形宽度20px -->
-          <path d="M 0,0 L 0,125 A 65,62.5 0 0,0 0,0 Z"
+          <!-- 右侧：圆弧半径85px（完整），形成完整的半圆 -->
+          <path d="M 0,0 L 0,125 A 85,62.5 0 0,0 0,0 Z"
                 fill="url(#bankerPairGradient)"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="2"/>
