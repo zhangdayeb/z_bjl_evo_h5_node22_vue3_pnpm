@@ -40,7 +40,7 @@ const gamePhase = computed(() => {
 /* PC版投注容器 - 适应横向宽屏布局 */
 .betting-container {
   width: 100%;
-  height: 170px;
+  height: 125px;
   max-width: 700px;
   margin: 0 auto;
   position: relative;

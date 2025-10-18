@@ -122,8 +122,8 @@ onMounted(() => {
   left: 50%;
   transform: translateX(-50%);
   width: 500px;
-  height: 200px;
-  padding: 20px;
+  height: 300px;
+  padding: 0px 20px;
   overflow: hidden;
   background: transparent;
 }

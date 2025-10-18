@@ -41,8 +41,6 @@ onMounted(() => {
 
 /* 投注区域 - 占据剩余空间 */
 .pc-betting-area-section {
-  flex: 1;
-  display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
