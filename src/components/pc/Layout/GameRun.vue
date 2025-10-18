@@ -118,7 +118,7 @@ onMounted(() => {
 /* 中间投注区域 - 绝对定位，固定宽度，居中 */
 .pc-betting-area {
   position: absolute;
-  bottom: 40px;
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
   width: 500px;
