@@ -6,15 +6,15 @@
       <!-- =================== 左侧：闲对区域 =================== -->
       <div class="pair-zone player-pair left-pair" :class="{ 'winner-highlight': isWinner('player-pair') }">
         <!-- SVG半圆形状 -->
-        <svg class="svg-builder" viewBox="0 0 85 170" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 85 125" preserveAspectRatio="none">
           <defs>
             <linearGradient id="playerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
               <stop offset="100%" style="stop-color: rgb(0, 58, 136);"></stop>
             </linearGradient>
           </defs>
-          <!-- 左侧半圆：右边直线，左边标准圆弧 -->
-          <path d="M 85,0 L 85,170 A 85,85 0 0,1 85,0 Z"
+          <!-- 左侧：圆弧半径65px，矩形宽度20px -->
+          <path d="M 85,0 L 85,125 A 65,62.5 0 0,1 85,0 Z"
                 fill="url(#playerPairGradient)"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="2"/>
@@ -32,7 +32,7 @@
         <!-- =================== 闲家区域 Player =================== -->
         <div class="bet-spot player-spot" :class="{ 'winner-highlight': isWinner('player') }">
         <!-- SVG形状 -->
-        <svg class="svg-builder" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 125 125" preserveAspectRatio="none">
           <defs>
             <linearGradient id="playerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" style="stop-color: rgb(0, 68, 221);"></stop>
@@ -44,13 +44,13 @@
               <stop offset="100%" style="stop-color: rgb(0, 68, 221);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
-                   C30,100 29,99 29,98 L 29,45
-                   C29,32 20,14 0,14 Z"
+          <path d="M 0,2.5 C0,1.25 1.25,0 2.5,0 L 120,0 C122.5,0 125,2.5 125,5 L 125,120 C125,122.5 122.5,125 120,125 L 37.5,125
+                   C37.5,125 36.25,123.75 36.25,122.5 L 36.25,56.25
+                   C36.25,40 25,17.5 0,17.5 Z"
                 :fill="isWinner('player') ? 'url(#playerWinGradient)' : 'url(#playerGradient)'"
                 stroke="rgba(0, 68, 221, 0.8)"
                 stroke-width="1"
-                :fill-opacity="isWinner('player') ? 1 : 0.8"/>
+                fill-opacity="1"/>
         </svg>
 
         <!-- 背景图案 -->
@@ -71,7 +71,7 @@
       <!-- =================== 庄家区域 Banker =================== -->
       <div class="bet-spot banker-spot" :class="{ 'winner-highlight': isWinner('banker') }">
         <!-- SVG形状 -->
-        <svg class="svg-builder" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 125 125" preserveAspectRatio="none">
           <defs>
             <linearGradient id="bankerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" style="stop-color: rgb(230, 0, 0);"></stop>
@@ -83,13 +83,13 @@
               <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 0,2 C0,1 1,0 2,0 L 96,0 C98,0 100,2 100,4 L 100,96 C100,98 98,100 96,100 L 30,100
-                   C30,100 29,99 29,98 L 29,45
-                   C29,32 20,14 0,14 Z"
+          <path d="M 0,2.5 C0,1.25 1.25,0 2.5,0 L 120,0 C122.5,0 125,2.5 125,5 L 125,120 C125,122.5 122.5,125 120,125 L 37.5,125
+                   C37.5,125 36.25,123.75 36.25,122.5 L 36.25,56.25
+                   C36.25,40 25,17.5 0,17.5 Z"
                 :fill="isWinner('banker') ? 'url(#bankerWinGradient)' : 'url(#bankerGradient)'"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="1"
-                :fill-opacity="isWinner('banker') ? 1 : 0.8"/>
+                fill-opacity="1"/>
         </svg>
 
         <!-- 背景图案 -->
@@ -110,7 +110,7 @@
       <!-- =================== 和局区域 Tie =================== -->
       <div class="tie-spot" :class="{ 'winner-highlight': isWinner('tie') }">
         <!-- SVG形状 -->
-        <svg class="svg-builder" viewBox="0 0 140 190" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 92 125" preserveAspectRatio="none">
           <defs>
             <linearGradient id="tieGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" style="stop-color: rgb(3, 165, 1);"></stop>
@@ -122,11 +122,11 @@
               <stop offset="100%" style="stop-color: rgb(3, 165, 1);"></stop>
             </linearGradient>
           </defs>
-          <path d="M 70,0 C114.85,0 140,45 140,70 L 140,184 C140,188 138,190 134,190 L 6,190 C2,190 0,188 0,184 L 0,70 C0,45 25.15,0 70,0 Z"
+          <path d="M 46,0 C75.5,0 92,29.6 92,46 L 92,121 C92,123.7 90.8,125 88.1,125 L 3.9,125 C1.3,125 0,123.7 0,121 L 0,46 C0,29.6 16.5,0 46,0 Z"
                 :fill="isWinner('tie') ? 'url(#tieWinGradient)' : 'url(#tieGradient)'"
                 stroke="rgba(3, 165, 1, 0.8)"
                 stroke-width="2"
-                :fill-opacity="isWinner('tie') ? 1 : 0.8"/>
+                fill-opacity="1"/>
         </svg>
 
         <!-- 背景图案 -->
@@ -148,15 +148,15 @@
       <!-- =================== 右侧：庄对区域 =================== -->
       <div class="pair-zone banker-pair right-pair" :class="{ 'winner-highlight': isWinner('banker-pair') }">
         <!-- SVG半圆形状 -->
-        <svg class="svg-builder" viewBox="0 0 85 170" preserveAspectRatio="none">
+        <svg class="svg-builder" viewBox="0 0 85 125" preserveAspectRatio="none">
           <defs>
             <linearGradient id="bankerPairGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" style="stop-color: rgb(181, 0, 0);"></stop>
               <stop offset="100%" style="stop-color: rgb(230, 0, 0);"></stop>
             </linearGradient>
           </defs>
-          <!-- 右侧半圆：左边直线，右边标准圆弧 -->
-          <path d="M 0,0 L 0,170 A 85,85 0 0,0 0,0 Z"
+          <!-- 右侧：圆弧半径65px，矩形宽度20px -->
+          <path d="M 0,0 L 0,125 A 65,62.5 0 0,0 0,0 Z"
                 fill="url(#bankerPairGradient)"
                 stroke="rgba(230, 0, 0, 0.8)"
                 stroke-width="2"/>
