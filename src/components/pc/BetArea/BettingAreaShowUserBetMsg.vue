@@ -228,24 +228,24 @@ const bettingData = computed<Record<BetZone, BettingInfo>>(() => {
   top: 15px;
 }
 
-/* Player 统计位置 */
+/* Player 统计位置 - 匹配 BettingAreaMain.vue 中 Player 区域 */
 .player-statistics {
-  left: 15px;
-  width: calc(50% - 90px);
+  left: 95px; /* 85px(左侧闲对) + 10px(间隙) */
+  width: 155px; /* 匹配主投注区域的闲家宽度 */
 }
 
-/* Banker 统计位置 */
+/* Banker 统计位置 - 匹配 BettingAreaMain.vue 中 Banker 区域 */
 .banker-statistics {
-  right: 15px;
-  width: calc(50% - 90px);
+  right: 95px; /* 85px(右侧庄对) + 10px(间隙) */
+  width: 155px; /* 匹配主投注区域的庄家宽度 */
 }
 
-/* Tie 统计位置 */
+/* Tie 统计位置 - 匹配 BettingAreaMain.vue 中 Tie 区域 */
 .tie-statistics {
   left: 50%;
   transform: translateX(-50%);
-  top: 42px;
-  width: 31%;
+  top: 17%; /* 匹配 Main 中的百分比定位 */
+  width: 28%; /* 匹配 Main 中的 Tie 宽度 */
 }
 
 /* ========================= 统计信息 ========================= */
