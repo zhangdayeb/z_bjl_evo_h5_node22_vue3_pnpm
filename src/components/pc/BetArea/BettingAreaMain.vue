@@ -334,17 +334,18 @@ const isWinner = (zone: string): boolean => {
 /* ========================= 整体布局：左中右一行 ========================= */
 .betting-layout-row {
   position: relative;
-  width: 100%;
+  width: 500px;
   height: 100%;
   display: flex;
   align-items: stretch;
-  gap: 4px;
+  gap: 0px;
+  margin: 0 auto;
 }
 
 /* ========================= 主投注区域（中间部分）========================= */
 .main-betting-area {
   position: relative;
-  flex: 1;
+  width: 330px;
   height: 100%;
   display: flex;
   justify-content: space-between;
@@ -557,7 +558,7 @@ const isWinner = (zone: string): boolean => {
 /* ========================= 对子区域（左右两侧半圆）========================= */
 .pair-zone {
   position: relative;
-  width: 120px;
+  width: 85px;
   height: 100%;
   display: flex;
   align-items: center;
